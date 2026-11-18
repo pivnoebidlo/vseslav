@@ -4,7 +4,16 @@
 
 Движок — Godot 4.x, язык — строго типизированный GDScript.
 
-> Статус: проектирование. Кода пока нет, текущий этап — [этап 0](docs/ROADMAP.md#этап-0--каркас-и-спайки-12-недели).
+> Статус: этап 0 — каркас и спайки ([ROADMAP](docs/ROADMAP.md)). Есть тестовая арена с пошаговым боем.
+
+## Запуск
+
+```sh
+godot --path .                 # тестовая арена: ЛКМ по клетке — идти, по врагу — атаковать
+tools/test.sh                  # тесты
+tools/lint.sh                  # линтер
+tools/export.sh                # сборки для macOS, Windows, Linux в build/
+```
 
 ## Документы
 
@@ -27,8 +36,8 @@
 
 ## Требования для разработки
 
-- Godot 4.x (версия — [OPEN_QUESTIONS](docs/OPEN_QUESTIONS.md) №1), доступный как `godot` или через `GODOT=/путь/к/godot`.
-- Python 3 + `pip install "gdtoolkit==4.*"`.
+- Godot 4.7.2 ([ADR-0015](docs/adr/0015-toolchain-versions.md)), доступный как `godot` или через `GODOT=/путь/к/godot`, и шаблоны экспорта той же версии (для сборок). На macOS: `brew install --cask godot`.
+- gdtoolkit 4.x: `brew install gdtoolkit` или `pip install "gdtoolkit==4.*"`.
 - Git LFS.
 - Blender — для работы с моделями.
 

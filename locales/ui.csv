@@ -1,0 +1,34 @@
+keys,ru,en
+ARENA_TITLE,Испытание: засада у брода,Trial: ambush at the ford
+UNIT_RATNIK,Ратник,Warrior
+UNIT_LOVCHIY,Ловчий,Hunter
+UNIT_RAZBOYNIK,Разбойник,Brigand
+UNIT_ATAMAN,Атаман,Ataman
+UI_END_TURN,Конец хода,End turn
+UI_SAVE,Сохранить,Save
+UI_LOAD,Загрузить,Load
+UI_RESTART,Заново,Restart
+UI_ROUND_TURN,"Раунд {round}. Ходит: {name}","Round {round}. Turn: {name}"
+UI_MOVE_ACTION,"Перемещение: {move} кл. · Действие: {action}","Move: {move} sq · Action: {action}"
+UI_ACTION_READY,есть,ready
+UI_ACTION_USED,потрачено,used
+UI_HINT,"ЛКМ по клетке — идти, по врагу — атаковать","LMB on a cell to move, on an enemy to attack"
+LOG_INITIATIVE,"Инициатива: {order}","Initiative: {order}"
+LOG_TURN,"— {name} ходит —","— {name}'s turn —"
+LOG_MOVED,"{name} перемещается ({cost} кл.)","{name} moves ({cost} sq)"
+LOG_HIT,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — попадание, урон {damage}","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — hit, {damage} damage"
+LOG_CRIT,"{name} бьёт {target}: натуральная 20 — критический удар, урон {damage}","{name} attacks {target}: natural 20 — critical hit, {damage} damage"
+LOG_MISS,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — промах","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — miss"
+LOG_DOWNED,"{name} падает","{name} falls"
+LOG_WIN,Победа!,Victory!
+LOG_LOSS,Поражение.,Defeat.
+LOG_SAVED,Бой сохранён.,Combat saved.
+LOG_LOADED,Бой загружен.,Combat loaded.
+LOG_NO_SAVE,Сохранения нет.,No save found.
+err_combat_ended,Бой окончен.,Combat is over.
+err_not_your_turn,Сейчас не ваш ход.,It is not your turn.
+err_no_path,Туда не пройти.,No path there.
+err_too_far,Слишком далеко.,Too far.
+err_action_used,Действие уже потрачено.,Action already used.
+err_invalid_target,Неподходящая цель.,Invalid target.
+err_not_in_reach,Цель вне досягаемости.,Target out of reach.

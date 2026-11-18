@@ -40,9 +40,15 @@ tools/test.sh            # все тесты GUT headless
 tools/test.sh tests/unit # подмножество
 tools/lint.sh            # gdlint + gdformat --check
 gdformat <files>         # форматирование
+tools/record_golden.sh   # перезапись golden-реплея — только при намеренном изменении правил
+tools/export.sh [macOS|Windows|Linux]   # релизные сборки в build/
+
+# Запуск игры и дымовая проверка без участия человека:
+godot --path .                                   # обычный запуск
+godot --path . -- --autoplay --seed=42 --screenshot=/путь/shot.png   # ИИ за обе стороны, снимок и выход
 ```
 
-Godot должен быть в `PATH` как `godot` или задан через переменную `GODOT`. Перед тем как сказать «готово», запусти тесты и линт и приведи результат. Если запустить не получилось — так и скажи.
+Godot **4.7.2** ([ADR-0015](docs/adr/0015-toolchain-versions.md)) должен быть в `PATH` как `godot` или задан через переменную `GODOT`. Перед тем как сказать «готово», запусти тесты и линт и приведи результат. Если запустить не получилось — так и скажи.
 
 ## Жёсткие правила
 

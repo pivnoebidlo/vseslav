@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 dirs=()
-for d in core game editor addons/vseslav_editor tests; do
+for d in core game editor addons/vseslav_editor tests tools; do
   [[ -d "$d" ]] && dirs+=("$d")
 done
 

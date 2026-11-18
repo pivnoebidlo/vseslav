@@ -38,6 +38,16 @@ func resolve(attacker: Creature, target: Creature, advantage: int) -> AttackResu
 - Сигналы — для `game/` и UI. В `core/` результаты возвращаются значениями/списками событий-результатов.
 - Не оставляй `print()` в коммите; для логов — `push_warning()` / `push_error()` или наш логгер, когда появится.
 
+## Строгий режим проекта: что он не пропускает
+
+Эти ошибки уже ловились на этапе 0 — пиши сразу правильно:
+
+- `for x in untyped_array:` — ошибка «iterator variable has no static type». Пиши `for x: String in ...` или итерируй типизированный массив.
+- `int(variant)`, `bool(variant)`, `load(variant)` — ошибка «requires the subtype». Данные из JSON читай через `JsonRead` (`core/data/json_read.gd`): `JsonRead.get_int(data, "hp")`, `JsonRead.get_array(...)`, `JsonRead.to_vec2i(...)`.
+- Вызов метода у `Variant` (`data["x"].size()`) — ошибка. Сначала присвой в типизированную переменную: `var rows: Array = data["map"]`.
+- Присвоение `Variant` в типизированную переменную (`var d: Dictionary = parsed`) — допустимо: проверка будет во время выполнения.
+- Новый `class_name` не виден другим скриптам, пока не обновлён кэш классов: `godot --headless --import` (`tools/test.sh` делает это сам).
+
 ## Ловушки, которые ломают код молча
 
 - **JSON-числа приходят как `float`.** `JSON.parse_string("{\"hp\": 7}")["hp"]` — это `7.0`. В `from_dict` всегда явно приводи: `int(data["hp"])`, и проверяй наличие ключа.

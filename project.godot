@@ -1,0 +1,30 @@
+; Engine configuration file.
+; Версия движка закреплена: ADR-0015.
+
+config_version=5
+
+[application]
+
+config/name="Vseslav"
+config/description="RPG на Руси времён Всеслава Полоцкого"
+run/main_scene="res://game/arena/arena.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[debug]
+
+gdscript/warnings/exclude_addons=true
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/unsafe_property_access=2
+gdscript/warnings/unsafe_method_access=2
+gdscript/warnings/unsafe_cast=2
+gdscript/warnings/unsafe_call_argument=2
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://locales/ui.ru.translation", "res://locales/ui.en.translation")
+locale/fallback="ru"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/vram_compression/import_etc2_astc=true

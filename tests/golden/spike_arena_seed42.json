@@ -1,0 +1,107 @@
+{
+  "arena": "res://modules/spike/arena.json",
+  "expected": {
+    "action_used": true,
+    "arena_id": "spike.arena",
+    "combatants": [
+      {
+        "armor_class": 16,
+        "at": [
+          6,
+          3
+        ],
+        "attack_bonus": 5,
+        "damage": "1d8+3",
+        "hp": 0,
+        "id": "ratnik",
+        "initiative_bonus": 1,
+        "max_hp": 13,
+        "name_key": "UNIT_RATNIK",
+        "speed": 6,
+        "team": "party"
+      },
+      {
+        "armor_class": 14,
+        "at": [
+          7,
+          3
+        ],
+        "attack_bonus": 5,
+        "damage": "1d8+2",
+        "hp": 0,
+        "id": "lovchiy",
+        "initiative_bonus": 3,
+        "max_hp": 11,
+        "name_key": "UNIT_LOVCHIY",
+        "speed": 7,
+        "team": "party"
+      },
+      {
+        "armor_class": 12,
+        "at": [
+          6,
+          2
+        ],
+        "attack_bonus": 4,
+        "damage": "1d6+2",
+        "hp": 3,
+        "id": "razboynik_1",
+        "initiative_bonus": 2,
+        "max_hp": 9,
+        "name_key": "UNIT_RAZBOYNIK",
+        "speed": 6,
+        "team": "bandits"
+      },
+      {
+        "armor_class": 12,
+        "at": [
+          7,
+          2
+        ],
+        "attack_bonus": 4,
+        "damage": "1d6+2",
+        "hp": 9,
+        "id": "razboynik_2",
+        "initiative_bonus": 2,
+        "max_hp": 9,
+        "name_key": "UNIT_RAZBOYNIK",
+        "speed": 6,
+        "team": "bandits"
+      },
+      {
+        "armor_class": 14,
+        "at": [
+          7,
+          4
+        ],
+        "attack_bonus": 5,
+        "damage": "1d8+3",
+        "hp": 0,
+        "id": "ataman",
+        "initiative_bonus": 1,
+        "max_hp": 16,
+        "name_key": "UNIT_ATAMAN",
+        "speed": 6,
+        "team": "bandits"
+      }
+    ],
+    "ended": true,
+    "movement_left": 6,
+    "order": [
+      "ratnik",
+      "razboynik_2",
+      "ataman",
+      "lovchiy",
+      "razboynik_1"
+    ],
+    "rng": {
+      "seed": "42",
+      "state": "-6543243730216782941"
+    },
+    "round": 5,
+    "save_format": 1,
+    "turn_index": 1
+  },
+  "seed": 42,
+  "steps": 40
+}

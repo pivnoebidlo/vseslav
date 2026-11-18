@@ -1,0 +1,74 @@
+class_name UnitView
+extends Node3D
+## Фигура участника боя: капсула, подпись с именем и здоровьем, коллайдер для клика.
+
+const TEAM_COLORS: Dictionary[String, Color] = {
+	"party": Color(0.25, 0.45, 0.85),
+	"bandits": Color(0.75, 0.25, 0.2),
+}
+
+var unit_id: String = ""
+
+var _body_mat: StandardMaterial3D = StandardMaterial3D.new()
+var _label: Label3D = Label3D.new()
+var _base_color: Color = Color.WHITE
+
+
+func setup(id: String, team: String) -> void:
+	unit_id = id
+	_base_color = TEAM_COLORS.get(team, Color.GRAY)
+	_body_mat.albedo_color = _base_color
+
+	var mesh := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = 0.35
+	capsule.height = 1.6
+	mesh.mesh = capsule
+	mesh.material_override = _body_mat
+	mesh.position.y = 0.8
+	add_child(mesh)
+
+	var body := StaticBody3D.new()
+	body.set_meta("unit_id", id)
+	var shape := CollisionShape3D.new()
+	var capsule_shape := CapsuleShape3D.new()
+	capsule_shape.radius = 0.4
+	capsule_shape.height = 1.7
+	shape.shape = capsule_shape
+	shape.position.y = 0.85
+	body.add_child(shape)
+	add_child(body)
+
+	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_label.position.y = 2.1
+	_label.font_size = 48
+	_label.pixel_size = 0.009
+	_label.outline_size = 12
+	_label.no_depth_test = true
+	add_child(_label)
+
+
+func set_info(display_name: String, hp: int, max_hp: int) -> void:
+	_label.text = "%s\n%d/%d" % [display_name, hp, max_hp]
+
+
+func set_active(active: bool) -> void:
+	_body_mat.emission_enabled = active
+	_body_mat.emission = _base_color * 0.6
+
+
+func set_dead() -> void:
+	_body_mat.albedo_color = _base_color.darkened(0.7)
+	_body_mat.emission_enabled = false
+	rotation_degrees.x = 90.0
+	_label.modulate = Color(1, 1, 1, 0.35)
+	position.y += 0.35
+	for child in get_children():
+		if child is StaticBody3D:
+			child.queue_free()
+
+
+func flash() -> void:
+	var tween := create_tween()
+	tween.tween_property(_body_mat, "albedo_color", Color.WHITE, 0.08)
+	tween.tween_property(_body_mat, "albedo_color", _base_color, 0.2)

@@ -1,0 +1,24 @@
+# Godot
+.godot/
+*.translation
+export_presets.cfg.local
+/build/
+/export/
+
+# GUT / тесты
+.gut_editor_config.json
+
+# ОС и редакторы
+.DS_Store
+Thumbs.db
+*.textClipping
+.vscode/
+.idea/
+
+# Blender
+*.blend1
+*.blend@
+
+# Python (gdtoolkit)
+__pycache__/
+.venv/

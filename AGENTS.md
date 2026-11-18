@@ -46,6 +46,8 @@ tools/export.sh [macOS|Windows|Linux]   # релизные сборки в build
 # Запуск игры и дымовая проверка без участия человека:
 godot --path .                                   # обычный запуск
 godot --path . -- --autoplay --seed=42 --screenshot=/путь/shot.png   # ИИ за обе стороны, снимок и выход
+godot --path . res://game/spikes/model_viewer.tscn -- --screenshot=/путь/shot.png   # просмотр моделей
+tools/fetch_sample_models.sh             # образцы моделей (KayKit CC0 + синтетический Mixamo-риг)
 ```
 
 Godot **4.7.2** ([ADR-0015](docs/adr/0015-toolchain-versions.md)) должен быть в `PATH` как `godot` или задан через переменную `GODOT`. Те же проверки запускает CI на GitHub Actions (`.github/workflows/ci.yml`) для каждого PR. Перед тем как сказать «готово», запусти тесты и линт локально и приведи результат. Если запустить не получилось — так и скажи.
@@ -80,5 +82,5 @@ Godot **4.7.2** ([ADR-0015](docs/adr/0015-toolchain-versions.md)) должен �
 | [testing](.agents/skills/testing/SKILL.md) | Написание и запуск тестов, golden-реплеи |
 | [d20-rules](.agents/skills/d20-rules/SKILL.md) | Механики боя и правил, ruleset, формулы |
 | [module-content](.agents/skills/module-content/SKILL.md) | Формат модуля, области, диалоги, квесты, события, схемы |
-| [asset-pipeline](.agents/skills/asset-pipeline/SKILL.md) | 3D-модели, анимации, текстуры, звук, лицензии ассетов |
+| [asset-pipeline](.agents/skills/asset-pipeline/SKILL.md) | 3D-модели, анимации, ретаргетинг, профили ригов, лицензии ассетов |
 | [record-decision](.agents/skills/record-decision/SKILL.md) | Новое или изменённое решение: ADR, SPEC, открытые вопросы |

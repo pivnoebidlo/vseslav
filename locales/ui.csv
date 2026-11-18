@@ -32,3 +32,22 @@ err_too_far,Слишком далеко.,Too far.
 err_action_used,Действие уже потрачено.,Action already used.
 err_invalid_target,Неподходящая цель.,Invalid target.
 err_not_in_reach,Цель вне досягаемости.,Target out of reach.
+VIEWER_TITLE,Просмотр моделей (спайк),Model viewer (spike)
+VIEWER_DIR,Папка: {dir},Folder: {dir}
+VIEWER_NO_MODELS,"Нет .glb в папке {dir}. Положите туда модели или запустите tools/fetch_sample_models.sh","No .glb files in {dir}. Put models there or run tools/fetch_sample_models.sh"
+VIEWER_ANIM,Анимация: {anim},Animation: {anim}
+VIEWER_MODE_RETARGET,Режим: анимация источника на всех,Mode: source animation on all
+VIEWER_MODE_OWN,Режим: своя анимация модели,Mode: model's own animation
+VIEWER_RELOAD,Перечитать папку,Reload folder
+VIEWER_STATS,"риг {rig} · {tris} тр. · {bones} костей","rig {rig} · {tris} tris · {bones} bones"
+VIEWER_RIG_UNKNOWN,не распознан,unknown
+VIEWER_RETARGETED,анимация с {source},animation from {source}
+ERR_MODEL_NOT_FOUND,Файл {file} не найден,File {file} not found
+ERR_MODEL_EXTENSION,{file}: поддерживается только .glb,{file}: only .glb is supported
+ERR_MODEL_TOO_BIG,"{file}: {size} МБ, лимит {limit} МБ","{file}: {size} MB, limit {limit} MB"
+ERR_MODEL_PARSE,{file}: не удалось прочитать GLB,{file}: could not read GLB
+ERR_MODEL_TOO_MANY_TRIS,"Треугольников {count}, лимит {limit}","{count} triangles, limit {limit}"
+ERR_MODEL_TOO_MANY_SKELETONS,"Скелетов {count}, лимит {limit}","{count} skeletons, limit {limit}"
+ERR_MODEL_TOO_MANY_BONES,"Костей {count}, лимит {limit}","{count} bones, limit {limit}"
+ERR_MODEL_TEXTURE_TOO_BIG,"Текстура {size} px, лимит {limit} px","Texture {size} px, limit {limit} px"
+WARN_MODEL_UNKNOWN_RIG,Риг не распознан — анимации с других моделей недоступны,Rig not recognized — animations from other models unavailable

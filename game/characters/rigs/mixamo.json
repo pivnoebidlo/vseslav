@@ -1,0 +1,30 @@
+{
+  "id": "mixamo",
+  "title": "Mixamo",
+  "strip_prefix": "^mixamorig\\d*[:_]",
+  "detect": ["hips", "leftupleg", "leftleg", "leftarm"],
+  "bones": {
+    "hips": "Hips",
+    "spine": "Spine",
+    "spine1": "Chest",
+    "spine2": "UpperChest",
+    "neck": "Neck",
+    "head": "Head",
+    "leftshoulder": "LeftShoulder",
+    "leftarm": "LeftUpperArm",
+    "leftforearm": "LeftLowerArm",
+    "lefthand": "LeftHand",
+    "rightshoulder": "RightShoulder",
+    "rightarm": "RightUpperArm",
+    "rightforearm": "RightLowerArm",
+    "righthand": "RightHand",
+    "leftupleg": "LeftUpperLeg",
+    "leftleg": "LeftLowerLeg",
+    "leftfoot": "LeftFoot",
+    "lefttoebase": "LeftToes",
+    "rightupleg": "RightUpperLeg",
+    "rightleg": "RightLowerLeg",
+    "rightfoot": "RightFoot",
+    "righttoebase": "RightToes"
+  }
+}

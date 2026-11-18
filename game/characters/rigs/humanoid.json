@@ -1,0 +1,7 @@
+{
+  "id": "humanoid",
+  "title": "Godot Humanoid",
+  "detect": ["hips", "leftupperleg", "leftlowerleg", "leftupperarm"],
+  "identity": true,
+  "bones": {}
+}

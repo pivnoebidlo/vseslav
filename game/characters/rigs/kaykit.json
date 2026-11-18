@@ -1,0 +1,26 @@
+{
+  "id": "kaykit",
+  "title": "KayKit",
+  "detect": ["hips", "upperleg.l", "lowerleg.l", "upperarm.l"],
+  "bones": {
+    "root": "Root",
+    "hips": "Hips",
+    "spine": "Spine",
+    "chest": "Chest",
+    "head": "Head",
+    "upperarm.l": "LeftUpperArm",
+    "lowerarm.l": "LeftLowerArm",
+    "hand.l": "LeftHand",
+    "upperarm.r": "RightUpperArm",
+    "lowerarm.r": "RightLowerArm",
+    "hand.r": "RightHand",
+    "upperleg.l": "LeftUpperLeg",
+    "lowerleg.l": "LeftLowerLeg",
+    "foot.l": "LeftFoot",
+    "toes.l": "LeftToes",
+    "upperleg.r": "RightUpperLeg",
+    "lowerleg.r": "RightLowerLeg",
+    "foot.r": "RightFoot",
+    "toes.r": "RightToes"
+  }
+}

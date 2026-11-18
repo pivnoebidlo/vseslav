@@ -35,4 +35,10 @@ description: Работа с 3D-моделями, анимациями, текс
 
 ## Загрузка во время игры
 
-Только через валидатор (размер файла, треугольники, текстуры, кости) → `GLTFDocument.append_from_buffer()` / `append_from_file()` → `generate_scene()`. Ошибки — понятным сообщением, не падением.
+Только через `CharacterLoader.load_file()` (`game/characters/`): он проверяет расширение, сигнатуру, размер и лимиты, распознаёт риг и переименовывает кости. Не вызывай `GLTFDocument` напрямую для моделей из модулей и от игроков. Ошибки — ключи локализации `ERR_MODEL_*`, не падение.
+
+## Ретаргетинг
+
+- Риг распознаётся по профилю в `game/characters/rigs/*.json`. Новый источник моделей (другой авториггер, другой пак) — новый JSON-профиль: `detect` (кости-признаки), `strip_prefix` (регулярка префикса), `bones` (нормализованное имя → имя `SkeletonProfileHumanoid`). Код менять не нужно.
+- Анимации на другой риг — только через `Retarget.attach(source, target)` / `HumanoidRetarget`. **Не используй `RetargetModifier3D`** и свой `SkeletonModifier3D` — почему, см. ADR-0017.
+- Проверить модель вручную: положить `.glb` в пользовательскую папку `models` и запустить просмотрщик `godot --path . res://game/spikes/model_viewer.tscn`. Образцы: `tools/fetch_sample_models.sh`.

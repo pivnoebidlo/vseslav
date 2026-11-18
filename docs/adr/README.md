@@ -22,3 +22,4 @@
 | [0014](0014-classes.md) | Двенадцать классов на механике SRD в облике Руси XI века | Принято |
 | [0015](0015-toolchain-versions.md) | Godot 4.7.2, GUT 9.7.1, gdtoolkit 4.5 | Принято |
 | [0016](0016-licensing.md) | Код под MIT, контент под CC BY-SA 4.0 | Принято |
+| [0017](0017-runtime-models-and-retargeting.md) | Загрузка GLB и ретаргетинг во время игры (свой HumanoidRetarget) | Принято |

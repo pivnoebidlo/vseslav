@@ -12,7 +12,7 @@
 
 - [x] Godot-проект по структуре из [SPEC §6.1](SPEC.md#61-слои), версия движка закреплена ([ADR-0015](adr/0015-toolchain-versions.md)).
 - [x] GUT, `tools/test.sh`, `tools/lint.sh`.
-- [ ] CI (тесты + линт на PR) — после выбора хостинга ([OPEN_QUESTIONS](OPEN_QUESTIONS.md) №9).
+- [x] CI на GitHub Actions: тесты и линт на каждый PR и push, сборки под три ОС на `main` и тегах (`.github/workflows/ci.yml`).
 - [x] Предупреждения о нетипизированном и небезопасном коде включены как ошибки.
 - [ ] Спайк: загрузка GLB со скелетом и анимацией **во время игры** из папки вне `res://`.
 - [ ] Спайк: ретаргетинг одной анимации (Quaternius/Mixamo) на модель с другим скелетом через `SkeletonProfileHumanoid`.

@@ -41,4 +41,8 @@ tools/export.sh                # сборки для macOS, Windows, Linux в bu
 - Git LFS.
 - Blender — для работы с моделями.
 
-Правила игры основаны на System Reference Document 5.x, распространяемом под [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/). Проект не связан с Wizards of the Coast.
+## Лицензия
+
+Код — [MIT](LICENSE). Контент (сюжет, тексты, правила-данные, уровни, арт, звук) — [CC BY-SA 4.0](LICENSES/CC-BY-SA-4.0.txt). Подробности — [LICENSES/README.md](LICENSES/README.md).
+
+Правила игры основаны на System Reference Document 5.x от Wizards of the Coast, распространяемом под [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Проект не связан с Wizards of the Coast.

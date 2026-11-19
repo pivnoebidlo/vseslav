@@ -2,7 +2,7 @@ extends GutTest
 ## Критерий этапа 0: бой детерминирован, сохранение посреди боя
 ## и загрузка дают тот же итог, что и бой без перерыва.
 
-const GOLDEN_PATH := "res://tests/golden/spike_arena_seed42.json"
+const GOLDEN_PATH := "res://tests/golden/doroga_seed42.json"
 
 
 func test_same_seed_same_outcome() -> void:
@@ -38,7 +38,9 @@ func test_matches_golden_replay() -> void:
 
 func test_arena_loads_cleanly() -> void:
 	var data := ArenaLoader.read_file(CombatSim.ARENA_PATH)
-	var state := ArenaLoader.new_combat(data, 1)
-	assert_eq(state.combatants.size(), 5)
+	var errors: Array[String] = []
+	var state := ArenaLoader.new_combat(data, 1, CombatSim.rules(), errors)
+	assert_eq(errors, [] as Array[String])
+	assert_eq(state.combatants.size(), 7)
 	for c in state.combatants:
 		assert_true(state.grid.is_walkable(c.column), "%s stands on a walkable cell" % c.id)

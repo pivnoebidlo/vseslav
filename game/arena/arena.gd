@@ -8,7 +8,8 @@ extends Node3D
 ##   --screenshot=PATH сохранить снимок экрана по окончании боя (или через 20 с) и выйти
 ##   --lang=ru|en      язык интерфейса (по умолчанию русский; меню настроек — позже)
 
-const ARENA_PATH := "res://modules/spike/arena.json"
+const ARENA_PATH := "res://modules/spike/arenas/doroga.json"
+const RULES_DIR := "res://modules/base/rules"
 const SAVE_DIR := "user://saves"
 const SAVE_PATH := "user://saves/spike_combat.json"
 const PLAYER_TEAM := "party"
@@ -20,6 +21,7 @@ const SCREENSHOT_TIMEOUT := 20.0
 const DEFAULT_LANG := "ru"
 
 var _arena_data: Dictionary = {}
+var _db: RulesDb
 var _state: CombatState
 var _world: Node3D
 var _tiles: Dictionary[Vector2i, MeshInstance3D] = {}
@@ -45,6 +47,9 @@ func _ready() -> void:
 	_parse_args()
 	TranslationServer.set_locale(_lang)
 	_arena_data = ArenaLoader.read_file(ARENA_PATH)
+	_db = RulesDb.load_dir(RULES_DIR)
+	for err in _db.errors:
+		push_error(err)
 	_setup_materials()
 	_setup_environment()
 	_setup_ui()
@@ -228,7 +233,7 @@ func _column_position(column: Vector2i) -> Vector3:
 
 func _new_combat() -> void:
 	var seed_value := _seed_override if _seed_override >= 0 else randi()
-	_state = ArenaLoader.new_combat(_arena_data, seed_value)
+	_state = ArenaLoader.new_combat(_arena_data, seed_value, _db)
 	_log.clear()
 	var events := _state.start()
 	_rebuild_world()
@@ -251,7 +256,7 @@ func _continue() -> void:
 
 
 func _is_player_turn() -> bool:
-	return not _autoplay and _state.current().team == PLAYER_TEAM
+	return not _autoplay and _state.current().player
 
 
 ## Проверяет и применяет команду. Возвращает true, если команда выполнена.
@@ -284,15 +289,35 @@ func _unhandled_input(event: InputEvent) -> void:
 	if hit.has("unit_id"):
 		var target := _state.get_combatant(str(hit["unit_id"]))
 		if target != null and target.team != actor.team:
-			_player_command(AttackCommand.new(actor.id, target.id))
+			_attack(actor, target)
 		return
 	if hit.has("column"):
 		var column: Vector2i = hit["column"]
 		var occupant := _state.combatant_at(column)
 		if occupant != null and occupant.team != actor.team:
-			_player_command(AttackCommand.new(actor.id, occupant.id))
+			_attack(actor, occupant)
 		elif occupant == null:
 			_player_command(MoveCommand.new(actor.id, column))
+
+
+## Атака по цели самым сильным доступным действием (выбор действия — в UI боя, этап 1).
+func _attack(actor: Combatant, target: Combatant) -> void:
+	var best: ActionDef = null
+	for action in actor.actions:
+		if action.kind != ActionDef.KIND_ATTACK and action.kind != ActionDef.KIND_MULTI:
+			continue
+		var err := ActionResolver.validate(_state, actor, action, target.id, ActionResolver.NO_CELL)
+		if err != "":
+			continue
+		if (
+			best == null
+			or SimpleAi.expected_damage(actor, action) > SimpleAi.expected_damage(actor, best)
+		):
+			best = action
+	if best == null:
+		_write(tr(ActionResolver.ERR_OUT_OF_RANGE), Color(1.0, 0.75, 0.4))
+		return
+	_player_command(UseActionCommand.new(actor.id, best.id, target.id))
 
 
 ## Луч из камеры: возвращает {"unit_id": ...} или {"column": ...} или {}.
@@ -327,10 +352,17 @@ func _play_events(events: Array[CombatEvent]) -> void:
 				await _animate_move(e)
 			CombatEvent.ATTACK:
 				_log_attack(e)
-			CombatEvent.DOWNED:
+			CombatEvent.DOWNED, CombatEvent.DIED:
 				var downed := _state.get_combatant(str(e.data["id"]))
 				_units[downed.id].set_dead()
 				_write(tr("LOG_DOWNED").format({"name": _display_name(downed)}), Color(1, 0.5, 0.5))
+			CombatEvent.DAMAGE:
+				var hurt := _state.get_combatant(str(e.data["id"]))
+				_write(
+					tr("LOG_DAMAGE").format(
+						{"name": _display_name(hurt), "amount": JsonRead.get_int(e.data, "amount")}
+					)
+				)
 			CombatEvent.COMBAT_ENDED:
 				var won := str(e.data["winner"]) == PLAYER_TEAM
 				_write(tr("LOG_WIN") if won else tr("LOG_LOSS"), Color(1, 0.9, 0.4))
@@ -369,7 +401,6 @@ func _log_attack(e: CombatEvent) -> void:
 		"natural": JsonRead.get_int(e.data, "natural"),
 		"total": JsonRead.get_int(e.data, "total"),
 		"ac": JsonRead.get_int(e.data, "target_ac"),
-		"damage": JsonRead.get_int(e.data, "damage"),
 	}
 	if JsonRead.get_bool(e.data, "critical"):
 		_write(tr("LOG_CRIT").format(args), Color(1, 0.8, 0.3))
@@ -392,13 +423,11 @@ func _refresh_labels() -> void:
 	_turn_label.text = tr("UI_ROUND_TURN").format(
 		{"round": _state.round_number, "name": _display_name(current)}
 	)
-	var action := tr("UI_ACTION_USED") if _state.action_used else tr("UI_ACTION_READY")
+	var action := tr("UI_ACTION_READY") if _state.actions_left > 0 else tr("UI_ACTION_USED")
 	_move_label.text = tr("UI_MOVE_ACTION").format({"move": _state.movement_left, "action": action})
 	_clear_reachable()
 	if not _busy and not _state.ended and _is_player_turn():
-		_reachable = Pathfinder.reachable(
-			_state.grid, current.column, _state.movement_left, _state.occupied_except(current.id)
-		)
+		_reachable = MoveCommand.reachable_for(_state, current)
 		for column in _reachable:
 			if _tiles.has(column):
 				_tiles[column].material_override = _mat_reach

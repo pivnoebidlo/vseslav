@@ -1,0 +1,55 @@
+{
+  "creatures": [
+    { "id": "razboynik", "name_key": "UNIT_RAZBOYNIK", "tags": ["humanoid"], "proficiency": 2,
+      "abilities": { "str": 11, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 10 },
+      "armor_class": 12, "hp": 11, "speed": 6,
+      "actions": [
+        { "id": "topor", "name_key": "ITEM_TOPOR", "attack_type": "melee", "attack_bonus": "3",
+          "damage": [ { "formula": "1d6 + 1", "type": "slashing" } ], "tags": ["weapon", "iron"] },
+        { "id": "luk", "name_key": "ITEM_LUK", "attack_type": "ranged", "attack_bonus": "3", "range": 16,
+          "long_range": 64, "damage": [ { "formula": "1d6 + 1", "type": "piercing" } ], "tags": ["weapon", "iron"] }
+      ] },
+    { "id": "ataman", "name_key": "UNIT_ATAMAN", "tags": ["humanoid"], "proficiency": 2,
+      "abilities": { "str": 15, "dex": 16, "con": 14, "int": 14, "wis": 11, "cha": 14 },
+      "saves": ["str", "dex", "wis"], "armor_class": 15, "hp": 45, "speed": 6,
+      "actions": [
+        { "id": "mnogo_udarov", "name_key": "ACT_MULTIATTACK", "kind": "multiattack", "range": 1,
+          "sub_actions": ["mech", "mech"] },
+        { "id": "mech", "name_key": "ITEM_MECH", "attack_type": "melee", "attack_bonus": "5",
+          "damage": [ { "formula": "1d8 + 3", "type": "slashing" } ], "tags": ["weapon", "iron"] }
+      ] },
+    { "id": "volk", "name_key": "UNIT_VOLK", "tags": ["beast"], "proficiency": 2,
+      "abilities": { "str": 14, "dex": 15, "con": 12, "int": 3, "wis": 12, "cha": 6 },
+      "armor_class": 12, "hp": 11, "speed": 8,
+      "traits": [ { "type": "pack_tactics", "name_key": "TRAIT_PACK_TACTICS" } ],
+      "actions": [
+        { "id": "ukus", "name_key": "ACT_BITE", "attack_type": "melee", "attack_bonus": "4", "save_dc": "11",
+          "damage": [ { "formula": "1d6 + 2", "type": "piercing" } ],
+          "effects": [ { "condition": "prone", "on": "hit", "save_ability": "str" } ] }
+      ] },
+    { "id": "upyr", "name_key": "UNIT_UPYR", "tags": ["undead", "nechist"], "proficiency": 2,
+      "abilities": { "str": 16, "dex": 12, "con": 16, "int": 8, "wis": 10, "cha": 6 },
+      "armor_class": 13, "hp": 33, "speed": 6,
+      "defenses": [
+        { "kind": "resist", "types": ["physical"], "unless": ["aspen", "silver"] },
+        { "kind": "vulnerable", "types": ["fire"] },
+        { "kind": "immune", "types": ["poison"] }
+      ],
+      "traits": [ { "type": "revive", "formula": "10", "tags": ["fire", "aspen"], "name_key": "TRAIT_UPYR_REVIVE" } ],
+      "actions": [
+        { "id": "kogti", "name_key": "ACT_CLAWS", "kind": "multiattack", "range": 1, "sub_actions": ["kogot", "kogot"] },
+        { "id": "kogot", "name_key": "ACT_CLAW", "attack_type": "melee", "attack_bonus": "5",
+          "damage": [ { "formula": "1d6 + 3", "type": "slashing" } ] }
+      ] },
+    { "id": "poludnitsa", "name_key": "UNIT_POLUDNITSA", "tags": ["fey", "nechist"], "proficiency": 2,
+      "abilities": { "str": 12, "dex": 16, "con": 12, "int": 10, "wis": 14, "cha": 14 },
+      "armor_class": 13, "hp": 27, "speed": 8,
+      "defenses": [ { "kind": "resist", "types": ["physical"], "unless": ["iron"] } ],
+      "traits": [ { "type": "aura", "radius": 2, "ability": "con", "dc": 12, "condition": "poisoned", "rounds": 1,
+                    "name_key": "TRAIT_NOON_HEAT" } ],
+      "actions": [
+        { "id": "serp", "name_key": "ACT_SICKLE", "attack_type": "melee", "attack_bonus": "5",
+          "damage": [ { "formula": "1d8 + 3", "type": "slashing" } ] }
+      ] }
+  ]
+}

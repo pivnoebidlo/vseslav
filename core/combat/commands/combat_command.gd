@@ -32,8 +32,13 @@ static func from_dict(data: Dictionary) -> CombatCommand:
 	match JsonRead.get_str(data, "cmd"):
 		"move":
 			return MoveCommand.new(actor, JsonRead.to_vec2i(data.get("to")))
-		"attack":
-			return AttackCommand.new(actor, JsonRead.get_str(data, "target"))
+		"action":
+			return UseActionCommand.new(
+				actor,
+				JsonRead.get_str(data, "action"),
+				JsonRead.get_str(data, "target"),
+				JsonRead.to_vec2i(data.get("cell", [-1, -1]))
+			)
 		"end_turn":
 			return EndTurnCommand.new(actor)
 	push_error("Unknown combat command: %s" % JsonRead.get_str(data, "cmd"))

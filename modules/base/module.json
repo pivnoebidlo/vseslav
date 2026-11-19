@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "id": "vseslav.base",
+  "title": "locale:module.title",
+  "version": "0.1.0",
+  "api_version": 1,
+  "ruleset": "srd52@1",
+  "dependencies": []
+}

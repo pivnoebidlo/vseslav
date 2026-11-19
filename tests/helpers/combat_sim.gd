@@ -2,12 +2,22 @@ class_name CombatSim
 extends RefCounted
 ## Прогон боя, где все стороны управляются SimpleAi. Для тестов и golden-реплеев.
 
-const ARENA_PATH := "res://modules/spike/arena.json"
-const MAX_STEPS := 2000
+const ARENA_PATH := "res://modules/spike/arenas/doroga.json"
+const RULES_DIR := "res://modules/base/rules"
+const MAX_STEPS := 3000
+
+static var _db: RulesDb = null
 
 
-static func new_arena_combat(seed_value: int) -> CombatState:
-	var state := ArenaLoader.new_combat(ArenaLoader.read_file(ARENA_PATH), seed_value)
+## Данные правил базового модуля (загружаются один раз).
+static func rules() -> RulesDb:
+	if _db == null:
+		_db = RulesDb.load_dir(RULES_DIR)
+	return _db
+
+
+static func new_arena_combat(seed_value: int, arena_path: String = ARENA_PATH) -> CombatState:
+	var state := ArenaLoader.new_combat(ArenaLoader.read_file(arena_path), seed_value, rules())
 	state.start()
 	return state
 

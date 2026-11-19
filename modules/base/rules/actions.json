@@ -1,0 +1,37 @@
+{
+  "common": ["dash", "disengage", "dodge", "stand"],
+  "actions": [
+    { "id": "dash", "name_key": "ACT_DASH", "kind": "effect", "target": "self", "special": "dash" },
+    { "id": "disengage", "name_key": "ACT_DISENGAGE", "kind": "effect", "target": "self", "special": "disengage" },
+    { "id": "dodge", "name_key": "ACT_DODGE", "kind": "effect", "target": "self", "special": "dodge" },
+    { "id": "stand", "name_key": "ACT_STAND", "cost": "free", "kind": "effect", "target": "self", "special": "stand" },
+
+    { "id": "second_wind", "name_key": "ACT_SECOND_WIND", "cost": "bonus", "kind": "heal", "target": "self",
+      "heal": "1d10 + LEVEL", "resource": "second_wind" },
+    { "id": "action_surge", "name_key": "ACT_ACTION_SURGE", "cost": "free", "kind": "effect", "target": "self",
+      "special": "extra_action", "resource": "action_surge" },
+
+    { "id": "hunters_mark", "name_key": "ACT_HUNTERS_MARK", "cost": "bonus", "kind": "effect", "target": "enemy",
+      "range": 18, "concentration": true, "resource": "favored_enemy", "tags": ["spell", "magic"],
+      "effects": [ { "condition": "marked", "on": "always" } ] },
+
+    { "id": "produce_flame", "name_key": "ACT_PRODUCE_FLAME", "kind": "attack", "attack_type": "ranged",
+      "ability": "spell", "range": 12, "tags": ["spell", "magic", "fire"],
+      "damage": [ { "formula": "1d8", "type": "fire" } ] },
+    { "id": "thorn_whip", "name_key": "ACT_THORN_WHIP", "kind": "attack", "attack_type": "melee",
+      "ability": "spell", "range": 6, "tags": ["spell", "magic"],
+      "damage": [ { "formula": "1d6", "type": "piercing" } ] },
+    { "id": "cure_wounds", "name_key": "ACT_CURE_WOUNDS", "kind": "heal", "target": "ally", "range": 1,
+      "heal": "2d8 + SPELL", "resource": "slot_1", "tags": ["spell", "magic"] },
+    { "id": "healing_word", "name_key": "ACT_HEALING_WORD", "cost": "bonus", "kind": "heal", "target": "ally",
+      "range": 12, "heal": "2d4 + SPELL", "resource": "slot_1", "tags": ["spell", "magic"] },
+    { "id": "entangle", "name_key": "ACT_ENTANGLE", "kind": "save", "target": "point", "range": 18,
+      "area": "burst", "area_size": 1, "save_ability": "str", "save_dc": "8 + PROF + SPELL",
+      "concentration": true, "resource": "slot_1", "tags": ["spell", "magic"],
+      "effects": [ { "condition": "restrained", "on": "failed_save", "save_ends": "str" } ] },
+    { "id": "thunderwave", "name_key": "ACT_THUNDERWAVE", "kind": "save", "target": "point", "range": 3,
+      "area": "cone", "area_size": 3, "save_ability": "con", "save_dc": "8 + PROF + SPELL", "save_half": true,
+      "resource": "slot_1", "tags": ["spell", "magic"],
+      "damage": [ { "formula": "2d8", "type": "thunder" } ] }
+  ]
+}

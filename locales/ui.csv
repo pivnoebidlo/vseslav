@@ -16,8 +16,9 @@ UI_HINT,"ЛКМ по клетке — идти, по врагу — атаков
 LOG_INITIATIVE,"Инициатива: {order}","Initiative: {order}"
 LOG_TURN,"— {name} ходит —","— {name}'s turn —"
 LOG_MOVED,"{name} перемещается ({cost} кл.)","{name} moves ({cost} sq)"
-LOG_HIT,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — попадание, урон {damage}","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — hit, {damage} damage"
-LOG_CRIT,"{name} бьёт {target}: натуральная 20 — критический удар, урон {damage}","{name} attacks {target}: natural 20 — critical hit, {damage} damage"
+LOG_HIT,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — попадание","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — hit"
+LOG_CRIT,"{name} бьёт {target}: d20={natural} — критический удар","{name} attacks {target}: d20={natural} — critical hit"
+LOG_DAMAGE,"{name} получает урон: {amount}","{name} takes {amount} damage"
 LOG_MISS,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — промах","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — miss"
 LOG_DOWNED,"{name} падает","{name} falls"
 LOG_WIN,Победа!,Victory!
@@ -31,7 +32,16 @@ err_no_path,Туда не пройти.,No path there.
 err_too_far,Слишком далеко.,Too far.
 err_action_used,Действие уже потрачено.,Action already used.
 err_invalid_target,Неподходящая цель.,Invalid target.
-err_not_in_reach,Цель вне досягаемости.,Target out of reach.
+err_out_of_range,Цель вне досягаемости.,Target out of range.
+err_unknown_action,Нет такого действия.,No such action.
+err_incapacitated,Не может действовать.,Cannot act.
+err_bonus_used,Бонусное действие уже потрачено.,Bonus action already used.
+err_reaction_only,Это реакция: она срабатывает сама.,This is a reaction; it triggers on its own.
+err_no_resource,Не осталось зарядов.,No uses left.
+err_not_prone,Не лежит.,Not prone.
+err_no_movement,Не хватает перемещения.,Not enough movement.
+err_prone,Сначала нужно встать.,Stand up first.
+err_frightened,Страх не пускает ближе.,Too frightened to approach.
 VIEWER_TITLE,Просмотр моделей (спайк),Model viewer (spike)
 VIEWER_DIR,Папка: {dir},Folder: {dir}
 VIEWER_NO_MODELS,"Нет .glb в папке {dir}. Положите туда модели или запустите tools/fetch_sample_models.sh","No .glb files in {dir}. Put models there or run tools/fetch_sample_models.sh"

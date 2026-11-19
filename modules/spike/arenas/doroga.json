@@ -1,0 +1,28 @@
+{
+  "id": "spike.doroga",
+  "title_key": "ARENA_DOROGA",
+  "grid": {
+    "diagonal": "chebyshev",
+    "map": [
+      "............",
+      "............",
+      "...##.......",
+      "...##..11...",
+      "......111...",
+      "......122...",
+      "..#...122...",
+      "............",
+      "............",
+      "............"
+    ]
+  },
+  "combatants": [
+    { "id": "ratnik", "character": "ratnik", "team": "party", "at": [1, 7] },
+    { "id": "lovchiy", "character": "lovchiy", "team": "party", "at": [1, 9] },
+    { "id": "volkhv", "character": "volkhv", "team": "party", "at": [0, 8] },
+    { "id": "razboynik_1", "creature": "razboynik", "team": "bandits", "at": [9, 1] },
+    { "id": "razboynik_2", "creature": "razboynik", "team": "bandits", "at": [10, 2] },
+    { "id": "razboynik_3", "creature": "razboynik", "team": "bandits", "at": [8, 4] },
+    { "id": "ataman", "creature": "ataman", "team": "bandits", "at": [10, 5] }
+  ]
+}

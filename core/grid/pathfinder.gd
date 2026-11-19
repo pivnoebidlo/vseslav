@@ -18,12 +18,17 @@ const NEIGHBORS: Array[Vector2i] = [
 ]
 
 
-## Путь от [param from] до [param to]. Клетки из [param occupied] непроходимы.
+## Путь от [param from] до [param to]. Клетки из [param occupied] непроходимы;
+## в клетках из [param no_stop] (союзники) нельзя остановиться, но можно пройти.
 static func find_path(
-	grid: BattleGrid, from: Vector2i, to: Vector2i, occupied: Dictionary[Vector2i, bool] = {}
+	grid: BattleGrid,
+	from: Vector2i,
+	to: Vector2i,
+	occupied: Dictionary[Vector2i, bool] = {},
+	no_stop: Dictionary[Vector2i, bool] = {}
 ) -> PathResult:
 	var result := PathResult.new()
-	if from == to or not grid.is_walkable(to) or occupied.has(to):
+	if from == to or not grid.is_walkable(to) or occupied.has(to) or no_stop.has(to):
 		return result
 	var start := Vector3i(from.x, from.y, 0)
 	var g: Dictionary[Vector3i, int] = {start: 0}
@@ -50,9 +55,13 @@ static func find_path(
 
 
 ## Минимальная стоимость достижения каждой колонки в пределах [param budget].
-## Стартовая колонка не включается.
+## Стартовая колонка и клетки из [param no_stop] не включаются (но через них можно пройти).
 static func reachable(
-	grid: BattleGrid, from: Vector2i, budget: int, occupied: Dictionary[Vector2i, bool] = {}
+	grid: BattleGrid,
+	from: Vector2i,
+	budget: int,
+	occupied: Dictionary[Vector2i, bool] = {},
+	no_stop: Dictionary[Vector2i, bool] = {}
 ) -> Dictionary[Vector2i, int]:
 	var best: Dictionary[Vector2i, int] = {}
 	var start := Vector3i(from.x, from.y, 0)
@@ -63,7 +72,7 @@ static func reachable(
 		var current := _pop_best(open, g, Vector2i(-1, -1))
 		closed[current] = true
 		var col := Vector2i(current.x, current.y)
-		if col != from and (not best.has(col) or g[current] < best[col]):
+		if col != from and not no_stop.has(col) and (not best.has(col) or g[current] < best[col]):
 			best[col] = g[current]
 		for step in _steps(grid, current, occupied):
 			var node: Vector3i = step[0]

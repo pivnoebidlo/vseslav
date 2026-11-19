@@ -11,9 +11,13 @@ const PRONE := "prone"
 const RESTRAINED := "restrained"
 const STUNNED := "stunned"
 const UNCONSCIOUS := "unconscious"
-## Служебные состояния (не из SRD-списка): уклонение до начала своего хода, метка ловчего.
+## Служебные состояния (не из SRD-списка): уклонение до начала своего хода, метка ловчего,
+## приёмы оружия «Ослабление» (помеха на следующую атаку) и «Досада» (преимущество
+## источнику на следующую атаку по носителю).
 const DODGING := "dodging"
 const MARKED := "marked"
+const SAPPED := "sapped"
+const VEXED := "vexed"
 
 const SRD: Array[String] = [
 	BLINDED, FRIGHTENED, INCAPACITATED, POISONED, PRONE, RESTRAINED, STUNNED, UNCONSCIOUS
@@ -29,6 +33,8 @@ const ALL: Array[String] = [
 	UNCONSCIOUS,
 	DODGING,
 	MARKED,
+	SAPPED,
+	VEXED,
 ]
 ## Состояния, которые включают в себя другие.
 const IMPLIES: Dictionary[String, Array] = {

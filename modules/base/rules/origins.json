@@ -1,0 +1,8 @@
+{
+  "origins": [
+    { "id": "slavyanin", "name_key": "ORIGIN_SLAVYANIN", "abilities": ["dex", "con", "wis"],
+      "traits": [ { "type": "hp_per_level", "value": 2, "name_key": "TRAIT_TOUGH" } ] },
+    { "id": "varyag", "name_key": "ORIGIN_VARYAG", "abilities": ["str", "dex", "con"],
+      "traits": [ { "type": "initiative", "formula": "PROF", "name_key": "TRAIT_ALERT" } ] }
+  ]
+}

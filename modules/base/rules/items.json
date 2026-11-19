@@ -1,0 +1,39 @@
+{
+  "items": [
+    { "id": "mech", "name_key": "ITEM_MECH", "type": "weapon", "category": "martial", "attack_type": "melee",
+      "damage": "1d8", "damage_type": "slashing", "mastery": "sap", "tags": ["weapon", "iron"] },
+    { "id": "topor", "name_key": "ITEM_TOPOR", "type": "weapon", "category": "martial", "attack_type": "melee",
+      "damage": "1d8", "damage_type": "slashing", "mastery": "topple", "tags": ["weapon", "iron"] },
+    { "id": "kopyo", "name_key": "ITEM_KOPYO", "type": "weapon", "category": "simple", "attack_type": "melee",
+      "damage": "1d6", "damage_type": "piercing", "mastery": "sap", "tags": ["weapon", "iron"] },
+    { "id": "kisten", "name_key": "ITEM_KISTEN", "type": "weapon", "category": "martial", "attack_type": "melee",
+      "damage": "1d8", "damage_type": "bludgeoning", "mastery": "sap", "tags": ["weapon", "iron"] },
+    { "id": "nozh", "name_key": "ITEM_NOZH", "type": "weapon", "category": "simple", "attack_type": "melee",
+      "damage": "1d4", "damage_type": "piercing", "properties": ["finesse", "light"], "mastery": "nick",
+      "tags": ["weapon", "iron"] },
+    { "id": "serebryany_nozh", "name_key": "ITEM_SEREBRYANY_NOZH", "type": "weapon", "category": "simple",
+      "attack_type": "melee", "damage": "1d4", "damage_type": "piercing", "properties": ["finesse", "light"],
+      "mastery": "nick", "tags": ["weapon", "silver"] },
+    { "id": "posoh", "name_key": "ITEM_POSOH", "type": "weapon", "category": "simple", "attack_type": "melee",
+      "damage": "1d6", "damage_type": "bludgeoning", "mastery": "topple", "tags": ["weapon", "wood"] },
+    { "id": "osinovy_kol", "name_key": "ITEM_OSINOVY_KOL", "type": "weapon", "category": "simple",
+      "attack_type": "melee", "damage": "1d6", "damage_type": "piercing", "mastery": "vex",
+      "tags": ["weapon", "wood", "aspen"] },
+    { "id": "sulitsa", "name_key": "ITEM_SULITSA", "type": "weapon", "category": "simple", "attack_type": "ranged",
+      "thrown": true, "range": 6, "long_range": 24, "damage": "1d6", "damage_type": "piercing",
+      "mastery": "slow", "tags": ["weapon", "iron"] },
+    { "id": "luk", "name_key": "ITEM_LUK", "type": "weapon", "category": "martial", "attack_type": "ranged",
+      "range": 30, "long_range": 120, "damage": "1d8", "damage_type": "piercing", "mastery": "slow",
+      "tags": ["weapon", "iron"] },
+
+    { "id": "stegach", "name_key": "ITEM_STEGACH", "type": "armor", "armor": "light", "base": 11, "dex_cap": -1 },
+    { "id": "kozhukh", "name_key": "ITEM_KOZHUKH", "type": "armor", "armor": "light", "base": 12, "dex_cap": -1 },
+    { "id": "kuyak", "name_key": "ITEM_KUYAK", "type": "armor", "armor": "medium", "base": 14, "dex_cap": 2 },
+    { "id": "kolchuga", "name_key": "ITEM_KOLCHUGA", "type": "armor", "armor": "heavy", "base": 16, "dex_cap": 0,
+      "str_req": 13 },
+    { "id": "shchit", "name_key": "ITEM_SHCHIT", "type": "shield", "ac": 2 },
+
+    { "id": "otvar", "name_key": "ITEM_OTVAR", "type": "consumable",
+      "action": { "cost": "bonus", "kind": "heal", "target": "self", "heal": "2d4 + 2" } }
+  ]
+}

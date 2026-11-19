@@ -1,0 +1,102 @@
+{
+  "id": "spike.polyana",
+  "title_key": "ARENA_POLYANA",
+  "grid": {
+    "diagonal": "chebyshev",
+    "map": [
+      "............",
+      "..##........",
+      "..#.........",
+      "........1...",
+      ".......111..",
+      "............",
+      "....#.......",
+      "...##.......",
+      "............",
+      "............"
+    ]
+  },
+  "combatants": [
+    {
+      "id": "ratnik",
+      "character": "ratnik",
+      "team": "party",
+      "at": [
+        2,
+        8
+      ]
+    },
+    {
+      "id": "lovchiy",
+      "character": "lovchiy",
+      "team": "party",
+      "at": [
+        1,
+        9
+      ]
+    },
+    {
+      "id": "volkhv",
+      "character": "volkhv",
+      "team": "party",
+      "at": [
+        0,
+        8
+      ]
+    },
+    {
+      "id": "volk_1",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        9,
+        1
+      ]
+    },
+    {
+      "id": "volk_2",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        10,
+        2
+      ]
+    },
+    {
+      "id": "volk_3",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        11,
+        6
+      ]
+    },
+    {
+      "id": "poludnitsa",
+      "creature": "poludnitsa",
+      "team": "beasts",
+      "at": [
+        8,
+        4
+      ]
+    },
+    {
+      "id": "volk_4",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        11,
+        9
+      ]
+    },
+    {
+      "id": "volk_5",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        6,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "spike.pogost",
+  "title_key": "ARENA_POGOST",
+  "grid": {
+    "diagonal": "chebyshev",
+    "map": [
+      "..........",
+      ".#..#..#..",
+      "..........",
+      ".#..#..#..",
+      "..........",
+      "....11....",
+      "..........",
+      "..........",
+      ".........."
+    ]
+  },
+  "combatants": [
+    {
+      "id": "ratnik",
+      "character": "ratnik",
+      "team": "party",
+      "at": [
+        3,
+        8
+      ]
+    },
+    {
+      "id": "lovchiy",
+      "character": "lovchiy",
+      "team": "party",
+      "at": [
+        5,
+        8
+      ]
+    },
+    {
+      "id": "volkhv",
+      "character": "volkhv",
+      "team": "party",
+      "at": [
+        4,
+        7
+      ]
+    },
+    {
+      "id": "upyr",
+      "creature": "upyr",
+      "team": "nechist",
+      "at": [
+        4,
+        0
+      ]
+    },
+    {
+      "id": "razboynik_1",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "razboynik_2",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        8,
+        2
+      ]
+    },
+    {
+      "id": "razboynik_3",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        0,
+        4
+      ]
+    },
+    {
+      "id": "razboynik_4",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        9,
+        4
+      ]
+    }
+  ]
+}

@@ -110,7 +110,11 @@ static func apply(
 		ActionDef.KIND_MULTI:
 			for sub_id in action.sub_actions:
 				var sub := actor.get_action(sub_id)
-				if sub == null or not target.is_alive() or not in_range(state, actor, sub, target):
+				if (
+					sub == null
+					or not target.is_present()
+					or not in_range(state, actor, sub, target)
+				):
 					break
 				attack(state, actor, sub, target, events)
 		ActionDef.KIND_SAVE:

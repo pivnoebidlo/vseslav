@@ -385,3 +385,18 @@ func test_specials_dash_dodge_extra_action() -> void:
 	assert_true(s.get_combatant("a").has_condition(Conditions.DODGING), "lasts through foe's turn")
 	EndTurnCommand.new("b").apply(s)
 	assert_false(s.get_combatant("a").has_condition(Conditions.DODGING), "ends at own turn start")
+
+
+func test_multiattack_hits_downed_target() -> void:
+	var multi := MiniCombat.action(
+		{"id": "multi", "kind": "multiattack", "range": 1, "sub_actions": ["hit", "hit"]}
+	)
+	var s := _duel([multi, MiniCombat.melee("hit", "3")])
+	var b := s.get_combatant("b")
+	b.death_saves = true
+	b.hp = 0
+	b.add_condition(ConditionState.new(Conditions.UNCONSCIOUS))
+	MiniCombat.rolls(s, [10, 10, 10, 10])
+	var events := MiniCombat.use(s, "a", "multi", "b")
+	assert_eq(MiniCombat.events_of(events, CombatEvent.ATTACK).size(), 2)
+	assert_true(b.dead, "two auto-crits at 0 hp: four failed death saves")

@@ -246,7 +246,7 @@ func _continue() -> void:
 	_busy = true
 	while not _state.ended and not _is_player_turn():
 		await get_tree().create_timer(AI_STEP_DELAY).timeout
-		var cmd := SimpleAi.next_command(_state)
+		var cmd := CombatAi.next_command(_state)
 		await _execute(cmd)
 	_busy = false
 	_refresh_labels()
@@ -309,10 +309,8 @@ func _attack(actor: Combatant, target: Combatant) -> void:
 		var err := ActionResolver.validate(_state, actor, action, target.id, ActionResolver.NO_CELL)
 		if err != "":
 			continue
-		if (
-			best == null
-			or SimpleAi.expected_damage(actor, action) > SimpleAi.expected_damage(actor, best)
-		):
+		var value := CombatAi.attack_value(_state, actor, action, target)
+		if best == null or value > CombatAi.attack_value(_state, actor, best, target):
 			best = action
 	if best == null:
 		_write(tr(ActionResolver.ERR_OUT_OF_RANGE), Color(1.0, 0.75, 0.4))

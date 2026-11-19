@@ -17,3 +17,8 @@ static func floor_div(a: int, b: int) -> int:
 ## Модификатор характеристики: floor((score - 10) / 2).
 static func ability_modifier(score: int) -> int:
 	return floor_div(score - 10, 2)
+
+
+## Бонус мастерства по уровню (или показателю опасности существа): 2 + (уровень - 1) / 4.
+static func proficiency_bonus(level: int) -> int:
+	return 2 + floor_div(maxi(level, 1) - 1, 4)

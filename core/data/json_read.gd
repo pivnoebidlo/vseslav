@@ -60,6 +60,14 @@ static func get_dict(data: Dictionary, key: String) -> Dictionary:
 	return d
 
 
+## Массив строк; не-строки приводятся через str().
+static func get_str_array(data: Dictionary, key: String) -> Array[String]:
+	var result: Array[String] = []
+	for item: Variant in get_array(data, key):
+		result.append(str(item))
+	return result
+
+
 ## Пара [x, z] → Vector2i.
 static func to_vec2i(value: Variant) -> Vector2i:
 	if typeof(value) != TYPE_ARRAY:

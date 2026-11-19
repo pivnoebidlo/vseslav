@@ -1,32 +1,38 @@
 extends Node3D
-## Сцена спайка этапа 0: пошаговый бой на тестовой арене.
-## Представление только отображает CombatState и передаёт команды ядру (SPEC §6.2).
+## Тестовые бои этапа 1. Представление только отображает CombatState и передаёт
+## команды ядру (SPEC §6.2): ход, перемещение, выбор действия и цели, предпросмотр.
 ##
 ## Аргументы командной строки (после `--`):
+##   --arena=NAME      doroga | polyana | pogost (по умолчанию doroga)
 ##   --seed=N          фиксированный seed боя
 ##   --autoplay        за партию тоже играет ИИ (дымовая проверка)
-##   --screenshot=PATH сохранить снимок экрана по окончании боя (или через 20 с) и выйти
+##   --screenshot=PATH сохранить снимок экрана по окончании боя (или через 25 с) и выйти
 ##   --lang=ru|en      язык интерфейса (по умолчанию русский; меню настроек — позже)
 
-const ARENA_PATH := "res://modules/spike/arenas/doroga.json"
+const ARENAS: Array[String] = ["doroga", "polyana", "pogost"]
+const ARENA_DIR := "res://modules/spike/arenas"
+const MODULE_DIRS: Array[String] = ["res://modules/base", "res://modules/spike"]
 const RULES_DIR := "res://modules/base/rules"
 const SAVE_DIR := "user://saves"
-const SAVE_PATH := "user://saves/spike_combat.json"
-const PLAYER_TEAM := "party"
+const SAVE_PATH := "user://saves/arena_combat.json"
 const CELL := BattleGrid.CELL_SIZE_M
 const LEVEL_HEIGHT := 0.75
 const AI_STEP_DELAY := 0.3
 const MOVE_STEP_TIME := 0.12
-const SCREENSHOT_TIMEOUT := 20.0
+const SCREENSHOT_TIMEOUT := 25.0
 const DEFAULT_LANG := "ru"
+const NO_CELL := ActionResolver.NO_CELL
 
+var _arena := "doroga"
 var _arena_data: Dictionary = {}
 var _db: RulesDb
 var _state: CombatState
 var _world: Node3D
 var _tiles: Dictionary[Vector2i, MeshInstance3D] = {}
 var _units: Dictionary[String, UnitView] = {}
-var _reachable: Dictionary[Vector2i, int] = {}
+var _highlighted: Array[Vector2i] = []
+var _area_cells: Array[Vector2i] = []
+var _selected: ActionDef = null
 var _busy := false
 var _autoplay := false
 var _seed_override := -1
@@ -37,26 +43,37 @@ var _mat_floor := StandardMaterial3D.new()
 var _mat_high := StandardMaterial3D.new()
 var _mat_wall := StandardMaterial3D.new()
 var _mat_reach := StandardMaterial3D.new()
+var _mat_range := StandardMaterial3D.new()
+var _mat_area := StandardMaterial3D.new()
 
+var _title := Label.new()
 var _turn_label := Label.new()
-var _move_label := Label.new()
+var _economy_label := Label.new()
+var _hint := Label.new()
+var _arena_select := OptionButton.new()
+var _initiative := InitiativeBar.new()
+var _actions := ActionBar.new()
+var _preview := Label.new()
 var _log := RichTextLabel.new()
 
 
 func _ready() -> void:
 	_parse_args()
 	TranslationServer.set_locale(_lang)
-	_arena_data = ArenaLoader.read_file(ARENA_PATH)
+	for dir in MODULE_DIRS:
+		ModuleLocales.load_module(dir)
 	_db = RulesDb.load_dir(RULES_DIR)
-	for err in _db.errors:
-		push_error(err)
 	_setup_materials()
 	_setup_environment()
 	_setup_ui()
 	_world = Node3D.new()
 	add_child(_world)
+	for err in _db.errors:
+		push_error(err)
+		_write(CombatLogFormat.tr_fmt("LOG_DATA_ERROR", {"error": err}), CombatLogFormat.COLOR_BAD)
 	if _screenshot_path != "":
 		get_tree().create_timer(SCREENSHOT_TIMEOUT).timeout.connect(_take_screenshot_and_quit)
+	_load_arena(_arena)
 	_new_combat()
 
 
@@ -64,12 +81,23 @@ func _parse_args() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--autoplay":
 			_autoplay = true
+		elif arg.begins_with("--arena="):
+			var name := arg.trim_prefix("--arena=")
+			if ARENAS.has(name):
+				_arena = name
 		elif arg.begins_with("--seed="):
 			_seed_override = arg.trim_prefix("--seed=").to_int()
 		elif arg.begins_with("--lang="):
 			_lang = arg.trim_prefix("--lang=")
 		elif arg.begins_with("--screenshot="):
 			_screenshot_path = arg.trim_prefix("--screenshot=")
+
+
+func _load_arena(name: String) -> void:
+	_arena = name
+	_arena_data = ArenaLoader.read_file(ARENA_DIR.path_join(name + ".json"))
+	_title.text = tr(JsonRead.get_str(_arena_data, "title_key"))
+	_arena_select.select(ARENAS.find(name))
 
 
 # --- Построение сцены ---------------------------------------------------------
@@ -79,9 +107,15 @@ func _setup_materials() -> void:
 	_mat_floor.albedo_color = Color(0.42, 0.5, 0.3)
 	_mat_high.albedo_color = Color(0.55, 0.5, 0.38)
 	_mat_wall.albedo_color = Color(0.35, 0.3, 0.27)
-	_mat_reach.albedo_color = Color(0.55, 0.7, 0.45)
-	_mat_reach.emission_enabled = true
-	_mat_reach.emission = Color(0.15, 0.25, 0.1)
+	_glow(_mat_reach, Color(0.55, 0.7, 0.45), Color(0.15, 0.25, 0.1))
+	_glow(_mat_range, Color(0.5, 0.55, 0.75), Color(0.1, 0.12, 0.25))
+	_glow(_mat_area, Color(0.85, 0.45, 0.35), Color(0.35, 0.1, 0.05))
+
+
+func _glow(mat: StandardMaterial3D, albedo: Color, emission: Color) -> void:
+	mat.albedo_color = albedo
+	mat.emission_enabled = true
+	mat.emission = emission
 
 
 func _setup_environment() -> void:
@@ -106,9 +140,10 @@ func _setup_camera(grid: BattleGrid) -> void:
 	var camera := Camera3D.new()
 	camera.name = "Camera"
 	_world.add_child(camera)
-	# Цель взгляда смещена к камере, чтобы поле не уходило под лог внизу экрана.
-	var target := center + Vector3(0.0, 0.0, 2.5)
-	camera.position = target + Vector3(0.0, 12.5, 8.0)
+	# Цель взгляда смещена к камере, чтобы поле не уходило под лог внизу экрана,
+	# и сдвинута влево, чтобы его не закрывала панель слева сверху.
+	var target := center + Vector3(-2.5, 0.0, 3.5)
+	camera.position = target + Vector3(0.0, 15.0, 9.5)
 	camera.look_at(target)
 	camera.current = true
 
@@ -122,17 +157,14 @@ func _setup_ui() -> void:
 	layer.add_child(panel)
 	var box := VBoxContainer.new()
 	panel.add_child(box)
-
-	var title := Label.new()
-	title.text = tr("ARENA_TITLE")
-	title.add_theme_font_size_override("font_size", 20)
-	box.add_child(title)
+	_title.add_theme_font_size_override("font_size", 20)
+	box.add_child(_title)
 	box.add_child(_turn_label)
-	box.add_child(_move_label)
-	var hint := Label.new()
-	hint.text = tr("UI_HINT")
-	hint.modulate = Color(1, 1, 1, 0.7)
-	box.add_child(hint)
+	box.add_child(_economy_label)
+	_hint.modulate = Color(1, 1, 1, 0.7)
+	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hint.custom_minimum_size = Vector2(430, 0)
+	box.add_child(_hint)
 
 	var buttons := HBoxContainer.new()
 	box.add_child(buttons)
@@ -141,24 +173,60 @@ func _setup_ui() -> void:
 	_add_button(buttons, "UI_LOAD", _on_load)
 	_add_button(buttons, "UI_RESTART", _on_restart)
 
-	_log.scroll_following = true
-	_log.bbcode_enabled = true
-	_log.custom_minimum_size = Vector2(520, 220)
-	_log.anchor_top = 1.0
-	_log.anchor_bottom = 1.0
-	_log.offset_left = 12
-	_log.offset_top = -232
-	_log.offset_right = 532
-	_log.offset_bottom = -12
+	var arena_row := HBoxContainer.new()
+	box.add_child(arena_row)
+	var arena_label := Label.new()
+	arena_label.text = tr("UI_ARENA")
+	arena_row.add_child(arena_label)
+	for name in ARENAS:
+		var data := ArenaLoader.read_file(ARENA_DIR.path_join(name + ".json"))
+		_arena_select.add_item(tr(JsonRead.get_str(data, "title_key")))
+	_arena_select.item_selected.connect(_on_arena_selected)
+	arena_row.add_child(_arena_select)
+
+	_initiative.anchor_left = 1.0
+	_initiative.anchor_right = 1.0
+	_initiative.offset_left = -600
+	_initiative.offset_right = -12
+	_initiative.offset_top = 12
+	_initiative.alignment = FlowContainer.ALIGNMENT_END
+	layer.add_child(_initiative)
+
+	_actions.anchor_left = 0.5
+	_actions.anchor_right = 1.0
+	_actions.anchor_top = 1.0
+	_actions.anchor_bottom = 1.0
+	_actions.offset_left = 50
+	_actions.offset_right = -12
+	_actions.offset_top = -110
+	_actions.offset_bottom = -12
+	_actions.alignment = FlowContainer.ALIGNMENT_END
+	_actions.action_pressed.connect(_on_action_pressed)
+	layer.add_child(_actions)
+
 	var log_bg := PanelContainer.new()
 	log_bg.anchor_top = 1.0
 	log_bg.anchor_bottom = 1.0
 	log_bg.offset_left = 8
-	log_bg.offset_top = -236
-	log_bg.offset_right = 536
+	log_bg.offset_top = -196
+	log_bg.offset_right = 616
 	log_bg.offset_bottom = -8
 	layer.add_child(log_bg)
+	_log.scroll_following = true
+	_log.anchor_top = 1.0
+	_log.anchor_bottom = 1.0
+	_log.offset_left = 12
+	_log.offset_top = -192
+	_log.offset_right = 612
+	_log.offset_bottom = -12
+	_log.add_theme_font_size_override("normal_font_size", 13)
 	layer.add_child(_log)
+
+	_preview.add_theme_color_override("font_outline_color", Color.BLACK)
+	_preview.add_theme_constant_override("outline_size", 6)
+	_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_preview.visible = false
+	layer.add_child(_preview)
 
 
 func _add_button(parent: Container, key: String, handler: Callable) -> void:
@@ -173,6 +241,8 @@ func _rebuild_world() -> void:
 		child.queue_free()
 	_tiles.clear()
 	_units.clear()
+	_highlighted.clear()
+	_area_cells.clear()
 	var grid := _state.grid
 	_setup_camera(grid)
 	for z in grid.depth:
@@ -182,11 +252,9 @@ func _rebuild_world() -> void:
 		var view := UnitView.new()
 		_world.add_child(view)
 		view.setup(c.id, c.team)
-		view.position = _column_position(c.column)
-		if not c.is_alive():
-			view.set_dead()
+		view.place(_column_position(c.column))
 		_units[c.id] = view
-	_refresh_labels()
+	_refresh()
 
 
 func _add_tile(grid: BattleGrid, column: Vector2i) -> void:
@@ -206,7 +274,7 @@ func _add_tile(grid: BattleGrid, column: Vector2i) -> void:
 		tile.material_override = _mat_wall
 		return
 	_tiles[column] = tile
-	_reset_tile_material(column)
+	_reset_tile(column)
 
 	var body := StaticBody3D.new()
 	body.set_meta("column", column)
@@ -218,7 +286,7 @@ func _add_tile(grid: BattleGrid, column: Vector2i) -> void:
 	tile.add_child(body)
 
 
-func _reset_tile_material(column: Vector2i) -> void:
+func _reset_tile(column: Vector2i) -> void:
 	var high := _state.grid.level_at(column) > 0
 	_tiles[column].material_override = _mat_high if high else _mat_floor
 
@@ -233,8 +301,12 @@ func _column_position(column: Vector2i) -> Vector3:
 
 func _new_combat() -> void:
 	var seed_value := _seed_override if _seed_override >= 0 else randi()
-	_state = ArenaLoader.new_combat(_arena_data, seed_value, _db)
+	var errors: Array[String] = []
+	_state = ArenaLoader.new_combat(_arena_data, seed_value, _db, errors)
 	_log.clear()
+	for err in errors:
+		_write(CombatLogFormat.tr_fmt("LOG_DATA_ERROR", {"error": err}), CombatLogFormat.COLOR_BAD)
+	_selected = null
 	var events := _state.start()
 	_rebuild_world()
 	await _play_events(events)
@@ -244,19 +316,21 @@ func _new_combat() -> void:
 ## Передаёт ход ИИ, пока не настанет ход игрока или бой не закончится.
 func _continue() -> void:
 	_busy = true
+	_refresh()
 	while not _state.ended and not _is_player_turn():
 		await get_tree().create_timer(AI_STEP_DELAY).timeout
 		var cmd := CombatAi.next_command(_state)
 		await _execute(cmd)
 	_busy = false
-	_refresh_labels()
+	_refresh()
 	if _state.ended and _screenshot_path != "":
 		await get_tree().create_timer(0.5).timeout
 		_take_screenshot_and_quit()
 
 
 func _is_player_turn() -> bool:
-	return not _autoplay and _state.current().player
+	var current := _state.current()
+	return not _autoplay and current != null and current.player
 
 
 ## Проверяет и применяет команду. Возвращает true, если команда выполнена.
@@ -273,54 +347,261 @@ func _player_command(cmd: CombatCommand) -> void:
 	if _busy:
 		return
 	_busy = true
+	_selected = null
+	_preview.visible = false
 	await _execute(cmd)
 	_busy = false
 	await _continue()
 
 
+# --- Ввод ---------------------------------------------------------------------
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	var click := event as InputEventMouseButton
-	if click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
+	var key := event as InputEventKey
+	if key != null:
+		if key.pressed and key.keycode == KEY_ESCAPE:
+			_cancel_selection()
 		return
+	var motion := event as InputEventMouseMotion
+	if motion != null:
+		_on_hover(motion.position)
+		return
+	var click := event as InputEventMouseButton
+	if click != null and click.pressed:
+		if click.button_index == MOUSE_BUTTON_RIGHT:
+			_cancel_selection()
+		elif click.button_index == MOUSE_BUTTON_LEFT:
+			_on_left_click(click.position)
+
+
+func _on_left_click(screen_pos: Vector2) -> void:
 	if _busy or _state.ended or not _is_player_turn():
 		return
-	var hit := _raycast(click.position)
+	var hit := _raycast(screen_pos)
 	var actor := _state.current()
-	if hit.has("unit_id"):
-		var target := _state.get_combatant(str(hit["unit_id"]))
-		if target != null and target.team != actor.team:
-			_attack(actor, target)
+	var target := _hit_unit(hit)
+	var cell := _hit_cell(hit, target)
+	if _selected != null:
+		_use_selected(actor, target, cell)
 		return
+	if target != null and target.team != actor.team:
+		_auto_attack(actor, target)
+	elif target == null and cell != NO_CELL:
+		_player_command(MoveCommand.new(actor.id, cell))
+
+
+func _hit_unit(hit: Dictionary) -> Combatant:
+	if hit.has("unit_id"):
+		return _state.get_combatant(str(hit["unit_id"]))
 	if hit.has("column"):
 		var column: Vector2i = hit["column"]
-		var occupant := _state.combatant_at(column)
-		if occupant != null and occupant.team != actor.team:
-			_attack(actor, occupant)
-		elif occupant == null:
-			_player_command(MoveCommand.new(actor.id, column))
+		return _state.combatant_at(column)
+	return null
 
 
-## Атака по цели самым сильным доступным действием (выбор действия — в UI боя, этап 1).
-func _attack(actor: Combatant, target: Combatant) -> void:
+func _hit_cell(hit: Dictionary, unit: Combatant) -> Vector2i:
+	if unit != null:
+		return unit.column
+	if hit.has("column"):
+		var column: Vector2i = hit["column"]
+		return column
+	return NO_CELL
+
+
+func _use_selected(actor: Combatant, target: Combatant, cell: Vector2i) -> void:
+	var target_id := ""
+	if _selected.target != ActionDef.TARGET_POINT:
+		if target == null:
+			return
+		target_id = target.id
+	_player_command(UseActionCommand.new(actor.id, _selected.id, target_id, cell))
+
+
+## Лучшая доступная атака стоимостью «действие» по цели; null — нечем достать.
+func _best_attack(actor: Combatant, target: Combatant) -> ActionDef:
 	var best: ActionDef = null
+	var best_value := -1
 	for action in actor.actions:
 		if action.kind != ActionDef.KIND_ATTACK and action.kind != ActionDef.KIND_MULTI:
 			continue
-		var err := ActionResolver.validate(_state, actor, action, target.id, ActionResolver.NO_CELL)
-		if err != "":
+		if action.cost != ActionDef.COST_ACTION:
+			continue
+		if ActionResolver.validate(_state, actor, action, target.id, NO_CELL) != "":
 			continue
 		var value := CombatAi.attack_value(_state, actor, action, target)
-		if best == null or value > CombatAi.attack_value(_state, actor, best, target):
+		# Расходуемое оружие — только если оно заметно лучше.
+		if action.resource != "":
+			value -= CombatAi.SCALE
+		if value > best_value:
 			best = action
+			best_value = value
+	return best
+
+
+func _auto_attack(actor: Combatant, target: Combatant) -> void:
+	var best := _best_attack(actor, target)
 	if best == null:
 		_write(tr(ActionResolver.ERR_OUT_OF_RANGE), Color(1.0, 0.75, 0.4))
 		return
 	_player_command(UseActionCommand.new(actor.id, best.id, target.id))
 
 
+func _on_action_pressed(action_id: String) -> void:
+	if _busy or not _is_player_turn():
+		return
+	var actor := _state.current()
+	var action := actor.get_action(action_id)
+	if _selected == action:
+		_cancel_selection()
+		return
+	if action.target == ActionDef.TARGET_SELF:
+		_player_command(UseActionCommand.new(actor.id, action.id, actor.id))
+		return
+	_selected = action
+	_refresh()
+
+
+func _cancel_selection() -> void:
+	if _selected == null:
+		return
+	_selected = null
+	_preview.visible = false
+	_refresh()
+
+
+## Наведение мыши: предпросмотр атаки или области, сведения об участнике.
+func _on_hover(screen_pos: Vector2) -> void:
+	if _state == null or _busy:
+		_preview.visible = false
+		return
+	var hit := _raycast(screen_pos)
+	var unit := _hit_unit(hit)
+	var cell := _hit_cell(hit, unit)
+	var lines: PackedStringArray = []
+	var actor := _state.current()
+	_paint_area([])
+	if _is_player_turn() and actor != null and not _state.ended:
+		if _selected != null:
+			lines.append_array(_selected_preview(actor, unit, cell))
+		elif unit != null and unit.team != actor.team:
+			var best := _best_attack(actor, unit)
+			if best != null:
+				lines.append(_preview_text(actor, best, unit))
+	if unit != null:
+		lines.append(_unit_info(unit))
+	_preview.visible = not lines.is_empty()
+	_preview.text = "\n".join(lines)
+	# Прижимаем подсказку к краям экрана.
+	var size := _preview.get_minimum_size()
+	var view := get_viewport().get_visible_rect().size
+	var pos := screen_pos + Vector2(18, 12)
+	pos.x = minf(pos.x, view.x - size.x - 8)
+	pos.y = minf(pos.y, view.y - size.y - 8)
+	_preview.position = pos.max(Vector2(8, 8))
+
+
+func _selected_preview(actor: Combatant, unit: Combatant, cell: Vector2i) -> PackedStringArray:
+	var lines: PackedStringArray = []
+	if _selected.target == ActionDef.TARGET_POINT:
+		if cell == NO_CELL:
+			return lines
+		var err := ActionResolver.validate(_state, actor, _selected, "", cell)
+		if err != "":
+			lines.append(tr(err))
+			return lines
+		var cells: Array[Vector2i] = []
+		if _selected.area == ActionDef.AREA_CONE:
+			cells = Area.cone(_state.grid, actor.column, cell, _selected.area_size)
+		else:
+			cells = Area.burst(_state.grid, cell, _selected.area_size)
+		_paint_area(cells)
+		var names: PackedStringArray = []
+		var ally_hit := false
+		for t in ActionResolver.targets_in_area(_state, actor, _selected, cell):
+			var p := ActionPreview.for_target(_state, actor, _selected, t)
+			names.append("%s %d%%" % [CombatLogFormat.display_name(t), p.chance])
+			if t.team == actor.team:
+				ally_hit = true
+		lines.append(tr(_selected.name_key))
+		lines.append(CombatLogFormat.tr_fmt("UI_PREVIEW_AREA", {"names": ", ".join(names)}))
+		if ally_hit:
+			lines.append(tr("UI_PREVIEW_AREA_ALLY"))
+		return lines
+	if unit == null:
+		return lines
+	var err := ActionResolver.validate(_state, actor, _selected, unit.id, NO_CELL)
+	if err != "":
+		lines.append(tr(err))
+		return lines
+	lines.append(_preview_text(actor, _selected, unit))
+	return lines
+
+
+func _preview_text(actor: Combatant, action: ActionDef, target: Combatant) -> String:
+	var p := ActionPreview.for_target(_state, actor, action, target)
+	var name := tr(action.name_key)
+	var text := name
+	match action.kind:
+		ActionDef.KIND_ATTACK, ActionDef.KIND_MULTI:
+			text = CombatLogFormat.tr_fmt(
+				"UI_PREVIEW_ATTACK",
+				{
+					"action": name,
+					"chance": p.chance,
+					"min": p.damage_min,
+					"max": p.damage_max,
+					"crit": p.crit_max
+				}
+			)
+		ActionDef.KIND_SAVE:
+			var key := "UI_PREVIEW_SAVE" if p.damage_max > 0 else "UI_PREVIEW_SAVE_NODMG"
+			text = CombatLogFormat.tr_fmt(
+				key,
+				{
+					"action": name,
+					"chance": p.chance,
+					"dc": p.target_number,
+					"min": p.damage_min,
+					"max": p.damage_max
+				}
+			)
+		ActionDef.KIND_HEAL:
+			text = CombatLogFormat.tr_fmt(
+				"UI_PREVIEW_HEAL", {"action": name, "min": p.heal_min, "max": p.heal_max}
+			)
+	text += CombatLogFormat.reasons(p.mods.to_dict())
+	if not p.defenses.is_empty():
+		var defs: PackedStringArray = []
+		for d in p.defenses:
+			defs.append(tr("DEF_" + d.to_upper()))
+		text += "\n" + CombatLogFormat.tr_fmt("UI_DEFENSES", {"list": ", ".join(defs)})
+	return text
+
+
+func _unit_info(c: Combatant) -> String:
+	var text := CombatLogFormat.tr_fmt(
+		"UI_UNIT_INFO",
+		{
+			"name": CombatLogFormat.display_name(c),
+			"hp": c.hp,
+			"max": c.max_hp,
+			"ac": _state.effective_ac(c)
+		}
+	)
+	var conds: PackedStringArray = []
+	for cond in c.conditions:
+		conds.append(CombatLogFormat.condition_name(cond.id))
+	if not conds.is_empty():
+		text += " · " + ", ".join(conds)
+	return text
+
+
 ## Луч из камеры: возвращает {"unit_id": ...} или {"column": ...} или {}.
 func _raycast(screen_pos: Vector2) -> Dictionary:
 	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return {}
 	var from := camera.project_ray_origin(screen_pos)
 	var to := from + camera.project_ray_normal(screen_pos) * 200.0
 	var query := PhysicsRayQueryParameters3D.create(from, to)
@@ -341,110 +622,106 @@ func _raycast(screen_pos: Vector2) -> Dictionary:
 func _play_events(events: Array[CombatEvent]) -> void:
 	for e in events:
 		match e.type:
-			CombatEvent.INITIATIVE:
-				_log_initiative(e)
-			CombatEvent.TURN_STARTED:
-				var c := _state.get_combatant(str(e.data["id"]))
-				_write(tr("LOG_TURN").format({"name": _display_name(c)}), Color(0.8, 0.85, 1.0))
 			CombatEvent.MOVED:
 				await _animate_move(e)
 			CombatEvent.ATTACK:
-				_log_attack(e)
-			CombatEvent.DOWNED, CombatEvent.DIED:
-				var downed := _state.get_combatant(str(e.data["id"]))
-				_units[downed.id].set_dead()
-				_write(tr("LOG_DOWNED").format({"name": _display_name(downed)}), Color(1, 0.5, 0.5))
-			CombatEvent.DAMAGE:
-				var hurt := _state.get_combatant(str(e.data["id"]))
-				_write(
-					tr("LOG_DAMAGE").format(
-						{"name": _display_name(hurt), "amount": JsonRead.get_int(e.data, "amount")}
-					)
-				)
-			CombatEvent.COMBAT_ENDED:
-				var won := str(e.data["winner"]) == PLAYER_TEAM
-				_write(tr("LOG_WIN") if won else tr("LOG_LOSS"), Color(1, 0.9, 0.4))
-	_refresh_labels()
+				var target := JsonRead.get_str(e.data, "target")
+				if JsonRead.get_bool(e.data, "hit") and _units.has(target):
+					_units[target].flash()
+		var line := CombatLogFormat.line(_state, e)
+		if line.text != "":
+			_write(line.text, line.color)
+	_refresh()
 
 
 func _animate_move(e: CombatEvent) -> void:
-	var c := _state.get_combatant(str(e.data["id"]))
-	var view := _units[c.id]
-	_clear_reachable()
+	var view := _units[JsonRead.get_str(e.data, "id")]
+	_clear_highlight()
 	for cell: Variant in JsonRead.get_array(e.data, "path"):
 		var xyz: Array = cell
 		var column := Vector2i(JsonRead.to_int(xyz[0]), JsonRead.to_int(xyz[2]))
 		var tween := create_tween()
 		tween.tween_property(view, "position", _column_position(column), MOVE_STEP_TIME)
 		await tween.finished
-	var cost := JsonRead.get_int(e.data, "cost")
-	_write(tr("LOG_MOVED").format({"name": _display_name(c), "cost": cost}))
+		view.place(_column_position(column))
 
 
-func _log_initiative(e: CombatEvent) -> void:
-	var parts: PackedStringArray = []
-	for item: Variant in JsonRead.get_array(e.data, "order"):
-		var entry: Dictionary = item
-		var c := _state.get_combatant(JsonRead.get_str(entry, "id"))
-		parts.append("%s (%d)" % [_display_name(c), JsonRead.get_int(entry, "total")])
-	_write(tr("LOG_INITIATIVE").format({"order": ", ".join(parts)}))
-
-
-func _log_attack(e: CombatEvent) -> void:
-	var actor := _state.get_combatant(JsonRead.get_str(e.data, "id"))
-	var target := _state.get_combatant(JsonRead.get_str(e.data, "target"))
-	var args := {
-		"name": _display_name(actor),
-		"target": _display_name(target),
-		"natural": JsonRead.get_int(e.data, "natural"),
-		"total": JsonRead.get_int(e.data, "total"),
-		"ac": JsonRead.get_int(e.data, "target_ac"),
-	}
-	if JsonRead.get_bool(e.data, "critical"):
-		_write(tr("LOG_CRIT").format(args), Color(1, 0.8, 0.3))
-	elif JsonRead.get_bool(e.data, "hit"):
-		_write(tr("LOG_HIT").format(args))
-	else:
-		_write(tr("LOG_MISS").format(args), Color(0.7, 0.7, 0.7))
-	if JsonRead.get_bool(e.data, "hit"):
-		_units[target.id].flash()
-
-
-func _refresh_labels() -> void:
+func _refresh() -> void:
 	for c in _state.combatants:
 		if _units.has(c.id):
-			_units[c.id].set_info(_display_name(c), c.hp, c.max_hp)
+			_units[c.id].refresh(CombatLogFormat.display_name(c), c)
 			_units[c.id].set_active(not _state.ended and c == _state.current())
+	_initiative.refresh(_state)
 	var current := _state.current()
+	var player := not _busy and not _state.ended and _is_player_turn()
+	_actions.refresh(_state, current, player, _selected.id if _selected != null else "")
+	_clear_highlight()
 	if current == null:
 		return
-	_turn_label.text = tr("UI_ROUND_TURN").format(
-		{"round": _state.round_number, "name": _display_name(current)}
+	_turn_label.text = CombatLogFormat.tr_fmt(
+		"UI_ROUND_TURN",
+		{"round": _state.round_number, "name": CombatLogFormat.display_name(current)}
 	)
-	var action := tr("UI_ACTION_READY") if _state.actions_left > 0 else tr("UI_ACTION_USED")
-	_move_label.text = tr("UI_MOVE_ACTION").format({"move": _state.movement_left, "action": action})
-	_clear_reachable()
-	if not _busy and not _state.ended and _is_player_turn():
-		_reachable = MoveCommand.reachable_for(_state, current)
-		for column in _reachable:
-			if _tiles.has(column):
-				_tiles[column].material_override = _mat_reach
+	var ready := tr("UI_READY")
+	var spent := tr("UI_SPENT")
+	_economy_label.text = CombatLogFormat.tr_fmt(
+		"UI_ECONOMY",
+		{
+			"action": ready if _state.actions_left > 0 else spent,
+			"bonus": spent if _state.bonus_used else ready,
+			"reaction": ready if current.reaction_ready else spent,
+			"move": _state.movement_left
+		}
+	)
+	if not player:
+		_hint.text = "" if _state.ended else tr("UI_AI_TURN")
+		return
+	if _selected != null:
+		var hint_key := "UI_TARGET_ENEMY"
+		if _selected.target == ActionDef.TARGET_ALLY:
+			hint_key = "UI_TARGET_ALLY"
+		elif _selected.target == ActionDef.TARGET_POINT:
+			hint_key = "UI_TARGET_POINT"
+		_hint.text = CombatLogFormat.tr_fmt(
+			"UI_TARGETING", {"action": tr(_selected.name_key), "hint": tr(hint_key)}
+		)
+		_paint(Area.burst(_state.grid, current.column, _selected.max_range()), _mat_range)
+		return
+	_hint.text = tr("UI_HINT")
+	var reach_cells: Array[Vector2i] = []
+	for column: Vector2i in MoveCommand.reachable_for(_state, current):
+		reach_cells.append(column)
+	_paint(reach_cells, _mat_reach)
 
 
-func _clear_reachable() -> void:
-	for column in _reachable:
+func _paint(cells: Array[Vector2i], mat: StandardMaterial3D) -> void:
+	for column in cells:
 		if _tiles.has(column):
-			_reset_tile_material(column)
-	_reachable.clear()
+			_tiles[column].material_override = mat
+			_highlighted.append(column)
 
 
-## Имя для показа: «Разбойник 2» для id вида razboynik_2.
-func _display_name(c: Combatant) -> String:
-	var name := tr(c.name_key)
-	var suffix := c.id.get_slice("_", c.id.get_slice_count("_") - 1)
-	if c.id.get_slice_count("_") > 1 and suffix.is_valid_int():
-		name += " " + suffix
-	return name
+## Подсветка области под курсором поверх подсветки дальности.
+func _paint_area(cells: Array[Vector2i]) -> void:
+	for column in _area_cells:
+		if not _tiles.has(column):
+			continue
+		if _highlighted.has(column):
+			_tiles[column].material_override = _mat_range if _selected != null else _mat_reach
+		else:
+			_reset_tile(column)
+	_area_cells = cells.duplicate()
+	for column in cells:
+		if _tiles.has(column):
+			_tiles[column].material_override = _mat_area
+
+
+func _clear_highlight() -> void:
+	for column in _highlighted:
+		if _tiles.has(column):
+			_reset_tile(column)
+	_highlighted.clear()
+	_area_cells.clear()
 
 
 func _write(text: String, color: Color = Color.WHITE) -> void:
@@ -468,36 +745,49 @@ func _on_save() -> void:
 		return
 	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify(_state.to_dict(), "  ", true))
+	var data := {"arena": _arena, "combat": _state.to_dict()}
+	file.store_string(JSON.stringify(data, "  ", true))
 	file.close()
-	_write(tr("LOG_SAVED"), Color(0.6, 1, 0.6))
+	_write(tr("LOG_SAVED"), CombatLogFormat.COLOR_GOOD)
 
 
 func _on_load() -> void:
 	if _busy:
 		return
-	var text := FileAccess.get_file_as_string(SAVE_PATH)
-	if text == "":
-		_write(tr("LOG_NO_SAVE"), Color(1.0, 0.75, 0.4))
-		return
-	var parsed: Variant = JSON.parse_string(text)
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
 	if typeof(parsed) != TYPE_DICTIONARY:
 		_write(tr("LOG_NO_SAVE"), Color(1.0, 0.75, 0.4))
 		return
 	var data: Dictionary = parsed
-	var loaded := CombatState.from_dict(data, ArenaLoader.grid_from(_arena_data))
+	var arena := JsonRead.get_str(data, "arena")
+	if not ARENAS.has(arena):
+		_write(tr("LOG_NO_SAVE"), Color(1.0, 0.75, 0.4))
+		return
+	_load_arena(arena)
+	var loaded := CombatState.from_dict(
+		JsonRead.get_dict(data, "combat"), ArenaLoader.grid_from(_arena_data)
+	)
 	if loaded == null:
 		_write(tr("LOG_NO_SAVE"), Color(1.0, 0.75, 0.4))
 		return
 	_state = loaded
+	_selected = null
 	_rebuild_world()
-	_write(tr("LOG_LOADED"), Color(0.6, 1, 0.6))
+	_write(tr("LOG_LOADED"), CombatLogFormat.COLOR_GOOD)
 	await _continue()
 
 
 func _on_restart() -> void:
 	if _busy:
 		return
+	_new_combat()
+
+
+func _on_arena_selected(index: int) -> void:
+	if _busy:
+		_arena_select.select(ARENAS.find(_arena))
+		return
+	_load_arena(ARENAS[index])
 	_new_combat()
 
 

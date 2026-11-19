@@ -20,6 +20,15 @@ const NO_CELL := Vector2i(-1, -1)
 static func validate(
 	state: CombatState, actor: Combatant, action: ActionDef, target_id: String, cell: Vector2i
 ) -> String:
+	var err := can_afford(state, actor, action)
+	if err != "":
+		return err
+	return _validate_target(state, actor, action, target_id, cell)
+
+
+## Хватает ли участнику действия, бонусного действия, зарядов и т. п. — без учёта цели.
+## По этой проверке UI включает и выключает кнопки действий.
+static func can_afford(state: CombatState, actor: Combatant, action: ActionDef) -> String:
 	if action == null:
 		return ERR_UNKNOWN_ACTION
 	if Conditions.incapacitated(actor.conditions) or not actor.is_alive():
@@ -40,7 +49,7 @@ static func validate(
 			return ERR_NOT_PRONE
 		if state.movement_left < stand_cost(actor):
 			return ERR_NO_MOVEMENT
-	return _validate_target(state, actor, action, target_id, cell)
+	return ""
 
 
 static func _validate_target(
@@ -180,7 +189,9 @@ static func setup_attack(
 	if protector != null:
 		s.protector = protector.id
 		s.mods.add_disadvantage("WHY_PROTECTED")
-	s.bonus = action.attack_bonus.roll(state.rng, actor.formula_vars(action))
+	# Бонус атаки — без костей (проверяется при загрузке), поэтому RNG не нужен:
+	# setup_attack вызывается и предпросмотром.
+	s.bonus = action.attack_bonus.value_range(actor.formula_vars(action)).x
 	for t in actor.traits_of(TraitDef.ATTACK_BONUS):
 		if t.attack_type == "" or t.attack_type == action.attack_type:
 			s.bonus += t.value

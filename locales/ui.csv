@@ -1,31 +1,118 @@
 keys,ru,en
-ARENA_TITLE,Испытание: засада у брода,Trial: ambush at the ford
-UNIT_RATNIK,Ратник,Warrior
-UNIT_LOVCHIY,Ловчий,Hunter
-UNIT_RAZBOYNIK,Разбойник,Brigand
-UNIT_ATAMAN,Атаман,Ataman
 UI_END_TURN,Конец хода,End turn
 UI_SAVE,Сохранить,Save
 UI_LOAD,Загрузить,Load
 UI_RESTART,Заново,Restart
-UI_ROUND_TURN,"Раунд {round}. Ходит: {name}","Round {round}. Turn: {name}"
-UI_MOVE_ACTION,"Перемещение: {move} кл. · Действие: {action}","Move: {move} sq · Action: {action}"
-UI_ACTION_READY,есть,ready
-UI_ACTION_USED,потрачено,used
-UI_HINT,"ЛКМ по клетке — идти, по врагу — атаковать","LMB on a cell to move, on an enemy to attack"
-LOG_INITIATIVE,"Инициатива: {order}","Initiative: {order}"
-LOG_TURN,"— {name} ходит —","— {name}'s turn —"
-LOG_MOVED,"{name} перемещается ({cost} кл.)","{name} moves ({cost} sq)"
-LOG_HIT,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — попадание","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — hit"
-LOG_CRIT,"{name} бьёт {target}: d20={natural} — критический удар","{name} attacks {target}: d20={natural} — critical hit"
-LOG_DAMAGE,"{name} получает урон: {amount}","{name} takes {amount} damage"
-LOG_MISS,"{name} бьёт {target}: d20={natural} ({total} против КД {ac}) — промах","{name} attacks {target}: d20={natural} ({total} vs AC {ac}) — miss"
-LOG_DOWNED,"{name} падает","{name} falls"
+UI_ARENA,Арена:,Arena:
+UI_ROUND_TURN,Раунд {round}. Ходит {name},Round {round}. {name}'s turn
+UI_ECONOMY,Действие: {action} · Бонус: {bonus} · Реакция: {reaction} · Перемещение: {move} кл.,Action: {action} · Bonus: {bonus} · Reaction: {reaction} · Move: {move} sq.
+UI_READY,есть,ready
+UI_SPENT,нет,spent
+UI_HINT,"ЛКМ: по клетке — идти, по врагу — лучшая атака. Выберите действие внизу для заговоров и умений. ПКМ / Esc — отмена.","LMB: square — move, enemy — best attack. Pick an action below for spells and abilities. RMB / Esc — cancel."
+UI_TARGETING,Цель для «{action}»: {hint},Target for “{action}”: {hint}
+UI_TARGET_ENEMY,выберите врага,pick an enemy
+UI_TARGET_ALLY,выберите союзника,pick an ally
+UI_TARGET_POINT,выберите клетку,pick a square
+UI_USES,{n},{n}
+UI_AI_TURN,Ходит ИИ…,AI is acting…
+UI_PREVIEW_ATTACK,{action}: попадание {chance}% · урон {min}–{max} (крит до {crit}),{action}: {chance}% to hit · {min}–{max} damage (crit up to {crit})
+UI_PREVIEW_SAVE,{action}: провал спасброска {chance}% (СЛ {dc}) · урон {min}–{max},{action}: {chance}% to fail save (DC {dc}) · {min}–{max} damage
+UI_PREVIEW_SAVE_NODMG,{action}: провал спасброска {chance}% (СЛ {dc}),{action}: {chance}% to fail save (DC {dc})
+UI_PREVIEW_HEAL,{action}: лечение {min}–{max},{action}: heals {min}–{max}
+UI_PREVIEW_AREA,В области: {names},In the area: {names}
+UI_PREVIEW_AREA_ALLY,Внимание: заденет своих!,Warning: allies will be hit!
+UI_UNIT_INFO,{name} · хиты {hp}/{max} · КД {ac},{name} · HP {hp}/{max} · AC {ac}
+UI_DEFENSES,Защиты: {list},Defenses: {list}
+UI_ADVANTAGE,преимущество: {why},advantage: {why}
+UI_DISADVANTAGE,помеха: {why},disadvantage: {why}
+LOG_INITIATIVE,Инициатива: {order},Initiative: {order}
+LOG_TURN,— Раунд {round}: ходит {name} —,— Round {round}: {name}'s turn —
+LOG_SKIPPED,{name} пропускает ход,{name} loses the turn
+LOG_MOVED,{name} идёт ({cost} кл.),{name} moves ({cost} sq.)
+LOG_ACTION,{name}: {action},{name}: {action}
+LOG_ACTION_TARGET,{name}: {action} → {target},{name}: {action} → {target}
+LOG_ATTACK,{name} → {target} ({action}): d20 [{rolls}] {bonus} = {total} против КД {ac} —,{name} → {target} ({action}): d20 [{rolls}] {bonus} = {total} vs AC {ac} —
+LOG_RESULT_HIT,попадание,hit
+LOG_RESULT_CRIT,критический удар!,critical hit!
+LOG_RESULT_MISS,промах,miss
+LOG_SAVE,"{name}: спасбросок {ability}, d20 [{rolls}] {mod} = {total} против СЛ {dc} —","{name}: {ability} save, d20 [{rolls}] {mod} = {total} vs DC {dc} —"
+LOG_SAVE_AUTO_FAIL,{name}: спасбросок {ability} — автоматический провал,{name}: {ability} save — automatic failure
+LOG_RESULT_SAVED,успех,success
+LOG_RESULT_FAILED,провал,failure
+LOG_DAMAGE,"{name} получает {amount} урона ({parts}), хитов: {hp}","{name} takes {amount} damage ({parts}), HP: {hp}"
+LOG_HEALED,"{name} восстанавливает {amount} хитов, хитов: {hp}","{name} regains {amount} HP, HP: {hp}"
+LOG_CONDITION,{name}: {condition},{name}: {condition}
+LOG_CONDITION_GONE,{name}: проходит — {condition},{name}: no longer {condition}
+LOG_CONCENTRATION_ENDED,{name} теряет сосредоточение,{name} loses concentration
+LOG_REACTION_PROTECTION,{name} прикрывает щитом {target},{name} covers {target} with a shield
+LOG_REACTION_OPPORTUNITY,{name} бьёт вдогонку {target},{name} strikes {target} as they leave
+LOG_DOWNED,{name} падает без сознания,{name} falls unconscious
+LOG_DOWNED_REVIVING,{name} падает… но нечисть так просто не умирает,{name} falls… but the unclean do not die so easily
+LOG_DIED,{name} погибает,{name} dies
+LOG_REVIVED,{name} поднимается! Хитов: {hp},{name} rises again! HP: {hp}
+LOG_DEATH_SAVE,"{name}: спасбросок от смерти d20={natural} — успехов {successes}, провалов {failures}","{name}: death save d20={natural} — {successes} successes, {failures} failures"
+LOG_DEATH_SAVE_20,{name}: натуральная 20 — приходит в себя!,{name}: natural 20 — regains consciousness!
+LOG_DEATH_SAVE_STABLE,{name} больше не умирает (стабилизирован),{name} is stable
+LOG_DEATH_SAVE_HIT,{name} получает удар лёжа — провалов {failures},{name} is hit while down — {failures} failures
 LOG_WIN,Победа!,Victory!
-LOG_LOSS,Поражение.,Defeat.
+LOG_LOSS,Поражение…,Defeat…
 LOG_SAVED,Бой сохранён.,Combat saved.
 LOG_LOADED,Бой загружен.,Combat loaded.
-LOG_NO_SAVE,Сохранения нет.,No save found.
+LOG_NO_SAVE,Нет сохранения.,No save found.
+LOG_DATA_ERROR,Ошибка данных: {error},Data error: {error}
+ABIL_STR,Силы,Strength
+ABIL_DEX,Ловкости,Dexterity
+ABIL_CON,Телосложения,Constitution
+ABIL_INT,Интеллекта,Intelligence
+ABIL_WIS,Мудрости,Wisdom
+ABIL_CHA,Харизмы,Charisma
+DMG_ACID,кислотой,acid
+DMG_BLUDGEONING,дробящего,bludgeoning
+DMG_COLD,холодом,cold
+DMG_FIRE,огнём,fire
+DMG_FORCE,силовым,force
+DMG_LIGHTNING,молнией,lightning
+DMG_NECROTIC,некротического,necrotic
+DMG_PIERCING,колющего,piercing
+DMG_POISON,ядом,poison
+DMG_PSYCHIC,психического,psychic
+DMG_RADIANT,светом,radiant
+DMG_SLASHING,рубящего,slashing
+DMG_THUNDER,громом,thunder
+DEF_RESIST,сопротивление,resisted
+DEF_IMMUNE,иммунитет,immune
+DEF_VULNERABLE,уязвимость,vulnerable
+COND_BLINDED,ослеплён,blinded
+COND_FRIGHTENED,испуган,frightened
+COND_INCAPACITATED,недееспособен,incapacitated
+COND_POISONED,отравлен,poisoned
+COND_PRONE,сбит с ног,prone
+COND_RESTRAINED,опутан,restrained
+COND_STUNNED,оглушён,stunned
+COND_UNCONSCIOUS,без сознания,unconscious
+COND_DODGING,уклоняется,dodging
+COND_MARKED,под меткой ловчего,marked
+COND_SAPPED,ослаблен,sapped
+COND_VEXED,раскрылся,vexed
+WHY_SELF_BLINDED,ослеплён,blinded
+WHY_SELF_FRIGHTENED,испуган,frightened
+WHY_SELF_POISONED,отравлен,poisoned
+WHY_SELF_PRONE,лежит,prone
+WHY_SELF_RESTRAINED,опутан,restrained
+WHY_SELF_DODGING,уклоняется,dodging
+WHY_TARGET_BLINDED,цель ослеплена,target blinded
+WHY_TARGET_RESTRAINED,цель опутана,target restrained
+WHY_TARGET_STUNNED,цель беспомощна,target helpless
+WHY_TARGET_UNCONSCIOUS,цель без сознания,target unconscious
+WHY_TARGET_PRONE_NEAR,цель лежит рядом,target prone nearby
+WHY_TARGET_PRONE_FAR,цель лежит далеко,target prone at range
+WHY_TARGET_DODGING,цель уклоняется,target dodging
+WHY_LONG_RANGE,дальняя дистанция,long range
+WHY_ENEMY_ADJACENT,враг вплотную,enemy adjacent
+WHY_PACK_TACTICS,стая,pack tactics
+WHY_SAPPED,ослаблен,sapped
+WHY_VEXED,цель раскрылась,target vexed
+WHY_PROTECTED,прикрыта щитом,shield cover
 err_combat_ended,Бой окончен.,Combat is over.
 err_not_your_turn,Сейчас не ваш ход.,It is not your turn.
 err_no_path,Туда не пройти.,No path there.

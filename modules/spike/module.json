@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "id": "vseslav.spike",
+  "title": "locale:ARENA_DOROGA",
+  "version": "0.1.0",
+  "api_version": 1,
+  "ruleset": "srd52@1",
+  "dependencies": [
+    "vseslav.base"
+  ]
+}

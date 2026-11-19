@@ -204,5 +204,7 @@ static func _check(a: ActionDef, errors: Array[String]) -> void:
 		errors.append("%s: unknown mastery '%s'" % [a.id, a.mastery])
 	if a.special != "" and not SPECIALS.has(a.special):
 		errors.append("%s: unknown special '%s'" % [a.id, a.special])
+	if a.attack_bonus.has_dice() or a.save_dc.has_dice():
+		errors.append("%s: attack_bonus and save_dc must not roll dice" % a.id)
 	if a.kind == KIND_SAVE and a.save_ability == "":
 		errors.append("%s: save action needs save_ability" % a.id)

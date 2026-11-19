@@ -5,6 +5,8 @@ extends Node3D
 const TEAM_COLORS: Dictionary[String, Color] = {
 	"party": Color(0.25, 0.45, 0.85),
 	"bandits": Color(0.75, 0.25, 0.2),
+	"beasts": Color(0.55, 0.4, 0.25),
+	"nechist": Color(0.45, 0.6, 0.35),
 }
 
 var unit_id: String = ""
@@ -12,6 +14,7 @@ var unit_id: String = ""
 var _body_mat: StandardMaterial3D = StandardMaterial3D.new()
 var _label: Label3D = Label3D.new()
 var _base_color: Color = Color.WHITE
+var _ground_y: float = 0.0
 
 
 func setup(id: String, team: String) -> void:
@@ -48,24 +51,36 @@ func setup(id: String, team: String) -> void:
 	add_child(_label)
 
 
-func set_info(display_name: String, hp: int, max_hp: int) -> void:
-	_label.text = "%s\n%d/%d" % [display_name, hp, max_hp]
+## Подпись: имя, хиты и состояния; поза — стоит, лежит (0 хитов) или погиб.
+func refresh(display_name: String, c: Combatant) -> void:
+	var text := "%s\n%d/%d" % [display_name, c.hp, c.max_hp]
+	var conds: PackedStringArray = []
+	for cond in c.conditions:
+		if cond.id != Conditions.UNCONSCIOUS:
+			conds.append(CombatLogFormat.condition_name(cond.id))
+	if not conds.is_empty():
+		text += "\n" + ", ".join(conds)
+	_label.text = text
+	var down := c.hp == 0
+	rotation_degrees.x = 90.0 if down else 0.0
+	position.y = _ground_y + (0.35 if down else 0.0)
+	_label.modulate = Color(1, 1, 1, 0.35 if c.dead else 1.0)
+	_body_mat.albedo_color = _base_color.darkened(0.7) if c.dead else _base_color
+	if c.dead:
+		for child in get_children():
+			if child is StaticBody3D:
+				child.queue_free()
+
+
+## Высота клетки, на которой стоит фигура (лежащая фигура приподнимается от неё).
+func place(at: Vector3) -> void:
+	_ground_y = at.y
+	position = at
 
 
 func set_active(active: bool) -> void:
 	_body_mat.emission_enabled = active
 	_body_mat.emission = _base_color * 0.6
-
-
-func set_dead() -> void:
-	_body_mat.albedo_color = _base_color.darkened(0.7)
-	_body_mat.emission_enabled = false
-	rotation_degrees.x = 90.0
-	_label.modulate = Color(1, 1, 1, 0.35)
-	position.y += 0.35
-	for child in get_children():
-		if child is StaticBody3D:
-			child.queue_free()
 
 
 func flash() -> void:

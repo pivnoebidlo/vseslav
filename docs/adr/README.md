@@ -23,3 +23,6 @@
 | [0015](0015-toolchain-versions.md) | Godot 4.7.2, GUT 9.7.1, gdtoolkit 4.5 | Принято |
 | [0016](0016-licensing.md) | Код под MIT, контент под CC BY-SA 4.0 | Принято |
 | [0017](0017-runtime-models-and-retargeting.md) | Загрузка GLB и ретаргетинг во время игры (свой HumanoidRetarget) | Принято |
+| [0018](0018-srd-5-2.md) | Механика — SRD 5.2 | Принято |
+| [0019](0019-diagonal-chebyshev.md) | Диагональ по умолчанию — Чебышёв | Принято |
+| [0020](0020-party-hero-and-companions.md) | Партия — герой и до 3 компаньонов | Принято |

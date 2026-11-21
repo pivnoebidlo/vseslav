@@ -1,0 +1,13 @@
+{
+  "_comment": "Купцы тестовых арен (временный формат до формата модуля v1, ADR-0025). Цены — в кунах из items.json; markup — наценка при продаже герою (%), buyback — сколько купец платит (% цены), buys — какие типы берёт.",
+  "merchants": [
+    { "id": "kuznets", "name_key": "MERCHANT_KUZNETS", "markup": 100, "buyback": 50,
+      "buys": ["weapon", "armor", "shield"], "purse": 300,
+      "goods": [ { "item": "topor", "count": 2 }, { "item": "kopyo", "count": 2 }, "kisten", { "item": "nozh", "count": 3 },
+        { "item": "sulitsa", "count": 6 }, "osinovy_kol", "stegach", "kuyak", { "item": "shchit", "count": 2 } ] },
+    { "id": "travnitsa", "name_key": "MERCHANT_TRAVNITSA", "markup": 120, "buyback": 40,
+      "buys": ["consumable", "gear"], "purse": 120,
+      "goods": [ { "item": "otvar", "count": 4 }, { "item": "fakel", "count": 5 }, "verevka",
+        { "item": "suhari", "count": 10 }, { "item": "ognivo", "count": 2 } ] }
+  ]
+}

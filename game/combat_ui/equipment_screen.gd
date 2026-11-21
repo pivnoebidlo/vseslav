@@ -132,11 +132,50 @@ func _worn_column(inv: Inventory) -> VBoxContainer:
 		row.add_child(_small("UI_EQ_TO_BAG", func() -> void: _apply(inv.from_belt(item_id))))
 		col.add_child(row)
 	col.add_child(HSeparator.new())
+	var purse_row := HBoxContainer.new()
 	var purse := Label.new()
 	purse.text = CombatLogFormat.tr_fmt("UI_EQ_PURSE", {"money": money_text(inv.purse)})
 	purse.add_theme_font_size_override("font_size", 13)
-	col.add_child(purse)
+	purse.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	purse_row.add_child(purse)
+	if _heroes.size() > 1 and inv.purse > 0:
+		purse_row.add_child(_money_menu(inv))
+	col.add_child(purse_row)
 	return col
+
+
+## «Передать деньги»: каждому из остальных героев — 1 куна, 1 гривна или всё.
+func _money_menu(inv: Inventory) -> MenuButton:
+	var menu := MenuButton.new()
+	menu.text = TranslationServer.translate("UI_EQ_GIVE") + " ▾"
+	menu.flat = false
+	UiStyle.style_cost_button(menu, ActionDef.COST_FREE, false)
+	menu.add_theme_font_size_override("font_size", 12)
+	var choices: Array[Array] = []
+	for id in _heroes:
+		if id == _current:
+			continue
+		var amounts: Array[int] = []
+		for amount: int in [1, Money.KUNY_PER_GRIVNA, inv.purse]:
+			if amount <= inv.purse and not amounts.has(amount):
+				amounts.append(amount)
+		for amount in amounts:
+			var label := CombatLogFormat.tr_fmt(
+				"UI_EQ_GIVE_MONEY",
+				{
+					"hero": TranslationServer.translate(_hero_name_key(id)),
+					"money": money_text(amount)
+				}
+			)
+			menu.get_popup().add_item(label)
+			choices.append([id, amount])
+	menu.get_popup().index_pressed.connect(
+		func(index: int) -> void:
+			var to: String = choices[index][0]
+			var amount: int = choices[index][1]
+			_apply(inv.give_money(amount, _party.inventories[to]))
+	)
+	return menu
 
 
 func _bag_column(inv: Inventory) -> VBoxContainer:

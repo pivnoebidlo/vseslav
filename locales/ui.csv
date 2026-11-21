@@ -225,3 +225,16 @@ UI_KUNA_1,куна,kuna
 UI_KUNA_2,куны,kuna
 UI_KUNA_5,кун,kuna
 LOG_EQUIPMENT_SAVED,Снаряжение сохранено.,Equipment saved.
+UI_EQ_GIVE_MONEY,{hero}: {money},{hero}: {money}
+UI_TRADE,Торг,Trade
+UI_TRADE_HERO,Торгует:,Trading:
+UI_TRADE_GOODS,{name} · в кошельке {money},{name} · purse {money}
+UI_TRADE_BAG,"Мешок героя · {money} · нагрузка {weight} из {cap} фунт.","Hero's bag · {money} · load {weight} of {cap} lb"
+UI_TRADE_BAG_EMPTY,Мешок пуст. Снятое снаряжение попадает в мешок.,The bag is empty. Unequipped items go to the bag.
+UI_TRADE_NOT_WANTED,не берёт,not buying
+UI_TRADE_BUY,Купить,Buy
+UI_TRADE_SELL,Продать,Sell
+err_trade_no_money,Не хватает денег.,Not enough money.
+err_trade_merchant_no_money,У купца не хватает денег.,The merchant can't afford it.
+err_trade_not_buying,Купец такое не берёт.,The merchant doesn't buy that.
+err_trade_worthless,Ничего не стоит.,Worthless.

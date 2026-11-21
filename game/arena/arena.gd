@@ -62,13 +62,13 @@ var _mat_area := StandardMaterial3D.new()
 
 var _title := Label.new()
 var _turn_label := Label.new()
-var _economy_label := Label.new()
 var _hint := Label.new()
 var _arena_select := OptionButton.new()
 var _initiative := InitiativeBar.new()
 var _actions := ActionBar.new()
 var _preview := Label.new()
-var _log := RichTextLabel.new()
+var _log: CombatLogPanel
+var _hovered_id := ""
 
 
 func _ready() -> void:
@@ -207,7 +207,6 @@ func _setup_ui() -> void:
 	_title.add_theme_font_size_override("font_size", 20)
 	box.add_child(_title)
 	box.add_child(_turn_label)
-	box.add_child(_economy_label)
 	_hint.modulate = Color(1, 1, 1, 0.7)
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hint.custom_minimum_size = Vector2(430, 0)
@@ -215,7 +214,6 @@ func _setup_ui() -> void:
 
 	var buttons := HBoxContainer.new()
 	box.add_child(buttons)
-	_add_button(buttons, "UI_END_TURN", _on_end_turn)
 	_add_button(buttons, "UI_SAVE", _on_save)
 	_add_button(buttons, "UI_LOAD", _on_load)
 	_add_button(buttons, "UI_RESTART", _on_restart)
@@ -233,41 +231,31 @@ func _setup_ui() -> void:
 
 	_initiative.anchor_left = 1.0
 	_initiative.anchor_right = 1.0
-	_initiative.offset_left = -600
+	_initiative.offset_left = -640
 	_initiative.offset_right = -12
 	_initiative.offset_top = 12
 	_initiative.alignment = FlowContainer.ALIGNMENT_END
 	layer.add_child(_initiative)
 
-	_actions.anchor_left = 0.5
-	_actions.anchor_right = 1.0
-	_actions.anchor_top = 1.0
-	_actions.anchor_bottom = 1.0
-	_actions.offset_left = 50
-	_actions.offset_right = -12
-	_actions.offset_top = -110
-	_actions.offset_bottom = -12
-	_actions.alignment = FlowContainer.ALIGNMENT_END
+	# Низ экрана: журнал слева, панель хода справа. Контейнер на весь экран
+	# пропускает мышь к полю, а сам считает размеры панелей.
+	var bottom := HBoxContainer.new()
+	bottom.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
+	bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(bottom)
+	_log = CombatLogPanel.new()
+	_log.custom_minimum_size = Vector2(500, 0)
+	_log.size_flags_vertical = Control.SIZE_SHRINK_END
+	bottom.add_child(_log)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bottom.add_child(spacer)
+	_actions.custom_minimum_size = Vector2(520, 0)
+	_actions.size_flags_vertical = Control.SIZE_SHRINK_END
 	_actions.action_pressed.connect(_on_action_pressed)
-	layer.add_child(_actions)
-
-	var log_bg := PanelContainer.new()
-	log_bg.anchor_top = 1.0
-	log_bg.anchor_bottom = 1.0
-	log_bg.offset_left = 8
-	log_bg.offset_top = -196
-	log_bg.offset_right = 616
-	log_bg.offset_bottom = -8
-	layer.add_child(log_bg)
-	_log.scroll_following = true
-	_log.anchor_top = 1.0
-	_log.anchor_bottom = 1.0
-	_log.offset_left = 12
-	_log.offset_top = -192
-	_log.offset_right = 612
-	_log.offset_bottom = -12
-	_log.add_theme_font_size_override("normal_font_size", 13)
-	layer.add_child(_log)
+	_actions.end_turn_pressed.connect(_on_end_turn)
+	bottom.add_child(_actions)
 
 	_preview.add_theme_color_override("font_outline_color", Color.BLACK)
 	_preview.add_theme_constant_override("outline_size", 6)
@@ -570,6 +558,7 @@ func _on_hover(screen_pos: Vector2) -> void:
 	var hit := _raycast(screen_pos)
 	var unit := _hit_unit(hit)
 	var cell := _hit_cell(hit, unit)
+	_set_hovered(unit.id if unit != null else "")
 	var lines: PackedStringArray = []
 	var actor := _state.current()
 	_paint_area([])
@@ -591,6 +580,16 @@ func _on_hover(screen_pos: Vector2) -> void:
 	pos.x = minf(pos.x, view.x - size.x - 8)
 	pos.y = minf(pos.y, view.y - size.y - 8)
 	_preview.position = pos.max(Vector2(8, 8))
+
+
+func _set_hovered(id: String) -> void:
+	if id == _hovered_id:
+		return
+	if _units.has(_hovered_id):
+		_units[_hovered_id].set_hovered(false)
+	_hovered_id = id
+	if _units.has(id):
+		_units[id].set_hovered(true)
 
 
 func _selected_preview(actor: Combatant, unit: Combatant, cell: Vector2i) -> PackedStringArray:
@@ -819,17 +818,6 @@ func _refresh() -> void:
 		"UI_ROUND_TURN",
 		{"round": _state.round_number, "name": CombatLogFormat.display_name(current)}
 	)
-	var ready := tr("UI_READY")
-	var spent := tr("UI_SPENT")
-	_economy_label.text = CombatLogFormat.tr_fmt(
-		"UI_ECONOMY",
-		{
-			"action": ready if _state.actions_left > 0 else spent,
-			"bonus": spent if _state.bonus_used else ready,
-			"reaction": ready if current.reaction_ready else spent,
-			"move": _state.movement_left
-		}
-	)
 	if not player:
 		_hint.text = "" if _state.ended else tr("UI_AI_TURN")
 		return
@@ -882,10 +870,7 @@ func _clear_highlight() -> void:
 
 
 func _write(text: String, color: Color = Color.WHITE) -> void:
-	_log.push_color(color)
-	_log.add_text(text)
-	_log.pop()
-	_log.newline()
+	_log.write(text, color)
 
 
 # --- Кнопки -------------------------------------------------------------------

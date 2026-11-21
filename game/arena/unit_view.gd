@@ -1,15 +1,10 @@
 class_name UnitView
 extends Node3D
 ## Фигура участника боя: модель с анимациями (или простая фигура, если модели нет),
-## кольцо цвета команды, подпись с именем, хитами и состояниями, коллайдер для клика.
+## кольцо цвета команды, полоска хитов и состояния над головой, коллайдер для клика.
+## Имя с хитами видно у того, кто ходит, и при наведении мыши.
 ## Анимации выбираются по ролям (idle, walk, melee, …) — FigureCatalog.animation_for.
 
-const TEAM_COLORS: Dictionary[String, Color] = {
-	"party": Color(0.25, 0.5, 0.95),
-	"bandits": Color(0.85, 0.2, 0.15),
-	"beasts": Color(0.9, 0.55, 0.1),
-	"nechist": Color(0.6, 0.25, 0.85),
-}
 ## Роли, которые повторяются по кругу; остальные проигрываются один раз.
 const LOOPED_ROLES: Array[String] = ["idle", "walk", "downed_idle", "prone_idle"]
 const POSE_IDLE := "idle"
@@ -20,6 +15,9 @@ const MODEL_SCALE := 0.62
 const BLEND := 0.15
 ## Сколько ждать удара от начала анимации атаки — не дольше этого, секунд.
 const MAX_IMPACT_DELAY := 0.55
+const BAR_WIDTH := 0.9
+const BAR_HEIGHT := 0.09
+const BAR_Y := 1.85
 
 var unit_id: String = ""
 
@@ -29,7 +27,15 @@ var _player: AnimationPlayer = null
 var _figure: Node3D = Node3D.new()
 var _body_mat: StandardMaterial3D = StandardMaterial3D.new()
 var _ring_mat: StandardMaterial3D = StandardMaterial3D.new()
-var _label: Label3D = Label3D.new()
+var _name_label: Label3D = Label3D.new()
+var _cond_label: Label3D = Label3D.new()
+var _bar_bg: MeshInstance3D = MeshInstance3D.new()
+var _bar_fill: MeshInstance3D = MeshInstance3D.new()
+var _bar_mesh: QuadMesh = QuadMesh.new()
+var _bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+var _hovered: bool = false
+var _active: bool = false
+var _dead: bool = false
 var _base_color: Color = Color.WHITE
 var _team_color: Color = Color.GRAY
 var _ground_y: float = 0.0
@@ -41,7 +47,7 @@ var _was_reviving: bool = false
 func setup(id: String, team: String, entry: FigureCatalog.Entry, model: LoadedModel) -> void:
 	unit_id = id
 	_entry = entry
-	_team_color = TEAM_COLORS.get(team, Color.GRAY)
+	_team_color = UiStyle.team_color(team)
 	add_child(_figure)
 	_add_ring()
 	if model != null:
@@ -54,33 +60,30 @@ func setup(id: String, team: String, entry: FigureCatalog.Entry, model: LoadedMo
 		_add_simple_figure(entry.figure if entry != null else FigureCatalog.FIGURE_HUMANOID)
 	_add_collider()
 
-	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_label.position.y = 2.0
-	_label.font_size = 36
-	_label.pixel_size = 0.009
-	_label.outline_size = 12
-	_label.no_depth_test = true
-	add_child(_label)
+	_add_hp_bar()
+	_setup_label(_name_label, 34, BAR_Y + 0.28)
+	_setup_label(_cond_label, 24, BAR_Y - 0.2)
+	_cond_label.modulate = Color(1.0, 0.9, 0.55)
+	_name_label.visible = false
 	_set_pose(POSE_IDLE, false)
 
 
-## Подпись и поза по состоянию участника.
+## Полоска хитов, состояния, имя и поза по состоянию участника.
 func refresh(display_name: String, c: Combatant) -> void:
 	var conds: PackedStringArray = []
 	for cond in c.conditions:
 		if cond.id != Conditions.UNCONSCIOUS:
 			conds.append(CombatLogFormat.condition_name(cond.id))
-	var ratio := float(c.hp) / float(maxi(c.max_hp, 1))
-	var hp_color := Color(0.45, 0.95, 0.45)
-	if ratio <= 0.25:
-		hp_color = Color(1.0, 0.4, 0.35)
-	elif ratio <= 0.5:
-		hp_color = Color(1.0, 0.85, 0.3)
-	var text := "%s\n%d/%d" % [display_name, c.hp, c.max_hp]
-	if not conds.is_empty():
-		text += "\n" + ", ".join(conds)
-	_label.text = text
-	_label.modulate = Color(1, 1, 1, 0.35) if c.dead else hp_color.lerp(Color.WHITE, 0.35)
+	_cond_label.text = ", ".join(conds)
+	_cond_label.visible = not c.dead
+	_name_label.text = "%s  %d/%d" % [display_name, c.hp, c.max_hp]
+	var ratio := clampf(float(c.hp) / float(maxi(c.max_hp, 1)), 0.0, 1.0)
+	_bar_mesh.size = Vector2(BAR_WIDTH * ratio, BAR_HEIGHT * 0.7)
+	_bar_mesh.center_offset = Vector3(-BAR_WIDTH * (1.0 - ratio) / 2.0, 0.0, 0.01)
+	_bar_mat.albedo_color = UiStyle.hp_color(c.hp, c.max_hp)
+	_bar_fill.visible = c.hp > 0
+	_bar_bg.visible = not c.dead
+	_dead = c.dead
 
 	var pose := POSE_IDLE
 	if c.hp == 0 or c.dead:
@@ -95,6 +98,12 @@ func refresh(display_name: String, c: Combatant) -> void:
 		for child in get_children():
 			if child is StaticBody3D:
 				child.queue_free()
+	_update_name()
+
+
+func set_hovered(hovered: bool) -> void:
+	_hovered = hovered
+	_update_name()
 
 
 ## Высота клетки, на которой стоит фигура.
@@ -112,6 +121,8 @@ func face(at: Vector3) -> void:
 
 
 func set_active(active: bool) -> void:
+	_active = active
+	_update_name()
 	_ring_mat.emission_enabled = active
 	_ring_mat.emission = _team_color * 0.9
 	_body_mat.emission_enabled = active
@@ -149,6 +160,50 @@ func flash() -> void:
 
 
 # --- Внутреннее ----------------------------------------------------------------
+
+
+func _update_name() -> void:
+	_name_label.visible = (_hovered or _active) and not _dead
+	_name_label.modulate = UiStyle.ACTIVE if _active else Color.WHITE
+
+
+func _setup_label(label: Label3D, font_size: int, y: float) -> void:
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position.y = y
+	label.font_size = font_size
+	label.pixel_size = 0.008
+	label.outline_size = 10
+	label.no_depth_test = true
+	add_child(label)
+
+
+## Полоска хитов из двух плоскостей, повёрнутых к камере; заливка сдвигается
+## влево в плоскости экрана через center_offset.
+func _add_hp_bar() -> void:
+	var bg_mesh := QuadMesh.new()
+	bg_mesh.size = Vector2(BAR_WIDTH + 0.04, BAR_HEIGHT)
+	var bg_mat := _bar_material(Color(0.05, 0.05, 0.06, 0.85))
+	_bar_bg.mesh = bg_mesh
+	_bar_bg.material_override = bg_mat
+	_bar_bg.position.y = BAR_Y
+	add_child(_bar_bg)
+	_bar_mat = _bar_material(UiStyle.HP_GOOD)
+	_bar_mat.render_priority = 1
+	_bar_fill.mesh = _bar_mesh
+	_bar_fill.material_override = _bar_mat
+	_bar_fill.position.y = BAR_Y
+	add_child(_bar_fill)
+
+
+func _bar_material(color: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	m.no_depth_test = true
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.render_priority = 0
+	return m
 
 
 func _set_pose(pose: String, animate: bool, reviving: bool = false) -> void:

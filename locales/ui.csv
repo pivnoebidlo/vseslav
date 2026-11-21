@@ -5,9 +5,23 @@ UI_LOAD,Загрузить,Load
 UI_RESTART,Заново,Restart
 UI_ARENA,Арена:,Arena:
 UI_ROUND_TURN,Раунд {round}. Ходит {name},Round {round}. {name}'s turn
-UI_ECONOMY,Действие: {action} · Бонус: {bonus} · Реакция: {reaction} · Перемещение: {move} кл.,Action: {action} · Bonus: {bonus} · Reaction: {reaction} · Move: {move} sq.
 UI_READY,есть,ready
 UI_SPENT,нет,spent
+UI_COST_ACTION,Действие,Action
+UI_COST_BONUS,Бонусное действие,Bonus action
+UI_COST_FREE,Свободно,Free
+UI_REACTION,Реакция,Reaction
+UI_MOVEMENT,Перемещение {left}/{speed} кл.,Movement {left}/{speed} sq.
+UI_ATTACK_BONUS,{type} · d20 {bonus},{type} · d20 {bonus}
+UI_ATTACK_MELEE,Ближний бой,Melee
+UI_ATTACK_RANGED,Дальний бой,Ranged
+UI_RANGE,Дальность до {cells} кл.,Range up to {cells} sq.
+UI_NEXT_ROUND,↻ раунд {round},↻ round {round}
+UI_DOWNED,при смерти,dying
+UI_DEAD,погиб,dead
+UI_LOG,Журнал боя,Combat log
+UI_LOG_COLLAPSE,Свернуть ▾,Collapse ▾
+UI_LOG_EXPAND,Развернуть ▴,Expand ▴
 UI_HINT,"ЛКМ: по клетке — идти, по врагу — лучшая атака. Выберите действие внизу для заговоров и умений. ПКМ / Esc — отмена. Колесо — масштаб, WASD / средняя кнопка — сдвиг камеры.","LMB: square — move, enemy — best attack. Pick an action below for spells and abilities. RMB / Esc — cancel. Wheel — zoom, WASD / middle button — pan."
 UI_TARGETING,Цель для «{action}»: {hint},Target for “{action}”: {hint}
 UI_TARGET_ENEMY,выберите врага,pick an enemy

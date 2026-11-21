@@ -1,47 +1,183 @@
 class_name ActionBar
-extends HFlowContainer
-## Кнопки действий текущего персонажа игрока: атаки, заговоры, умения, общие действия.
-## Значки стоимости: без значка — действие, ◆ — бонусное, ◇ — свободное.
+extends PanelContainer
+## Панель хода персонажа игрока. Сверху — кто ходит, реакция и перемещение;
+## ниже — строки по стоимости: «Действие», «Бонусное действие», «Свободно».
+## В заголовке строки видно, потрачена ли эта часть хода; кнопки окрашены по стоимости.
 
 signal action_pressed(action_id: String)
+signal end_turn_pressed
 
-const COST_MARK: Dictionary[String, String] = {
-	ActionDef.COST_BONUS: "◆ ",
-	ActionDef.COST_FREE: "◇ ",
+const ROWS: Array[String] = [ActionDef.COST_ACTION, ActionDef.COST_BONUS, ActionDef.COST_FREE]
+const ROW_KEYS: Dictionary[String, String] = {
+	ActionDef.COST_ACTION: "UI_COST_ACTION",
+	ActionDef.COST_BONUS: "UI_COST_BONUS",
+	ActionDef.COST_FREE: "UI_COST_FREE",
 }
+const HEADER_WIDTH := 150
+const READY_MARK := "●"
+const SPENT_MARK := "○"
+
+
+func _init() -> void:
+	UiStyle.panel(self)
 
 
 func refresh(state: CombatState, actor: Combatant, enabled: bool, selected: String) -> void:
 	for child in get_children():
+		remove_child(child)
 		child.queue_free()
-	if actor == null or not enabled:
+	visible = actor != null and enabled
+	if not visible:
 		return
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	add_child(box)
+	box.add_child(_top_row(state, actor))
+	for cost in ROWS:
+		var row := _cost_row(state, actor, cost, selected)
+		if row != null:
+			box.add_child(row)
+	var end := Button.new()
+	end.text = TranslationServer.translate("UI_END_TURN")
+	end.size_flags_horizontal = Control.SIZE_SHRINK_END
+	UiStyle.style_cost_button(end, ActionDef.COST_REACTION, false)
+	end.pressed.connect(func() -> void: end_turn_pressed.emit())
+	box.add_child(end)
+
+
+## Имя, реакция, перемещение (число и полоска).
+func _top_row(state: CombatState, actor: Combatant) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var name := Label.new()
+	name.text = CombatLogFormat.display_name(actor)
+	name.add_theme_font_size_override("font_size", 16)
+	name.add_theme_color_override("font_color", UiStyle.ACTIVE)
+	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(name)
+	row.add_child(
+		_chip(
+			TranslationServer.translate("UI_REACTION"),
+			actor.reaction_ready,
+			UiStyle.cost_color(ActionDef.COST_REACTION)
+		)
+	)
+	var move := VBoxContainer.new()
+	move.custom_minimum_size = Vector2(130, 0)
+	move.add_theme_constant_override("separation", 1)
+	var move_label := Label.new()
+	move_label.text = CombatLogFormat.tr_fmt(
+		"UI_MOVEMENT", {"left": state.movement_left, "speed": actor.speed}
+	)
+	move_label.add_theme_font_size_override("font_size", 12)
+	move.add_child(move_label)
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.max_value = maxi(actor.speed, 1)
+	bar.value = mini(state.movement_left, actor.speed)
+	bar.custom_minimum_size = Vector2(0, 5)
+	bar.add_theme_stylebox_override(
+		"background", UiStyle.box(Color(0, 0, 0, 0.55), Color.TRANSPARENT, 0, 2)
+	)
+	var fill := UiStyle.box(Color(0.45, 0.75, 0.95), Color.TRANSPARENT, 0, 2)
+	fill.content_margin_top = 0
+	fill.content_margin_bottom = 0
+	bar.add_theme_stylebox_override("fill", fill)
+	move.add_child(bar)
+	row.add_child(move)
+	return row
+
+
+## Строка действий одной стоимости; null — таких действий нет.
+func _cost_row(
+	state: CombatState, actor: Combatant, cost: String, selected: String
+) -> HBoxContainer:
+	var buttons := HFlowContainer.new()
+	buttons.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buttons.add_theme_constant_override("h_separation", 4)
+	buttons.add_theme_constant_override("v_separation", 4)
 	for action in actor.actions:
-		if action.cost == ActionDef.COST_REACTION:
+		if action.cost != cost:
 			continue
 		var affordable := ActionResolver.can_afford(state, actor, action) == ""
 		if action.special == ActionDef.SPECIAL_STAND and not affordable:
 			continue
-		var button := Button.new()
-		var mark: String = COST_MARK.get(action.cost, "")
-		var text := mark + TranslationServer.translate(action.name_key)
-		if action.resource != "":
-			text += " (%d)" % actor.resource_left(action.resource)
-		button.text = text
-		button.disabled = not affordable
-		button.toggle_mode = true
-		button.button_pressed = action.id == selected
-		button.tooltip_text = _tooltip(actor, action)
-		button.pressed.connect(func() -> void: action_pressed.emit(action.id))
-		add_child(button)
+		buttons.add_child(_button(actor, action, affordable, action.id == selected))
+	if buttons.get_child_count() == 0:
+		buttons.free()
+		return null
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var ready := true
+	var label := TranslationServer.translate(ROW_KEYS[cost])
+	match cost:
+		ActionDef.COST_ACTION:
+			ready = state.actions_left > 0
+			if state.actions_left > 1:
+				label += " ×%d" % state.actions_left
+		ActionDef.COST_BONUS:
+			ready = not state.bonus_used
+	var chip := _chip(label, ready, UiStyle.cost_color(cost))
+	chip.custom_minimum_size = Vector2(HEADER_WIDTH, 0)
+	chip.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.add_child(chip)
+	row.add_child(buttons)
+	return row
+
+
+## Ярлык с отметкой «есть ● / потрачено ○» в цвете части хода.
+func _chip(text: String, ready: bool, color: Color) -> PanelContainer:
+	var chip := PanelContainer.new()
+	var bg := color.darkened(0.7) if ready else Color(0.16, 0.16, 0.18)
+	chip.add_theme_stylebox_override(
+		"panel", UiStyle.box(bg, color if ready else Color(0.3, 0.3, 0.32), 1, 10)
+	)
+	var label := Label.new()
+	label.text = "%s %s" % [READY_MARK if ready else SPENT_MARK, text]
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override(
+		"font_color", color.lightened(0.4) if ready else Color(0.5, 0.5, 0.52)
+	)
+	chip.add_child(label)
+	chip.tooltip_text = TranslationServer.translate("UI_READY" if ready else "UI_SPENT")
+	return chip
+
+
+func _button(actor: Combatant, action: ActionDef, affordable: bool, selected: bool) -> Button:
+	var button := Button.new()
+	var text := TranslationServer.translate(action.name_key)
+	if action.resource != "":
+		text += " ×%d" % actor.resource_left(action.resource)
+	button.text = text
+	button.disabled = not affordable
+	button.toggle_mode = true
+	button.button_pressed = selected
+	button.add_theme_font_size_override("font_size", 13)
+	UiStyle.style_cost_button(button, action.cost, selected)
+	button.tooltip_text = _tooltip(actor, action)
+	button.pressed.connect(func() -> void: action_pressed.emit(action.id))
+	return button
 
 
 func _tooltip(actor: Combatant, action: ActionDef) -> String:
-	var lines: PackedStringArray = [TranslationServer.translate(action.name_key)]
+	var cost_key: String = ROW_KEYS.get(action.cost, "UI_COST_ACTION")
+	var lines: PackedStringArray = [
+		TranslationServer.translate(action.name_key),
+		TranslationServer.translate(cost_key),
+	]
 	var vars := actor.formula_vars(action)
 	if action.kind == ActionDef.KIND_ATTACK:
 		var bonus := action.attack_bonus.value_range(vars).x
-		lines.append("%s · d20 %s" % [action.attack_type, CombatLogFormat.signed(bonus)])
+		lines.append(
+			CombatLogFormat.tr_fmt(
+				"UI_ATTACK_BONUS",
+				{
+					"type":
+					TranslationServer.translate("UI_ATTACK_" + action.attack_type.to_upper()),
+					"bonus": CombatLogFormat.signed(bonus)
+				}
+			)
+		)
 	for part in action.damage:
 		var r := part.formula.value_range(vars)
 		lines.append(
@@ -51,5 +187,5 @@ func _tooltip(actor: Combatant, action: ActionDef) -> String:
 			)
 		)
 	if action.max_range() > 1:
-		lines.append("≤ %d кл." % action.max_range())
+		lines.append(CombatLogFormat.tr_fmt("UI_RANGE", {"cells": action.max_range()}))
 	return "\n".join(lines)

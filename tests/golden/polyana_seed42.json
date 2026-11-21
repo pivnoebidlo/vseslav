@@ -327,7 +327,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 22,
+        "hp": 13,
         "id": "ratnik",
         "initiative_bonus": 3,
         "last_damage_tags": [
@@ -346,9 +346,9 @@
         "reaction_ready": true,
         "resources": {
           "action_surge": 0,
-          "item_otvar": 0,
-          "item_sulitsa": 2,
-          "second_wind": 0
+          "item_otvar": 1,
+          "item_sulitsa": 3,
+          "second_wind": 2
         },
         "resources_max": {
           "action_surge": 1,
@@ -722,7 +722,18 @@
           9
         ],
         "concentration": "hunters_mark",
-        "conditions": [],
+        "conditions": [
+          {
+            "concentration": false,
+            "ends_count": 0,
+            "ends_on": "",
+            "id": "poisoned",
+            "rounds": 1,
+            "save_ability": "",
+            "save_dc": 0,
+            "source": "poludnitsa"
+          }
+        ],
         "creature_tags": [
           "humanoid"
         ],
@@ -1196,7 +1207,18 @@
           8
         ],
         "concentration": "entangle",
-        "conditions": [],
+        "conditions": [
+          {
+            "concentration": false,
+            "ends_count": 0,
+            "ends_on": "",
+            "id": "poisoned",
+            "rounds": 1,
+            "save_ability": "",
+            "save_dc": 0,
+            "source": "poludnitsa"
+          }
+        ],
         "creature_tags": [
           "humanoid"
         ],
@@ -1220,7 +1242,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "slot_1": 0
+          "slot_1": 2
         },
         "resources_max": {
           "slot_1": 4
@@ -1434,7 +1456,8 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "slashing"
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -1649,9 +1672,9 @@
         "id": "volk_2",
         "initiative_bonus": 2,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing"
+          "spell",
+          "magic",
+          "thunder"
         ],
         "level": 1,
         "masteries": [],
@@ -2117,10 +2140,9 @@
         "id": "poludnitsa",
         "initiative_bonus": 3,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing",
-          "force"
+          "spell",
+          "magic",
+          "fire"
         ],
         "level": 1,
         "masteries": [],
@@ -2335,9 +2357,9 @@
         "id": "volk_4",
         "initiative_bonus": 2,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "fire"
+          "weapon",
+          "iron",
+          "slashing"
         ],
         "level": 1,
         "masteries": [],
@@ -2608,16 +2630,14 @@
     ],
     "rng": {
       "seed": "42",
-      "state": "-2829545460393222157"
+      "state": "-759061573781173892"
     },
     "round": 6,
     "save_format": 2,
-    "turn_index": 0,
-    "turn_once": [
-      "trait_2"
-    ],
+    "turn_index": 6,
+    "turn_once": [],
     "winner": "party"
   },
   "seed": 42,
-  "steps": 74
+  "steps": 73
 }

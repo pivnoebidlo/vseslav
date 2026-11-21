@@ -3,7 +3,7 @@
   "expected": {
     "actions_left": 0,
     "arena_id": "spike.pogost",
-    "bonus_used": false,
+    "bonus_used": true,
     "combatants": [
       {
         "abilities": {
@@ -730,10 +730,14 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 31,
+        "hp": 28,
         "id": "lovchiy",
         "initiative_bonus": 3,
-        "last_damage_tags": [],
+        "last_damage_tags": [
+          "weapon",
+          "iron",
+          "piercing"
+        ],
         "level": 3,
         "masteries": [
           "nick",
@@ -1204,7 +1208,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 7,
+        "hp": 9,
         "id": "volkhv",
         "initiative_bonus": 1,
         "last_damage_tags": [
@@ -1218,7 +1222,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "slot_1": 0
+          "slot_1": 2
         },
         "resources_max": {
           "slot_1": 4
@@ -1731,7 +1735,8 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "piercing"
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -2191,8 +2196,7 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "piercing",
-          "force"
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -2420,10 +2424,9 @@
         "id": "razboynik_4",
         "initiative_bonus": 1,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing",
-          "force"
+          "spell",
+          "magic",
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -2458,14 +2461,14 @@
     ],
     "rng": {
       "seed": "42",
-      "state": "-8811608934490056824"
+      "state": "-4746331507434003555"
     },
-    "round": 7,
+    "round": 6,
     "save_format": 2,
     "turn_index": 6,
     "turn_once": [],
     "winner": "party"
   },
   "seed": 42,
-  "steps": 78
+  "steps": 62
 }

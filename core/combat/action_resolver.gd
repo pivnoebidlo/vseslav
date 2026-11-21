@@ -13,6 +13,7 @@ const ERR_INVALID_TARGET := "err_invalid_target"
 const ERR_OUT_OF_RANGE := "err_out_of_range"
 const ERR_NOT_PRONE := "err_not_prone"
 const ERR_NO_MOVEMENT := "err_no_movement"
+const ERR_NO_LINE_OF_SIGHT := "err_no_line_of_sight"
 
 const NO_CELL := Vector2i(-1, -1)
 
@@ -63,8 +64,10 @@ static func _validate_target(
 				return ERR_INVALID_TARGET
 			if BattleGrid.chebyshev(actor.column, cell) > action.max_range():
 				return ERR_OUT_OF_RANGE
-			if action.area == ActionDef.AREA_CONE and cell == actor.column:
-				return ERR_INVALID_TARGET
+			if action.area == ActionDef.AREA_CONE:
+				return ERR_INVALID_TARGET if cell == actor.column else ""
+			if not LineOfSight.can_see(state.grid, actor.column, cell):
+				return ERR_NO_LINE_OF_SIGHT
 			return ""
 	var target := state.get_combatant(target_id)
 	if target == null or not target.is_present():
@@ -75,6 +78,8 @@ static func _validate_target(
 		return ERR_INVALID_TARGET
 	if not in_range(state, actor, action, target):
 		return ERR_OUT_OF_RANGE
+	if target != actor and not LineOfSight.can_see(state.grid, actor.column, target.column):
+		return ERR_NO_LINE_OF_SIGHT
 	return ""
 
 
@@ -165,6 +170,8 @@ class AttackSetup:
 	var distance: int = 1
 	## Кто прикрывает цель реакцией (пусто — никто).
 	var protector: String = ""
+	## Укрытие цели (LineOfSight.Cover); его бонус уже в [member target_ac].
+	var cover: int = LineOfSight.Cover.NONE
 
 
 static func setup_attack(
@@ -195,7 +202,8 @@ static func setup_attack(
 	for t in actor.traits_of(TraitDef.ATTACK_BONUS):
 		if t.attack_type == "" or t.attack_type == action.attack_type:
 			s.bonus += t.value
-	s.target_ac = state.effective_ac(target)
+	s.cover = state.cover_between(actor.column, target, actor.id)
+	s.target_ac = state.effective_ac(target) + LineOfSight.ac_bonus(s.cover)
 	for t in actor.traits_of(TraitDef.IMPROVED_CRITICAL):
 		s.crit_from = mini(s.crit_from, t.value)
 	return s
@@ -241,6 +249,7 @@ static func attack(
 		"bonus": s.bonus,
 		"total": d20.natural + s.bonus,
 		"target_ac": s.target_ac,
+		"cover": s.cover,
 		"hit": hit,
 		"critical": critical,
 		"mods": s.mods.to_dict(),
@@ -336,7 +345,22 @@ static func _apply_mastery(
 # --- Спасброски, области, эффекты ---------------------------------------------
 
 
+## Точка, из которой исходит действие: центр взрыва или сам участник.
+static func origin(actor: Combatant, action: ActionDef, cell: Vector2i) -> Vector2i:
+	return cell if action.area == ActionDef.AREA_BURST else actor.column
+
+
+## Укрытие цели от точки исхода для спасброска — учитывается только для Ловкости (SRD).
+static func save_cover(
+	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant, cell: Vector2i
+) -> int:
+	if action.save_ability != Abilities.DEX:
+		return LineOfSight.Cover.NONE
+	return state.cover_between(origin(actor, action, cell), target, actor.id)
+
+
 ## Участники, которых задевает действие с областью, по возрастанию id.
+## Полное укрытие от точки исхода защищает от области.
 static func targets_in_area(
 	state: CombatState, actor: Combatant, action: ActionDef, cell: Vector2i
 ) -> Array[Combatant]:
@@ -346,10 +370,12 @@ static func targets_in_area(
 			cells = Area.burst(state.grid, cell, action.area_size)
 		ActionDef.AREA_CONE:
 			cells = Area.cone(state.grid, actor.column, cell, action.area_size)
+	var from := origin(actor, action, cell)
 	var result: Array[Combatant] = []
 	for c in state.sorted_combatants():
 		if c.is_present() and cells.has(c.column):
-			result.append(c)
+			if LineOfSight.can_see(state.grid, from, c.column):
+				result.append(c)
 	return result
 
 
@@ -377,7 +403,10 @@ static func _save_action(
 	for part in action.damage:
 		amounts.append([part.damage_type, maxi(part.formula.roll(state.rng, vars), 0)])
 	for t in targets:
-		var save := CombatRules.saving_throw(state, t, action.save_ability, dc, events, action.id)
+		var cover := save_cover(state, actor, action, t, cell)
+		var save := CombatRules.saving_throw(
+			state, t, action.save_ability, dc, events, action.id, cover
+		)
 		if not amounts.is_empty():
 			var taken: Array[Array] = []
 			for pair in amounts:

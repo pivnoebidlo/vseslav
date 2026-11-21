@@ -96,16 +96,9 @@ static func attack_value(
 	if target.reviving:
 		# Павшего упыря имеет смысл бить только тем, что не даёт ему встать.
 		return SCALE * 50 if _prevents_revive(action, target) else 0
-	var bonus := action.attack_bonus.value_range(actor.formula_vars(action)).x
-	for t in actor.traits_of(TraitDef.ATTACK_BONUS):
-		if t.attack_type == "" or t.attack_type == action.attack_type:
-			bonus += t.value
-	var mods := Conditions.attack_modifiers(
-		actor.conditions, target.conditions, BattleGrid.chebyshev(actor.column, target.column)
-	)
-	if action.attack_type == ActionDef.RANGED and state.enemy_adjacent(actor):
-		mods.add_disadvantage("WHY_ENEMY_ADJACENT")
-	var chance := hit_chance(bonus, state.effective_ac(target), mods.mode())
+	# Та же подготовка, что у настоящей атаки: укрытие, приёмы, прикрытие, черты.
+	var s := ActionResolver.setup_attack(state, actor, action, target)
+	var chance := hit_chance(s.bonus, s.target_ac, s.mods.mode())
 	var dmg := average_damage(actor, action, target)
 	if target.hp > 0:
 		dmg = mini(dmg, target.hp)
@@ -298,7 +291,8 @@ static func _can_attack_from(
 			if state.reach_between(from, target.column):
 				return true
 		elif BattleGrid.chebyshev(from, target.column) <= reach:
-			return true
+			if LineOfSight.can_see(state.grid, from, target.column):
+				return true
 	return false
 
 
@@ -349,7 +343,8 @@ static func _reposition(state: CombatState, actor: Combatant) -> CombatCommand:
 
 
 ## Ключ клетки (меньше — лучше): [не может ударить, рядом с врагом (для стрелка),
-## расстояние до ближайшего врага, стоимость пути, z, x].
+## сколько врагов видят клетку без укрытия (для стрелка), расстояние до ближайшего
+## врага, стоимость пути, z, x].
 static func _cell_key(
 	state: CombatState,
 	actor: Combatant,
@@ -365,10 +360,17 @@ static func _cell_key(
 		if not can_hit and _can_attack_from(state, actor, cell, t):
 			can_hit = true
 	var adjacent := 1 if ranged and nearest <= 1 else 0
+	var exposed := 0
 	var distance := nearest
 	if ranged and can_hit:
 		distance = -nearest
-	return [0 if can_hit else 1, adjacent, distance, cost, cell.y, cell.x]
+		for t in targets:
+			if (
+				t.is_alive()
+				and LineOfSight.cover(state.grid, t.column, cell) == LineOfSight.Cover.NONE
+			):
+				exposed += 1
+	return [0 if can_hit else 1, adjacent, exposed, distance, cost, cell.y, cell.x]
 
 
 static func _dash(state: CombatState, actor: Combatant) -> CombatCommand:

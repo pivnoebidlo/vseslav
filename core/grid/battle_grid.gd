@@ -14,6 +14,7 @@ var diagonal: Diagonal = Diagonal.CHEBYSHEV
 
 var _levels: Dictionary[Vector2i, int] = {}
 var _blocked: Dictionary[Vector2i, bool] = {}
+var _low: Dictionary[Vector2i, bool] = {}
 
 
 func _init(p_width: int = 0, p_depth: int = 0) -> void:
@@ -38,10 +39,25 @@ func set_blocked(c: Vector2i, blocked: bool) -> void:
 		_blocked[c] = true
 	else:
 		_blocked.erase(c)
+		_low.erase(c)
 
 
 func is_blocked(c: Vector2i) -> bool:
 	return _blocked.has(c)
+
+
+## Низкая преграда (плетень, надгробие): непроходима, даёт половинное укрытие,
+## но не перекрывает линию видимости (docs/rules/cover.md).
+func set_low_obstacle(c: Vector2i, low: bool) -> void:
+	set_blocked(c, low)
+	if low:
+		_low[c] = true
+	else:
+		_low.erase(c)
+
+
+func is_low_obstacle(c: Vector2i) -> bool:
+	return _low.has(c)
 
 
 func is_walkable(c: Vector2i) -> bool:
@@ -66,7 +82,7 @@ static func chebyshev(a: Vector2i, b: Vector2i) -> int:
 
 
 ## Разбирает сетку из данных арены: строки карты, где '.' — уровень 0,
-## '1'..'9' — уровень, '#' — непроходимая клетка.
+## '1'..'9' — уровень, '#' — высокая преграда (стена, столб), '=' — низкая преграда.
 static func from_dict(data: Dictionary) -> BattleGrid:
 	var rows := JsonRead.get_array(data, "map")
 	if rows.is_empty():
@@ -85,6 +101,8 @@ static func from_dict(data: Dictionary) -> BattleGrid:
 			var c := Vector2i(x, z)
 			if ch == "#":
 				grid.set_blocked(c, true)
+			elif ch == "=":
+				grid.set_low_obstacle(c, true)
 			elif ch != ".":
 				grid.set_level(c, ch.to_int())
 	return grid

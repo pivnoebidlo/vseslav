@@ -17,6 +17,8 @@ const SAVE_DIR := "user://saves"
 const SAVE_PATH := "user://saves/arena_combat.json"
 const CELL := BattleGrid.CELL_SIZE_M
 const LEVEL_HEIGHT := 0.75
+const WALL_HEIGHT := 2.4
+const LOW_OBSTACLE_HEIGHT := 0.6
 const AI_STEP_DELAY := 0.3
 const MOVE_STEP_TIME := 0.12
 const SCREENSHOT_TIMEOUT := 25.0
@@ -42,6 +44,7 @@ var _lang := DEFAULT_LANG
 var _mat_floor := StandardMaterial3D.new()
 var _mat_high := StandardMaterial3D.new()
 var _mat_wall := StandardMaterial3D.new()
+var _mat_low := StandardMaterial3D.new()
 var _mat_reach := StandardMaterial3D.new()
 var _mat_range := StandardMaterial3D.new()
 var _mat_area := StandardMaterial3D.new()
@@ -107,6 +110,7 @@ func _setup_materials() -> void:
 	_mat_floor.albedo_color = Color(0.42, 0.5, 0.3)
 	_mat_high.albedo_color = Color(0.55, 0.5, 0.38)
 	_mat_wall.albedo_color = Color(0.35, 0.3, 0.27)
+	_mat_low.albedo_color = Color(0.5, 0.38, 0.24)
 	_glow(_mat_reach, Color(0.55, 0.7, 0.45), Color(0.15, 0.25, 0.1))
 	_glow(_mat_range, Color(0.5, 0.55, 0.75), Color(0.1, 0.12, 0.25))
 	_glow(_mat_area, Color(0.85, 0.45, 0.35), Color(0.35, 0.1, 0.05))
@@ -259,7 +263,10 @@ func _rebuild_world() -> void:
 
 func _add_tile(grid: BattleGrid, column: Vector2i) -> void:
 	var blocked := grid.is_blocked(column)
-	var top := 2.4 if blocked else grid.level_at(column) * LEVEL_HEIGHT
+	var low := grid.is_low_obstacle(column)
+	var top := grid.level_at(column) * LEVEL_HEIGHT
+	if blocked:
+		top = LOW_OBSTACLE_HEIGHT if low else WALL_HEIGHT
 	var height := top + 0.3
 	var size := Vector3(CELL * 0.96, height, CELL * 0.96)
 
@@ -271,7 +278,7 @@ func _add_tile(grid: BattleGrid, column: Vector2i) -> void:
 	_world.add_child(tile)
 
 	if blocked:
-		tile.material_override = _mat_wall
+		tile.material_override = _mat_low if low else _mat_wall
 		return
 	_tiles[column] = tile
 	_reset_tile(column)
@@ -519,8 +526,17 @@ func _selected_preview(actor: Combatant, unit: Combatant, cell: Vector2i) -> Pac
 		var names: PackedStringArray = []
 		var ally_hit := false
 		for t in ActionResolver.targets_in_area(_state, actor, _selected, cell):
-			var p := ActionPreview.for_target(_state, actor, _selected, t)
-			names.append("%s %d%%" % [CombatLogFormat.display_name(t), p.chance])
+			var p := ActionPreview.for_target(_state, actor, _selected, t, cell)
+			names.append(
+				(
+					"%s %d%%%s"
+					% [
+						CombatLogFormat.display_name(t),
+						p.chance,
+						CombatLogFormat.cover_text(p.cover)
+					]
+				)
+			)
 			if t.team == actor.team:
 				ally_hit = true
 		lines.append(tr(_selected.name_key))
@@ -570,6 +586,7 @@ func _preview_text(actor: Combatant, action: ActionDef, target: Combatant) -> St
 			text = CombatLogFormat.tr_fmt(
 				"UI_PREVIEW_HEAL", {"action": name, "min": p.heal_min, "max": p.heal_max}
 			)
+	text += CombatLogFormat.cover_text(p.cover)
 	text += CombatLogFormat.reasons(p.mods.to_dict())
 	if not p.defenses.is_empty():
 		var defs: PackedStringArray = []

@@ -17,9 +17,10 @@ static func saving_throw(
 	ability: String,
 	dc: int,
 	events: Array[CombatEvent],
-	reason: String = ""
+	reason: String = "",
+	cover: int = LineOfSight.Cover.NONE
 ) -> CheckResult:
-	var modifier := who.save_modifier(ability)
+	var modifier := who.save_modifier(ability) + LineOfSight.ac_bonus(cover)
 	var result: CheckResult
 	if Conditions.save_auto_fail(who.conditions, ability):
 		result = CheckResolver.auto_fail(modifier, dc)
@@ -30,6 +31,7 @@ static func saving_throw(
 	data["id"] = who.id
 	data["ability"] = ability
 	data["reason"] = reason
+	data["cover"] = cover
 	events.append(CombatEvent.new(CombatEvent.SAVE, data))
 	return result
 

@@ -134,6 +134,18 @@ func protector_for(target: Combatant, attacker: Combatant) -> Combatant:
 
 
 ## КД с учётом черт, зависящих от положения (строй).
+## Укрытие [param target] от клетки [param from] (ADR-0021). Стоящие живые существа,
+## кроме цели, [param exclude] и стоящего в [param from], дают половинное укрытие.
+func cover_between(from: Vector2i, target: Combatant, exclude: String = "") -> int:
+	var creatures: Array[Vector2i] = []
+	for c in sorted_combatants():
+		if c == target or c.id == exclude or c.column == from:
+			continue
+		if c.is_alive() and not c.has_condition(Conditions.PRONE):
+			creatures.append(c.column)
+	return LineOfSight.cover(grid, from, target.column, creatures)
+
+
 func effective_ac(target: Combatant) -> int:
 	var ac := target.armor_class
 	for t in target.traits_of(TraitDef.AC_BONUS):

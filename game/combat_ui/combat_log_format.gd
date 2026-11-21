@@ -157,6 +157,7 @@ static func _attack(state: CombatState, d: Dictionary, who: String) -> Line:
 	else:
 		text += " " + TranslationServer.translate("LOG_RESULT_MISS")
 		color = COLOR_MISS
+	text += cover_text(JsonRead.get_int(d, "cover"))
 	text += reasons(JsonRead.get_dict(d, "mods"))
 	return Line.new(text, color)
 
@@ -180,6 +181,7 @@ static func _save(d: Dictionary, who: String) -> Line:
 		tr_fmt("LOG_SAVE", args)
 		+ " "
 		+ TranslationServer.translate("LOG_RESULT_SAVED" if ok else "LOG_RESULT_FAILED")
+		+ cover_text(JsonRead.get_int(d, "cover"))
 	)
 	return Line.new(text, COLOR_MISS if ok else Color.WHITE)
 
@@ -229,6 +231,16 @@ static func _death_save(d: Dictionary, who: String) -> Line:
 
 
 ## « (преимущество: цель сбита с ног; помеха: …)» или пустая строка.
+## « · укрытие ½ (+2)» или пусто.
+static func cover_text(cover: int) -> String:
+	match cover:
+		LineOfSight.Cover.HALF:
+			return " · " + TranslationServer.translate("UI_COVER_HALF")
+		LineOfSight.Cover.THREE_QUARTERS:
+			return " · " + TranslationServer.translate("UI_COVER_THREE_QUARTERS")
+	return ""
+
+
 static func reasons(mods: Dictionary) -> String:
 	var parts: PackedStringArray = []
 	var adv := JsonRead.get_str_array(mods, "advantage")

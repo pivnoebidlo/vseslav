@@ -20,6 +20,8 @@ UI_PREVIEW_SAVE,{action}: провал спасброска {chance}% (СЛ {dc}
 UI_PREVIEW_SAVE_NODMG,{action}: провал спасброска {chance}% (СЛ {dc}),{action}: {chance}% to fail save (DC {dc})
 UI_PREVIEW_HEAL,{action}: лечение {min}–{max},{action}: heals {min}–{max}
 UI_PREVIEW_AREA,В области: {names},In the area: {names}
+UI_COVER_HALF,укрытие ½ (+2),half cover (+2)
+UI_COVER_THREE_QUARTERS,укрытие ¾ (+5),three-quarters cover (+5)
 UI_PREVIEW_AREA_ALLY,Внимание: заденет своих!,Warning: allies will be hit!
 UI_UNIT_INFO,{name} · хиты {hp}/{max} · КД {ac},{name} · HP {hp}/{max} · AC {ac}
 UI_DEFENSES,Защиты: {list},Defenses: {list}
@@ -120,6 +122,7 @@ err_too_far,Слишком далеко.,Too far.
 err_action_used,Действие уже потрачено.,Action already used.
 err_invalid_target,Неподходящая цель.,Invalid target.
 err_out_of_range,Цель вне досягаемости.,Target out of range.
+err_no_line_of_sight,Цель не видна: полное укрытие.,No line of sight: full cover.
 err_unknown_action,Нет такого действия.,No such action.
 err_incapacitated,Не может действовать.,Cannot act.
 err_bonus_used,Бонусное действие уже потрачено.,Bonus action already used.

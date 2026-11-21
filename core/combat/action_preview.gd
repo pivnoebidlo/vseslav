@@ -21,10 +21,18 @@ var mods: RollModifiers = RollModifiers.new()
 var defenses: Array[String] = []
 ## Спасбросок проваливается автоматически.
 var auto_fail: bool = false
+## Укрытие цели (LineOfSight.Cover): для атак — от атакующего, для спасбросков
+## Ловкости — от точки исхода. Бонус уже учтён в target_number или bonus.
+var cover: int = LineOfSight.Cover.NONE
 
 
+## [param cell] — выбранная точка для действий с областью (центр взрыва, направление конуса).
 static func for_target(
-	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	target: Combatant,
+	cell: Vector2i = ActionResolver.NO_CELL
 ) -> ActionPreview:
 	match action.kind:
 		ActionDef.KIND_ATTACK:
@@ -32,7 +40,7 @@ static func for_target(
 		ActionDef.KIND_MULTI:
 			return _multi(state, actor, action, target)
 		ActionDef.KIND_SAVE:
-			return _save(actor, action, target)
+			return _save(state, actor, action, target, cell)
 		ActionDef.KIND_HEAL:
 			var p := ActionPreview.new()
 			var r := action.heal.value_range(actor.formula_vars(action))
@@ -67,6 +75,7 @@ static func _attack(
 	p.bonus = s.bonus
 	p.target_number = s.target_ac
 	p.mods = s.mods
+	p.cover = s.cover
 	var wins := 0
 	var crits := 0
 	for natural in range(1, 21):
@@ -105,6 +114,7 @@ static func _multi(
 			total.bonus = p.bonus
 			total.target_number = p.target_number
 			total.mods = p.mods
+			total.cover = p.cover
 			total.defenses = p.defenses
 			first = false
 		total.damage_min += p.damage_min
@@ -113,10 +123,13 @@ static func _multi(
 	return total
 
 
-static func _save(actor: Combatant, action: ActionDef, target: Combatant) -> ActionPreview:
+static func _save(
+	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant, cell: Vector2i
+) -> ActionPreview:
 	var p := ActionPreview.new()
 	var dc := ActionResolver.save_dc(actor, action)
-	var modifier := target.save_modifier(action.save_ability)
+	p.cover = ActionResolver.save_cover(state, actor, action, target, cell)
+	var modifier := target.save_modifier(action.save_ability) + LineOfSight.ac_bonus(p.cover)
 	p.bonus = modifier
 	p.target_number = dc
 	if Conditions.save_auto_fail(target.conditions, action.save_ability):
@@ -205,4 +218,5 @@ func to_dict() -> Dictionary:
 		"mods": mods.to_dict(),
 		"defenses": defenses.duplicate(),
 		"auto_fail": auto_fail,
+		"cover": cover,
 	}

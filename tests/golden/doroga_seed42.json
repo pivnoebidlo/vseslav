@@ -327,7 +327,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 7,
+        "hp": 19,
         "id": "ratnik",
         "initiative_bonus": 3,
         "last_damage_tags": [
@@ -734,10 +734,14 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 31,
+        "hp": 17,
         "id": "lovchiy",
         "initiative_bonus": 3,
-        "last_damage_tags": [],
+        "last_damage_tags": [
+          "weapon",
+          "iron",
+          "piercing"
+        ],
         "level": 3,
         "masteries": [
           "nick",
@@ -749,8 +753,8 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "favored_enemy": 1,
-          "item_otvar": 1,
+          "favored_enemy": 0,
+          "item_otvar": 0,
           "slot_1": 3
         },
         "resources_max": {
@@ -1197,7 +1201,7 @@
           0,
           8
         ],
-        "concentration": "",
+        "concentration": "entangle",
         "conditions": [],
         "creature_tags": [
           "humanoid"
@@ -1208,14 +1212,10 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 2,
+        "hp": 30,
         "id": "volkhv",
         "initiative_bonus": 1,
-        "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing"
-        ],
+        "last_damage_tags": [],
         "level": 3,
         "masteries": [],
         "max_hp": 30,
@@ -1224,7 +1224,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "slot_1": 0
+          "slot_1": 2
         },
         "resources_max": {
           "slot_1": 4
@@ -1468,7 +1468,8 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "piercing"
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -1678,8 +1679,8 @@
         ],
         "armor_class": 12,
         "at": [
-          10,
-          2
+          4,
+          4
         ],
         "concentration": "",
         "conditions": [],
@@ -1698,8 +1699,7 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "piercing",
-          "force"
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -2370,8 +2370,8 @@
         ],
         "armor_class": 12,
         "at": [
-          11,
-          0
+          5,
+          3
         ],
         "concentration": "",
         "conditions": [],
@@ -2388,9 +2388,9 @@
         "id": "razboynik_4",
         "initiative_bonus": 1,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing"
+          "spell",
+          "magic",
+          "fire"
         ],
         "level": 1,
         "masteries": [],
@@ -2849,9 +2849,9 @@
         "id": "razboynik_6",
         "initiative_bonus": 1,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "fire"
+          "weapon",
+          "iron",
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -2888,9 +2888,9 @@
     ],
     "rng": {
       "seed": "42",
-      "state": "7125722592850469665"
+      "state": "-2829545460393222157"
     },
-    "round": 9,
+    "round": 7,
     "save_format": 2,
     "turn_index": 6,
     "turn_once": [
@@ -2899,5 +2899,5 @@
     "winner": "party"
   },
   "seed": 42,
-  "steps": 129
+  "steps": 97
 }

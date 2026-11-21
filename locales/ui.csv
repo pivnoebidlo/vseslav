@@ -238,3 +238,10 @@ err_trade_no_money,Не хватает денег.,Not enough money.
 err_trade_merchant_no_money,У купца не хватает денег.,The merchant can't afford it.
 err_trade_not_buying,Купец такое не берёт.,The merchant doesn't buy that.
 err_trade_worthless,Ничего не стоит.,Worthless.
+UI_LOOT,Добыча,Loot
+UI_LOOT_HINT,"Каждую вещь забирает выбранный герой. Не взятое останется на поле боя.","Each item goes to the hero you pick. Whatever is left stays on the battlefield."
+UI_LOOT_MONEY,Деньги: {money},Money: {money}
+UI_LOOT_EMPTY,Всё разобрано.,Nothing left.
+UI_LOOT_LOADS,Нагрузка (фунт.): {list},Load (lb): {list}
+UI_LB,фунт.,lb
+LOG_LOOT_TAKEN,Добыча разобрана.,Loot taken.

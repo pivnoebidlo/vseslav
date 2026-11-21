@@ -3,6 +3,8 @@
     { "id": "razboynik", "name_key": "UNIT_RAZBOYNIK", "tags": ["humanoid"], "proficiency": 2,
       "abilities": { "str": 11, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 10 },
       "armor_class": 12, "hp": 11, "speed": 6,
+      "carries": [ "stegach", "topor", "luk" ],
+      "loot": { "money": "2d6", "items": [ { "item": "suhari", "chance": 30 }, { "item": "otvar", "chance": 10 } ] },
       "actions": [
         { "id": "topor", "name_key": "ITEM_TOPOR", "attack_type": "melee", "attack_bonus": "3",
           "damage": [ { "formula": "1d6 + 1", "type": "slashing" } ], "tags": ["weapon", "iron"] },
@@ -12,6 +14,8 @@
     { "id": "ataman", "name_key": "UNIT_ATAMAN", "tags": ["humanoid"], "proficiency": 2,
       "abilities": { "str": 15, "dex": 16, "con": 14, "int": 14, "wis": 11, "cha": 14 },
       "saves": ["str", "dex", "wis"], "armor_class": 15, "hp": 45, "speed": 6,
+      "carries": [ "kozhukh", "mech" ],
+      "loot": { "money": "5d6 + 10", "items": [ { "item": "otvar", "chance": 50 }, { "item": "sheynaya_grivna", "chance": 25 } ] },
       "actions": [
         { "id": "mnogo_udarov", "name_key": "ACT_MULTIATTACK", "kind": "multiattack", "range": 1,
           "sub_actions": ["mech", "mech"] },
@@ -22,6 +26,7 @@
       "abilities": { "str": 14, "dex": 15, "con": 12, "int": 3, "wis": 12, "cha": 6 },
       "armor_class": 12, "hp": 11, "speed": 8,
       "traits": [ { "type": "pack_tactics", "name_key": "TRAIT_PACK_TACTICS" } ],
+      "loot": { "items": [ { "item": "volchya_shkura", "chance": 100 } ] },
       "actions": [
         { "id": "ukus", "name_key": "ACT_BITE", "attack_type": "melee", "attack_bonus": "4", "save_dc": "11",
           "damage": [ { "formula": "1d6 + 2", "type": "piercing" } ],
@@ -36,6 +41,7 @@
         { "kind": "immune", "types": ["poison"] }
       ],
       "traits": [ { "type": "revive", "formula": "10", "tags": ["fire", "aspen", "silver"], "name_key": "TRAIT_UPYR_REVIVE" } ],
+      "loot": { "money": "3d6 + 5", "items": [ { "item": "sheynaya_grivna", "chance": 50 } ] },
       "actions": [
         { "id": "kogti", "name_key": "ACT_CLAWS", "kind": "multiattack", "range": 1, "sub_actions": ["kogot", "kogot"] },
         { "id": "kogot", "name_key": "ACT_CLAW", "attack_type": "melee", "attack_bonus": "5",
@@ -47,6 +53,7 @@
       "defenses": [ { "kind": "resist", "types": ["physical"], "unless": ["iron"] } ],
       "traits": [ { "type": "aura", "radius": 2, "ability": "con", "dc": 12, "condition": "poisoned", "rounds": 1,
                     "name_key": "TRAIT_NOON_HEAT" } ],
+      "carries": [ "serp" ],
       "actions": [
         { "id": "zhatva", "name_key": "ACT_HARVEST", "kind": "multiattack", "range": 1, "sub_actions": ["serp", "serp"] },
         { "id": "serp", "name_key": "ACT_SICKLE", "attack_type": "melee", "attack_bonus": "5",

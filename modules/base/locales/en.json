@@ -65,5 +65,8 @@
   "TRAIT_ALERT": "Alert",
   "TRAIT_PACK_TACTICS": "Pack Tactics",
   "TRAIT_UPYR_REVIVE": "Unholy tenacity",
-  "TRAIT_NOON_HEAT": "Noon heat"
+  "TRAIT_NOON_HEAT": "Noon heat",
+  "ITEM_SERP": "Sickle",
+  "ITEM_VOLCHYA_SHKURA": "Wolf pelt",
+  "ITEM_SHEYNAYA_GRIVNA": "Silver neck torc"
 }

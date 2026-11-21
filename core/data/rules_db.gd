@@ -73,6 +73,7 @@ func validate() -> void:
 		CombatantBuilder.from_character(self, characters[id], errors)
 	for id: String in _sorted(creatures):
 		CombatantBuilder.from_creature(self, creatures[id], errors)
+		Loot.validate_creature(self, creatures[id], errors)
 
 
 func _index(data: Dictionary, key: String, into: Dictionary[String, Dictionary]) -> void:

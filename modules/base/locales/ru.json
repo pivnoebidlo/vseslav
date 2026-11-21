@@ -65,5 +65,8 @@
   "TRAIT_ALERT": "Бдительный",
   "TRAIT_PACK_TACTICS": "Стая",
   "TRAIT_UPYR_REVIVE": "Нечистая живучесть",
-  "TRAIT_NOON_HEAT": "Полуденный зной"
+  "TRAIT_NOON_HEAT": "Полуденный зной",
+  "ITEM_SERP": "Серп",
+  "ITEM_VOLCHYA_SHKURA": "Волчья шкура",
+  "ITEM_SHEYNAYA_GRIVNA": "Шейная гривна (серебро)"
 }

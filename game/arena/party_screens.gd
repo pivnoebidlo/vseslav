@@ -15,6 +15,7 @@ var dry_run := false
 var _db: RulesDb
 var _equipment: EquipmentScreen
 var _trade: TradeScreen
+var _loot: LootScreen
 
 
 func setup(db: RulesDb) -> void:
@@ -29,13 +30,15 @@ func setup(db: RulesDb) -> void:
 	# Экраны создаются здесь, а не при объявлении: к этому моменту язык уже выбран.
 	_equipment = EquipmentScreen.new()
 	_trade = TradeScreen.new()
-	for screen: PanelContainer in [_equipment, _trade]:
+	_loot = LootScreen.new()
+	for screen: PanelContainer in [_equipment, _trade, _loot]:
 		screen.set_anchors_preset(Control.PRESET_CENTER)
 		screen.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		screen.grow_vertical = Control.GROW_DIRECTION_BOTH
 		add_child(screen)
 	_equipment.closed.connect(_on_closed)
 	_trade.closed.connect(_on_closed)
+	_loot.closed.connect(_on_loot_closed)
 
 
 ## Герои партии, которые участвуют в бою [param state].
@@ -57,10 +60,19 @@ func open_trade(state: CombatState) -> void:
 	_trade.open(_db, party, market, heroes_of(state, party), _note(state))
 
 
-## После боя: потраченное списывается из снаряжения.
+## После боя: добыча (если победили), затем потраченное списывается из снаряжения.
+## Добыча считается отдельным генератором — копией генератора боя, — состояние
+## боя не меняется. В дымовом прогоне окно добычи не открывается.
 func after_combat(state: CombatState) -> void:
+	var pile := Loot.collect(state, _db, party, Rng.from_dict(state.rng.to_dict()))
 	party.take_from_combat(state)
 	save()
+	if dry_run or (pile.purse == 0 and pile.bag.is_empty()):
+		return
+	_equipment.visible = false
+	_trade.visible = false
+	var heroes := heroes_of(state, party)
+	_loot.open(_db, party, pile, heroes)
 
 
 func save() -> void:
@@ -72,6 +84,12 @@ func save() -> void:
 
 func _note(state: CombatState) -> String:
 	return "" if state.ended else TranslationServer.translate("UI_EQ_RESTART_NOTE")
+
+
+func _on_loot_closed(was_changed: bool) -> void:
+	if was_changed:
+		save()
+		message.emit(TranslationServer.translate("LOG_LOOT_TAKEN"))
 
 
 func _on_closed(was_changed: bool) -> void:

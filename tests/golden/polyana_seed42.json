@@ -412,6 +412,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "party",
+        "template": "ratnik",
         "traits": [
           {
             "ability": "",
@@ -868,6 +869,7 @@
         "spell_ability": "wis",
         "stable": false,
         "team": "party",
+        "template": "lovchiy",
         "traits": [
           {
             "ability": "",
@@ -1395,6 +1397,7 @@
         "spell_ability": "wis",
         "stable": false,
         "team": "party",
+        "template": "volkhv",
         "traits": [
           {
             "ability": "",
@@ -1629,6 +1632,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "beasts",
+        "template": "volk",
         "traits": [
           {
             "ability": "",
@@ -1862,6 +1866,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "beasts",
+        "template": "volk",
         "traits": [
           {
             "ability": "",
@@ -2096,6 +2101,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "beasts",
+        "template": "volk",
         "traits": [
           {
             "ability": "",
@@ -2365,6 +2371,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "beasts",
+        "template": "poludnitsa",
         "traits": [
           {
             "ability": "con",
@@ -2598,6 +2605,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "beasts",
+        "template": "volk",
         "traits": [
           {
             "ability": "",
@@ -2832,6 +2840,7 @@
         "spell_ability": "",
         "stable": false,
         "team": "beasts",
+        "template": "volk",
         "traits": [
           {
             "ability": "",

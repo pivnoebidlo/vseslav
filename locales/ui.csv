@@ -194,3 +194,34 @@ LOG_ITEM_DRAW_SWAP,"{name} берёт в руку: {item}, {previous} — на �
 LOG_ITEM_DRAW_BAG,"{name} берёт в руку: {item}, {previous} — в мешок","{name} draws {item}, {previous} goes to the bag"
 LOG_ITEM_STOW,{name} убирает на пояс: {item},{name} stows {item}
 LOG_ITEM_FETCH,{name} достаёт из мешка: {item},{name} fetches {item} from the bag
+UI_EQUIPMENT,Снаряжение,Equipment
+UI_EQ_RESET,Сбросить,Reset
+UI_EQ_CLOSE,Готово,Done
+UI_EQ_RESTART_NOTE,"Бой идёт: если что-то поменять, он начнётся заново.","A fight is on: changing anything restarts it."
+UI_EQ_WORN,Надето,Worn
+UI_SLOT_ARMOR,Доспех,Armor
+UI_SLOT_MAIN_HAND,Правая рука,Main hand
+UI_SLOT_OFF_HAND,Левая рука,Off hand
+UI_EQ_BELT,Пояс ({n}/{max}),Belt ({n}/{max})
+UI_EQ_BAG,Мешок,Bag
+UI_EQ_PURSE,Кошелёк: {money},Purse: {money}
+UI_EQ_ROW,{name} · {weight} фунт. · {price},{name} · {weight} lb · {price}
+UI_EQ_UNEQUIP,Снять,Take off
+UI_EQ_TO_BAG,В мешок,To bag
+UI_EQ_WEAR,Надеть,Wear
+UI_EQ_MAIN,В правую руку,Main hand
+UI_EQ_OFF,В левую руку,Off hand
+UI_EQ_BELT_PUT,На пояс,To belt
+UI_EQ_GIVE,Передать,Give
+UI_EQ_STATS_TITLE,Итог,Totals
+UI_EQ_STATS,КД {ac} · хиты {hp} · скорость {speed} кл.,AC {ac} · HP {hp} · speed {speed} sq.
+UI_EQ_ATTACKS,Атаки (✋ — в руке),Attacks (✋ — in hand)
+UI_EQ_LOAD,Нагрузка: {weight} из {cap} фунт.,Load: {weight} of {cap} lb
+UI_EQ_OVERLOAD,Перегруз: скорость 1 клетка.,Overloaded: speed 1 square.
+UI_GRIVNA_1,гривна,grivna
+UI_GRIVNA_2,гривны,grivna
+UI_GRIVNA_5,гривен,grivna
+UI_KUNA_1,куна,kuna
+UI_KUNA_2,куны,kuna
+UI_KUNA_5,кун,kuna
+LOG_EQUIPMENT_SAVED,Снаряжение сохранено.,Equipment saved.

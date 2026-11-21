@@ -10,15 +10,19 @@ const OVERLOADED_SPEED := 1
 
 
 ## Участник по записи арены: {"character": id} | {"creature": id} | {"sheet": {...}}
-## плюс id, team, player, at. Возвращает null при ошибке (причины в [param errors]).
-static func from_entry(db: RulesDb, entry: Dictionary, errors: Array[String]) -> Combatant:
+## плюс id, team, player, at. [param party] — снаряжение героев (null — из данных).
+## Возвращает null при ошибке (причины в [param errors]).
+static func from_entry(
+	db: RulesDb, entry: Dictionary, errors: Array[String], party: Party = null
+) -> Combatant:
 	var c: Combatant = null
 	if entry.has("character"):
 		var char_id := JsonRead.get_str(entry, "character")
 		if not db.characters.has(char_id):
 			errors.append("unknown character '%s'" % char_id)
 			return null
-		c = from_character(db, db.characters[char_id], errors)
+		var inv := party.inventory_copy(char_id) if party != null else null
+		c = from_character(db, db.characters[char_id], errors, inv)
 	elif entry.has("creature"):
 		var creature_id := JsonRead.get_str(entry, "creature")
 		if not db.creatures.has(creature_id):
@@ -54,6 +58,7 @@ static func from_character(
 		return null
 	var c := Combatant.new()
 	c.id = id
+	c.template = id
 	c.name_key = JsonRead.get_str(data, "name_key", id)
 	c.player = true
 	c.death_saves = true
@@ -101,6 +106,7 @@ static func from_character(
 static func from_creature(db: RulesDb, data: Dictionary, errors: Array[String]) -> Combatant:
 	var c := Combatant.new()
 	c.id = JsonRead.get_str(data, "id")
+	c.template = c.id
 	c.name_key = JsonRead.get_str(data, "name_key", c.id)
 	c.creature_tags = JsonRead.get_str_array(data, "tags")
 	c.proficiency = JsonRead.get_int(data, "proficiency", 2)

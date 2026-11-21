@@ -5,6 +5,8 @@ extends RefCounted
 ## поэтому сейв боя не зависит от последующих правок данных модуля.
 
 var id: String = ""
+## Из какого персонажа или существа собран (id в данных правил); пусто — лист вручную.
+var template: String = ""
 ## Ключ локализации имени.
 var name_key: String = ""
 var team: String = ""
@@ -166,6 +168,7 @@ func to_dict() -> Dictionary:
 		cond_list.append(c.to_dict())
 	return {
 		"id": id,
+		"template": template,
 		"name_key": name_key,
 		"team": team,
 		"player": player,
@@ -205,6 +208,7 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary, errors: Array[String] = []) -> Combatant:
 	var c := Combatant.new()
 	c.id = JsonRead.get_str(data, "id")
+	c.template = JsonRead.get_str(data, "template")
 	c.name_key = JsonRead.get_str(data, "name_key")
 	c.team = JsonRead.get_str(data, "team")
 	c.player = JsonRead.get_bool(data, "player")

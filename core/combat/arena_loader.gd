@@ -24,8 +24,9 @@ static func grid_from(data: Dictionary) -> BattleGrid:
 
 ## Новое состояние боя из данных арены с заданным seed. Ошибки сборки участников —
 ## в [param errors]; участник с ошибкой сборки пропускается.
+## [param party] — снаряжение героев (null — из данных персонажей).
 static func new_combat(
-	data: Dictionary, seed_value: int, db: RulesDb, errors: Array[String] = []
+	data: Dictionary, seed_value: int, db: RulesDb, errors: Array[String] = [], party: Party = null
 ) -> CombatState:
 	var state := CombatState.new()
 	state.arena_id = JsonRead.get_str(data, "id")
@@ -33,7 +34,7 @@ static func new_combat(
 	state.rng = Rng.new(seed_value)
 	for item: Variant in JsonRead.get_array(data, "combatants"):
 		var entry: Dictionary = item
-		var c := CombatantBuilder.from_entry(db, entry, errors)
+		var c := CombatantBuilder.from_entry(db, entry, errors, party)
 		if c != null:
 			state.combatants.append(c)
 	return state

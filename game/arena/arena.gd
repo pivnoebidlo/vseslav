@@ -30,6 +30,8 @@ var _arena := "doroga"
 var _arena_data: Dictionary = {}
 var _db: RulesDb
 var _figures: FigureCatalog
+var _party: Party
+var _equipment: EquipmentScreen
 var _state: CombatState
 var _world: Node3D
 var _tiles: Dictionary[Vector2i, MeshInstance3D] = {}
@@ -70,6 +72,7 @@ func _ready() -> void:
 		ModuleLocales.load_module(dir)
 	_db = RulesDb.load_dir(RULES_DIR)
 	_figures = FigureCatalog.load_dir(MODELS_DIR, RigProfile.load_all())
+	_party = PartyStore.load_party(_db)
 	_setup_materials()
 	_setup_environment()
 	_setup_ui()
@@ -173,6 +176,7 @@ func _setup_ui() -> void:
 	_add_button(buttons, "UI_SAVE", _on_save)
 	_add_button(buttons, "UI_LOAD", _on_load)
 	_add_button(buttons, "UI_RESTART", _on_restart)
+	_add_button(buttons, "UI_EQUIPMENT", _on_equipment)
 
 	var arena_row := HBoxContainer.new()
 	box.add_child(arena_row)
@@ -213,6 +217,13 @@ func _setup_ui() -> void:
 	_actions.end_turn_pressed.connect(_on_end_turn)
 	_actions.item_pressed.connect(_on_item_pressed)
 	bottom.add_child(_actions)
+
+	_equipment = EquipmentScreen.new()
+	_equipment.set_anchors_preset(Control.PRESET_CENTER)
+	_equipment.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_equipment.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_equipment.closed.connect(_on_equipment_closed)
+	layer.add_child(_equipment)
 
 	_reaction_dialog = ReactionDialog.new()
 	_reaction_dialog.anchor_left = 0.5
@@ -336,7 +347,7 @@ func _column_position(column: Vector2i) -> Vector3:
 func _new_combat() -> void:
 	var seed_value := _seed_override if _seed_override >= 0 else randi()
 	var errors: Array[String] = []
-	_state = ArenaLoader.new_combat(_arena_data, seed_value, _db, errors)
+	_state = ArenaLoader.new_combat(_arena_data, seed_value, _db, errors, _party)
 	_log.clear()
 	for err in errors:
 		_write(CombatLogFormat.tr_fmt("LOG_DATA_ERROR", {"error": err}), CombatLogFormat.COLOR_BAD)
@@ -745,6 +756,9 @@ func _play_events(events: Array[CombatEvent]) -> void:
 				await _animate_attack(e)
 			CombatEvent.COMBAT_ENDED:
 				_celebrate(JsonRead.get_str(e.data, "winner"))
+				# Потраченное в бою (брошенное, выпитое) списывается из снаряжения партии.
+				_party.take_from_combat(_state)
+				_save_party()
 		var line := CombatLogFormat.line(_state, e)
 		if line.text != "":
 			_write(line.text, line.color)
@@ -931,6 +945,32 @@ func _on_load() -> void:
 	_rebuild_world()
 	_write(tr("LOG_LOADED"), CombatLogFormat.COLOR_GOOD)
 	await _continue()
+
+
+func _save_party() -> void:
+	if not _autoplay:
+		PartyStore.save_party(_party)
+
+
+func _on_equipment() -> void:
+	if _busy:
+		return
+	var heroes: Array[String] = []
+	for c in _state.combatants:
+		if c.inventory != null and _party.inventories.has(c.template):
+			heroes.append(c.template)
+	var note := "" if _state.ended else tr("UI_EQ_RESTART_NOTE")
+	_preview.visible = false
+	_equipment.open(_db, _party, heroes, note)
+
+
+func _on_equipment_closed(changed: bool) -> void:
+	if not changed:
+		return
+	_save_party()
+	_write(tr("LOG_EQUIPMENT_SAVED"), CombatLogFormat.COLOR_GOOD)
+	if not _state.ended:
+		_new_combat()
 
 
 func _on_restart() -> void:

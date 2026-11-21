@@ -26,6 +26,9 @@ var disengaged: bool = false
 ## Ключи умений «раз в ход», уже использованных в этом ходу.
 var turn_once: Array[String] = []
 var ended: bool = false
+## Ответы игрока на реакции текущей команды и возникшие вопросы (ADR-0023).
+## Не сохраняются: живут только во время применения одной команды.
+var reactions: ReactionLog = ReactionLog.new()
 var winner: String = ""
 
 

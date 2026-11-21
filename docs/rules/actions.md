@@ -27,7 +27,7 @@
 
 ## Черты (закрытый список, механика в коде)
 
-`pack_tactics`, `bonus_damage` (`when`: всегда / `target_wounded` / `target_marked`, `once_per_turn`), `attack_bonus`, `ac_bonus` (`armored` — при сборке, `adjacent_ally` — строй), `improved_critical`, `protection` (реакция со щитом: помеха на атаку по соседнему союзнику, срабатывает автоматически), `revive` (встаёт, если последний урон не имел меток из `tags`), `aura`, `initiative`, `hp_per_level`.
+`pack_tactics`, `bonus_damage` (`when`: всегда / `target_wounded` / `target_marked`, `once_per_turn`), `attack_bonus`, `ac_bonus` (`armored` — при сборке, `adjacent_ally` — строй), `improved_critical`, `protection` (реакция со щитом: помеха на атаку по соседнему союзнику; персонажа игрока бой спрашивает — ADR-0023), `revive` (встаёт, если последний урон не имел меток из `tags`), `aura`, `initiative`, `hp_per_level`.
 
 ## Персонаж = класс + путь + происхождение + снаряжение
 

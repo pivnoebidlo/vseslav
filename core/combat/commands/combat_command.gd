@@ -7,6 +7,8 @@ const ERR_COMBAT_ENDED := "err_combat_ended"
 const ERR_NOT_YOUR_TURN := "err_not_your_turn"
 
 var actor_id: String = ""
+## Ответы игрока на реакции по порядку возникновения (ADR-0023).
+var reactions: Array[bool] = []
 
 
 func validate(state: CombatState) -> String:
@@ -26,8 +28,23 @@ func to_dict() -> Dictionary:
 	return {"actor": actor_id}
 
 
+## Добавляет ответы на реакции в запись команды, если они есть.
+func _with_reactions(data: Dictionary) -> Dictionary:
+	if not reactions.is_empty():
+		data["reactions"] = reactions.duplicate()
+	return data
+
+
 ## Команда из записи (реплеи, сохранённые ходы). Возвращает null при ошибке.
 static func from_dict(data: Dictionary) -> CombatCommand:
+	var cmd := _from_dict(data)
+	if cmd != null:
+		for answer: Variant in JsonRead.get_array(data, "reactions"):
+			cmd.reactions.append(answer == true)
+	return cmd
+
+
+static func _from_dict(data: Dictionary) -> CombatCommand:
 	var actor := JsonRead.get_str(data, "actor")
 	match JsonRead.get_str(data, "cmd"):
 		"move":

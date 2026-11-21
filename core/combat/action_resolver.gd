@@ -174,8 +174,13 @@ class AttackSetup:
 	var cover: int = LineOfSight.Cover.NONE
 
 
+## [param with_protector] = false — защитник отказался прикрывать (ADR-0023).
 static func setup_attack(
-	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	target: Combatant,
+	with_protector: bool = true
 ) -> AttackSetup:
 	var s := AttackSetup.new()
 	s.distance = BattleGrid.chebyshev(actor.column, target.column)
@@ -192,7 +197,7 @@ static func setup_attack(
 		s.mods.add_disadvantage("WHY_SAPPED")
 	if Conditions.has_from(target.conditions, Conditions.VEXED, actor.id):
 		s.mods.add_advantage("WHY_VEXED")
-	var protector := state.protector_for(target, actor)
+	var protector := state.protector_for(target, actor) if with_protector else null
 	if protector != null:
 		s.protector = protector.id
 		s.mods.add_disadvantage("WHY_PROTECTED")
@@ -217,6 +222,10 @@ static func attack(
 	events: Array[CombatEvent]
 ) -> void:
 	var s := setup_attack(state, actor, action, target)
+	if s.protector != "":
+		var protector := state.get_combatant(s.protector)
+		if not state.reactions.decide(protector, ReactionPrompt.PROTECTION, target.id, actor.id):
+			s = setup_attack(state, actor, action, target, false)
 	if s.protector != "":
 		state.get_combatant(s.protector).reaction_ready = false
 		events.append(

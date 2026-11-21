@@ -68,6 +68,7 @@ var _initiative := InitiativeBar.new()
 var _actions := ActionBar.new()
 var _preview := Label.new()
 var _log: CombatLogPanel
+var _reaction_dialog: ReactionDialog
 var _hovered_id := ""
 
 
@@ -257,6 +258,14 @@ func _setup_ui() -> void:
 	_actions.end_turn_pressed.connect(_on_end_turn)
 	bottom.add_child(_actions)
 
+	_reaction_dialog = ReactionDialog.new()
+	_reaction_dialog.anchor_left = 0.5
+	_reaction_dialog.anchor_right = 0.5
+	_reaction_dialog.offset_left = -220
+	_reaction_dialog.offset_right = 220
+	_reaction_dialog.offset_top = 120
+	layer.add_child(_reaction_dialog)
+
 	_preview.add_theme_color_override("font_outline_color", Color.BLACK)
 	_preview.add_theme_constant_override("outline_size", 6)
 	_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -408,8 +417,59 @@ func _execute(cmd: CombatCommand) -> bool:
 	if err != "":
 		_write(tr(err), Color(1.0, 0.75, 0.4))
 		return false
+	await _ask_reactions(cmd)
 	await _play_events(cmd.apply(_state))
 	return true
+
+
+## Пробные прогоны команды на копии состояния: пока встречается реакция персонажа
+## игрока без ответа — спрашиваем и дописываем ответ в команду (ADR-0023).
+func _ask_reactions(cmd: CombatCommand) -> void:
+	if _autoplay:
+		return
+	while true:
+		var probe := CombatState.from_dict(_state.to_dict(), _state.grid)
+		cmd.apply(probe)
+		var prompt := probe.reactions.first_unanswered()
+		if prompt == null:
+			return
+		var accepted: bool = await _ask_reaction(prompt)
+		cmd.reactions.append(accepted)
+
+
+func _ask_reaction(prompt: ReactionPrompt) -> bool:
+	var reactor := _state.get_combatant(prompt.reactor)
+	var target := _state.get_combatant(prompt.target)
+	var source := _state.get_combatant(prompt.source)
+	var names := {
+		"reactor": CombatLogFormat.display_name(reactor),
+		"target": CombatLogFormat.display_name(target),
+		"source": CombatLogFormat.display_name(source),
+	}
+	var text := ""
+	var detail := ""
+	var yes := ""
+	if prompt.kind == ReactionPrompt.OPPORTUNITY:
+		text = CombatLogFormat.tr_fmt("UI_REACT_OPPORTUNITY", names)
+		yes = tr("UI_REACT_STRIKE")
+		var strike := MoveCommand.opportunity_action(reactor)
+		if strike != null:
+			detail = _preview_text(reactor, strike, target)
+	else:
+		text = CombatLogFormat.tr_fmt("UI_REACT_PROTECTION", names)
+		detail = tr("UI_REACT_PROTECTION_DETAIL")
+		yes = tr("UI_REACT_PROTECT")
+	detail += ("\n" if detail != "" else "") + tr("UI_REACT_ONCE")
+	for id: String in [prompt.reactor, prompt.target, prompt.source]:
+		if _units.has(id):
+			_units[id].set_hovered(true)
+	_preview.visible = false
+	_reaction_dialog.ask(text, detail, yes, tr("UI_REACT_SKIP"))
+	var accepted: bool = await _reaction_dialog.answered
+	for id: String in [prompt.reactor, prompt.target, prompt.source]:
+		if _units.has(id):
+			_units[id].set_hovered(id == _hovered_id)
+	return accepted
 
 
 func _player_command(cmd: CombatCommand) -> void:

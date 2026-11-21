@@ -29,6 +29,7 @@ func validate(state: CombatState) -> String:
 
 
 func apply(state: CombatState) -> Array[CombatEvent]:
+	state.reactions.begin(reactions)
 	var actor := state.get_combatant(actor_id)
 	var events := ActionResolver.apply(state, actor, actor.get_action(action_id), target_id, cell)
 	events.append_array(state.check_end())
@@ -36,10 +37,12 @@ func apply(state: CombatState) -> Array[CombatEvent]:
 
 
 func to_dict() -> Dictionary:
-	return {
-		"cmd": "action",
-		"actor": actor_id,
-		"action": action_id,
-		"target": target_id,
-		"cell": [cell.x, cell.y],
-	}
+	return _with_reactions(
+		{
+			"cmd": "action",
+			"actor": actor_id,
+			"action": action_id,
+			"target": target_id,
+			"cell": [cell.x, cell.y],
+		}
+	)

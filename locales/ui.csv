@@ -165,3 +165,10 @@ ERR_MODEL_TOO_MANY_SKELETONS,"Скелетов {count}, лимит {limit}","{co
 ERR_MODEL_TOO_MANY_BONES,"Костей {count}, лимит {limit}","{count} bones, limit {limit}"
 ERR_MODEL_TEXTURE_TOO_BIG,"Текстура {size} px, лимит {limit} px","Texture {size} px, limit {limit} px"
 WARN_MODEL_UNKNOWN_RIG,Риг не распознан — анимации с других моделей недоступны,Rig not recognized — animations from other models unavailable
+UI_REACT_OPPORTUNITY,{reactor} может ударить вдогонку: {target} выходит из досягаемости.,{reactor} can strike: {target} is leaving their reach.
+UI_REACT_STRIKE,Ударить (реакция),Strike (reaction)
+UI_REACT_PROTECTION,"Атака: {source} → {target}. {reactor} может прикрыть щитом.","Attack: {source} → {target}. {reactor} can cover with a shield."
+UI_REACT_PROTECTION_DETAIL,Атака будет с помехой.,The attack will have disadvantage.
+UI_REACT_PROTECT,Прикрыть (реакция),Protect (reaction)
+UI_REACT_SKIP,Пропустить,Skip
+UI_REACT_ONCE,Реакция одна на раунд — восстановится в начале своего хода.,One reaction per round — it returns at the start of your turn.

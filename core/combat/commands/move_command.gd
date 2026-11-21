@@ -35,6 +35,7 @@ func validate(state: CombatState) -> String:
 
 
 func apply(state: CombatState) -> Array[CombatEvent]:
+	state.reactions.begin(reactions)
 	var actor := state.get_combatant(actor_id)
 	var path := path_for(state, actor, to)
 	var from := actor.column
@@ -46,15 +47,15 @@ func apply(state: CombatState) -> Array[CombatEvent]:
 	for i in path.cells.size():
 		var cell := path.cells[i]
 		var next := Vector2i(cell.x, cell.z)
-		var reactions := _opportunity_attacks(state, actor, prev, next)
-		if not reactions.is_empty():
+		var reactors := _opportunity_attacks(state, actor, prev, next)
+		if not reactors.is_empty():
 			# Перемещение прерывается до шага: атака идёт, пока цель ещё в досягаемости.
 			if not walked.is_empty():
 				events.append(_moved_event(actor, from, walked, spent - segment_start))
 			from = prev
 			walked = []
 			segment_start = spent
-			for reactor in reactions:
+			for reactor in reactors:
 				events.append_array(_attack_of_opportunity(state, reactor, actor))
 				if not actor.is_alive():
 					break
@@ -118,7 +119,8 @@ func _opportunity_attacks(
 		if Conditions.incapacitated(c.conditions) or opportunity_action(c) == null:
 			continue
 		if state.reach_between(c.column, prev) and not state.reach_between(c.column, next):
-			result.append(c)
+			if state.reactions.decide(c, ReactionPrompt.OPPORTUNITY, actor.id, actor.id):
+				result.append(c)
 	return result
 
 
@@ -151,4 +153,4 @@ func _moved_event(actor: Combatant, from: Vector2i, walked: Array, cost: int) ->
 
 
 func to_dict() -> Dictionary:
-	return {"cmd": "move", "actor": actor_id, "to": [to.x, to.y]}
+	return _with_reactions({"cmd": "move", "actor": actor_id, "to": [to.x, to.y]})

@@ -91,7 +91,7 @@ func test_builder_reports_bad_characters() -> void:
 	var data: Dictionary = _db.characters["volkhv"].duplicate(true)
 	data["origin_bonus"] = {"cha": 2, "wis": 1}
 	data["spells"] = ["hunters_mark"]
-	data["equipment"] = ["kolchuga", "mech", "nonexistent"]
+	data["inventory"] = {"armor": "kolchuga", "main_hand": "mech", "bag": ["nonexistent"]}
 	var errors: Array[String] = []
 	CombatantBuilder.from_character(_db, data, errors)
 	var text := "\n".join(errors)

@@ -172,3 +172,11 @@ UI_REACT_PROTECTION_DETAIL,Атака будет с помехой.,The attack w
 UI_REACT_PROTECT,Прикрыть (реакция),Protect (reaction)
 UI_REACT_SKIP,Пропустить,Skip
 UI_REACT_ONCE,Реакция одна на раунд — восстановится в начале своего хода.,One reaction per round — it returns at the start of your turn.
+err_item_unknown,Неизвестный предмет.,Unknown item.
+err_item_not_here,Этого предмета здесь нет.,The item is not here.
+err_item_wrong_slot,Сюда это не надеть.,That doesn't go there.
+err_item_hands_busy,"Руки заняты: двуручное оружие и вторая рука несовместимы.","Hands are busy: a two-handed weapon needs both hands."
+err_item_belt_full,На поясе нет места.,No room on the belt.
+err_item_not_for_belt,"На пояс — только оружие и расходники.","Only weapons and consumables go on the belt."
+err_item_too_heavy,Слишком тяжело — не утащит.,Too heavy to drag.
+err_item_no_money,Не хватает денег.,Not enough money.

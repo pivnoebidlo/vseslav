@@ -1,10 +1,12 @@
 class_name CombatantBuilder
 extends RefCounted
-## Собирает лист участника боя из данных (docs/rules/characters.md):
-## персонаж = класс + путь + происхождение + снаряжение; существо — готовый блок.
+## Собирает лист участника боя из данных (docs/rules/actions.md):
+## персонаж = класс + путь + происхождение + инвентарь; существо — готовый блок.
 
 const BASE_SPEED := 6
 const HEAVY_ARMOR_PENALTY := 2
+## Перегруженный (вес больше Силы × 15) двигается не дальше 1 клетки за ход (SRD 5.2).
+const OVERLOADED_SPEED := 1
 
 
 ## Участник по записи арены: {"character": id} | {"creature": id} | {"sheet": {...}}
@@ -40,7 +42,10 @@ static func from_entry(db: RulesDb, entry: Dictionary, errors: Array[String]) ->
 	return c
 
 
-static func from_character(db: RulesDb, data: Dictionary, errors: Array[String]) -> Combatant:
+## [param inventory] — снаряжение героя (экран снаряжения); null — из данных персонажа.
+static func from_character(
+	db: RulesDb, data: Dictionary, errors: Array[String], inventory: Inventory = null
+) -> Combatant:
 	var id := JsonRead.get_str(data, "id")
 	var cls: Dictionary = db.classes.get(JsonRead.get_str(data, "class"), {})
 	var origin: Dictionary = db.origins.get(JsonRead.get_str(data, "origin"), {})
@@ -80,7 +85,11 @@ static func from_character(db: RulesDb, data: Dictionary, errors: Array[String])
 	c.max_hp = maxi(c.max_hp, 1)
 	c.hp = c.max_hp
 
-	_equip(db, c, cls, JsonRead.get_array(data, "equipment"), errors)
+	var inv := inventory
+	if inv == null:
+		inv = Inventory.from_dict(JsonRead.get_dict(data, "inventory"))
+	inv.validate(db, id, errors)
+	_equip(db, c, cls, inv, errors)
 	for action_id in action_ids:
 		var a := db.make_action(action_id, errors)
 		if a != null:
@@ -170,74 +179,95 @@ static func _collect_class_features(
 		c.masteries = ["*"]
 
 
-## Снаряжение: доспех и щит → КД и скорость; оружие → атаки; расходники → действия.
+## Снаряжение: доспех и щит → КД и скорость; оружие в руках и на поясе → атаки;
+## расходники с пояса → действия. Метательное оружие и расходники тратятся
+## (заряды = сколько их в руках и на поясе). Мешок в бою недоступен.
 static func _equip(
-	db: RulesDb, c: Combatant, cls: Dictionary, equipment: Array, errors: Array[String]
+	db: RulesDb, c: Combatant, cls: Dictionary, inv: Inventory, errors: Array[String]
 ) -> void:
 	var dex := c.abilities.modifier(Abilities.DEX)
 	var ac := 10 + dex
 	var armored := false
 	c.speed = BASE_SPEED
 	var trained_armor := JsonRead.get_str_array(cls, "armor")
-	var trained_weapons := JsonRead.get_str_array(cls, "weapons")
+	if inv.armor != "" and db.items.has(inv.armor):
+		var item: Dictionary = db.items[inv.armor]
+		var kind := JsonRead.get_str(item, "armor")
+		if not trained_armor.has(kind):
+			errors.append("%s: not trained in %s armor" % [c.id, kind])
+		var cap := JsonRead.get_int(item, "dex_cap", -1)
+		var dex_part := dex if cap < 0 else mini(dex, cap)
+		ac = JsonRead.get_int(item, "base", 10) + dex_part
+		armored = true
+		var str_req := JsonRead.get_int(item, "str_req")
+		if str_req > 0 and c.abilities.score(Abilities.STR) < str_req:
+			c.speed -= HEAVY_ARMOR_PENALTY
+	if inv.off_hand != "" and Inventory.item_type(db, inv.off_hand) == "shield":
+		if not trained_armor.has("shield"):
+			errors.append("%s: not trained with shields" % c.id)
+		c.has_shield = true
+		ac += JsonRead.get_int(db.items[inv.off_hand], "ac", 2)
 	var weapon_masteries: Array[String] = []
-	for entry: Variant in equipment:
-		var item_id := ""
-		var count := 1
-		if typeof(entry) == TYPE_DICTIONARY:
-			var d: Dictionary = entry
-			item_id = JsonRead.get_str(d, "item")
-			count = JsonRead.get_int(d, "count", 1)
-		else:
-			item_id = str(entry)
+	for item_id in _ready_items(inv):
 		if not db.items.has(item_id):
-			errors.append("%s: unknown item '%s'" % [c.id, item_id])
 			continue
 		var item: Dictionary = db.items[item_id]
 		match JsonRead.get_str(item, "type"):
-			"armor":
-				var kind := JsonRead.get_str(item, "armor")
-				if not trained_armor.has(kind):
-					errors.append("%s: not trained in %s armor" % [c.id, kind])
-				var cap := JsonRead.get_int(item, "dex_cap", -1)
-				var dex_part := dex if cap < 0 else mini(dex, cap)
-				ac = JsonRead.get_int(item, "base", 10) + dex_part
-				armored = true
-				var str_req := JsonRead.get_int(item, "str_req")
-				if str_req > 0 and c.abilities.score(Abilities.STR) < str_req:
-					c.speed -= HEAVY_ARMOR_PENALTY
-			"shield":
-				if not trained_armor.has("shield"):
-					errors.append("%s: not trained with shields" % c.id)
-				c.has_shield = true
-				ac += JsonRead.get_int(item, "ac", 2)
 			"weapon":
-				if not trained_weapons.has(JsonRead.get_str(item, "category")):
-					errors.append("%s: not trained with %s" % [c.id, item_id])
-				var attack := weapon_action(c, item)
-				if JsonRead.get_bool(item, "thrown"):
-					attack.resource = "item_" + item_id
-					c.resources_max[attack.resource] = count
-				c.actions.append(attack)
-				if attack.mastery != "":
-					weapon_masteries.append(attack.mastery)
+				_add_weapon(c, cls, item, inv, weapon_masteries, errors)
 			"consumable":
 				var action_data := JsonRead.get_dict(item, "action").duplicate()
 				action_data["id"] = "use_" + item_id
 				action_data["name_key"] = JsonRead.get_str(item, "name_key", item_id)
 				action_data["resource"] = "item_" + item_id
 				var action := ActionDef.from_dict(action_data, errors)
-				c.resources_max[action.resource] = count
+				c.resources_max[action.resource] = inv.belt_count(item_id)
 				c.actions.append(action)
-			_:
-				errors.append("%s: item '%s' has unknown type" % [c.id, item_id])
 	for t in c.traits_of(TraitDef.AC_BONUS):
 		if t.when == TraitDef.WHEN_ARMORED and armored:
 			ac += t.value
 	c.armor_class = ac
+	if inv.weight(db) > Inventory.carry_limit(c.abilities.score(Abilities.STR)):
+		c.speed = mini(c.speed, OVERLOADED_SPEED)
 	if c.masteries.has("*"):
 		weapon_masteries.sort()
 		c.masteries = weapon_masteries
+
+
+## Предметы под рукой без повторов: руки, затем пояс по порядку.
+static func _ready_items(inv: Inventory) -> Array[String]:
+	var ids: Array[String] = []
+	for item_id: String in [inv.main_hand, inv.off_hand]:
+		if item_id != "" and not ids.has(item_id):
+			ids.append(item_id)
+	for s in inv.belt:
+		if not ids.has(s.item):
+			ids.append(s.item)
+	return ids
+
+
+static func _add_weapon(
+	c: Combatant,
+	cls: Dictionary,
+	item: Dictionary,
+	inv: Inventory,
+	weapon_masteries: Array[String],
+	errors: Array[String]
+) -> void:
+	var item_id := JsonRead.get_str(item, "id")
+	if not JsonRead.get_str_array(cls, "weapons").has(JsonRead.get_str(item, "category")):
+		errors.append("%s: not trained with %s" % [c.id, item_id])
+	var attack := weapon_action(c, item)
+	if JsonRead.get_bool(item, "thrown"):
+		attack.resource = "item_" + item_id
+		var in_hands := 0
+		for hand: String in [inv.main_hand, inv.off_hand]:
+			if hand == item_id:
+				in_hands += 1
+		c.resources_max[attack.resource] = in_hands + inv.belt_count(item_id)
+	c.actions.append(attack)
+	if attack.mastery != "":
+		weapon_masteries.append(attack.mastery)
 
 
 ## Атака оружием: MOD — Сила (ближний и метательное) или Ловкость (дальнобойное);

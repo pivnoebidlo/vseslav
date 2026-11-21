@@ -8,7 +8,7 @@ UI_ROUND_TURN,Раунд {round}. Ходит {name},Round {round}. {name}'s turn
 UI_ECONOMY,Действие: {action} · Бонус: {bonus} · Реакция: {reaction} · Перемещение: {move} кл.,Action: {action} · Bonus: {bonus} · Reaction: {reaction} · Move: {move} sq.
 UI_READY,есть,ready
 UI_SPENT,нет,spent
-UI_HINT,"ЛКМ: по клетке — идти, по врагу — лучшая атака. Выберите действие внизу для заговоров и умений. ПКМ / Esc — отмена.","LMB: square — move, enemy — best attack. Pick an action below for spells and abilities. RMB / Esc — cancel."
+UI_HINT,"ЛКМ: по клетке — идти, по врагу — лучшая атака. Выберите действие внизу для заговоров и умений. ПКМ / Esc — отмена. Колесо — масштаб, WASD / средняя кнопка — сдвиг камеры.","LMB: square — move, enemy — best attack. Pick an action below for spells and abilities. RMB / Esc — cancel. Wheel — zoom, WASD / middle button — pan."
 UI_TARGETING,Цель для «{action}»: {hint},Target for “{action}”: {hint}
 UI_TARGET_ENEMY,выберите врага,pick an enemy
 UI_TARGET_ALLY,выберите союзника,pick an ally

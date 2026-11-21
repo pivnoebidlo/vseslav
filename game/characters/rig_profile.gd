@@ -17,6 +17,12 @@ var detect: Array[String] = []
 var bones: Dictionary[String, String] = {}
 ## Имена уже гуманоидные: переименование не нужно, только сопоставление.
 var identity: bool = false
+## Роль анимации (idle, walk, melee, …) → имена анимаций этого рига по порядку
+## предпочтения. Используются фигурами боя (game/arena/unit_view.gd).
+var animations: Dictionary[String, PackedStringArray] = {}
+## Узлы-крепления (кости рук), на которых висит снаряжение модели. Фигура показывает
+## только то снаряжение, что перечислено в её описании (modules/*/models/models.json).
+var attachment_slots: Array[String] = []
 
 var _strip: RegEx = null
 
@@ -34,6 +40,10 @@ static func from_dict(data: Dictionary) -> RigProfile:
 	var map := JsonRead.get_dict(data, "bones")
 	for key: Variant in map:
 		p.bones[str(key).to_lower()] = str(map[key])
+	p.attachment_slots = JsonRead.get_str_array(data, "attachment_slots")
+	var anims := JsonRead.get_dict(data, "animations")
+	for role: Variant in anims:
+		p.animations[str(role)] = PackedStringArray(JsonRead.get_str_array(anims, str(role)))
 	return p
 
 

@@ -13,6 +13,7 @@ const ARENAS: Array[String] = ["doroga", "polyana", "pogost"]
 const ARENA_DIR := "res://modules/spike/arenas"
 const MODULE_DIRS: Array[String] = ["res://modules/base", "res://modules/spike"]
 const RULES_DIR := "res://modules/base/rules"
+const MODELS_DIR := "res://modules/base/models"
 const SAVE_DIR := "user://saves"
 const SAVE_PATH := "user://saves/arena_combat.json"
 const CELL := BattleGrid.CELL_SIZE_M
@@ -20,16 +21,26 @@ const LEVEL_HEIGHT := 0.75
 const WALL_HEIGHT := 2.4
 const LOW_OBSTACLE_HEIGHT := 0.6
 const AI_STEP_DELAY := 0.3
-const MOVE_STEP_TIME := 0.12
+const MOVE_STEP_TIME := 0.22
 const SCREENSHOT_TIMEOUT := 25.0
+const CAMERA_OFFSET := Vector3(0.0, 14.0, 10.0)
+const ZOOM_MIN := 0.45
+const ZOOM_MAX := 1.3
+const ZOOM_STEP := 0.1
+const PAN_STEP := 0.75
+const PAN_DRAG_SPEED := 0.02
 const DEFAULT_LANG := "ru"
 const NO_CELL := ActionResolver.NO_CELL
 
 var _arena := "doroga"
 var _arena_data: Dictionary = {}
 var _db: RulesDb
+var _figures: FigureCatalog
 var _state: CombatState
 var _world: Node3D
+var _camera: Camera3D = null
+var _camera_target := Vector3.ZERO
+var _zoom := 1.0
 var _tiles: Dictionary[Vector2i, MeshInstance3D] = {}
 var _units: Dictionary[String, UnitView] = {}
 var _highlighted: Array[Vector2i] = []
@@ -66,6 +77,7 @@ func _ready() -> void:
 	for dir in MODULE_DIRS:
 		ModuleLocales.load_module(dir)
 	_db = RulesDb.load_dir(RULES_DIR)
+	_figures = FigureCatalog.load_dir(MODELS_DIR, RigProfile.load_all())
 	_setup_materials()
 	_setup_environment()
 	_setup_ui()
@@ -144,12 +156,43 @@ func _setup_camera(grid: BattleGrid) -> void:
 	var camera := Camera3D.new()
 	camera.name = "Camera"
 	_world.add_child(camera)
-	# Цель взгляда смещена к камере, чтобы поле не уходило под лог внизу экрана,
-	# и сдвинута влево, чтобы его не закрывала панель слева сверху.
-	var target := center + Vector3(-2.5, 0.0, 3.5)
-	camera.position = target + Vector3(0.0, 15.0, 9.5)
-	camera.look_at(target)
+	camera.fov = 50.0
+	# Цель взгляда смещена к камере, чтобы поле не уходило под лог внизу экрана.
+	_camera_target = center + Vector3(-1.5, 0.0, 2.0)
+	_camera = camera
+	_zoom = 1.1
+	_place_camera()
 	camera.current = true
+
+
+func _pan_by_key(keycode: Key) -> void:
+	match keycode:
+		KEY_A, KEY_LEFT:
+			_pan(Vector3(-PAN_STEP, 0.0, 0.0))
+		KEY_D, KEY_RIGHT:
+			_pan(Vector3(PAN_STEP, 0.0, 0.0))
+		KEY_W, KEY_UP:
+			_pan(Vector3(0.0, 0.0, -PAN_STEP))
+		KEY_S, KEY_DOWN:
+			_pan(Vector3(0.0, 0.0, PAN_STEP))
+
+
+func _pan(delta: Vector3) -> void:
+	if _state == null:
+		return
+	var grid := _state.grid
+	var size := Vector3(grid.width * CELL, 0.0, grid.depth * CELL)
+	_camera_target = (_camera_target + delta).clamp(-size * 0.25, size * 1.25)
+	_place_camera()
+
+
+## Камера смотрит на поле сверху-спереди; колесо мыши приближает и отдаляет,
+## WASD, стрелки и средняя кнопка мыши двигают.
+func _place_camera() -> void:
+	if _camera == null:
+		return
+	_camera.position = _camera_target + CAMERA_OFFSET * _zoom
+	_camera.look_at(_camera_target)
 
 
 func _setup_ui() -> void:
@@ -255,10 +298,41 @@ func _rebuild_world() -> void:
 	for c in _state.combatants:
 		var view := UnitView.new()
 		_world.add_child(view)
-		view.setup(c.id, c.team)
+		var entry := _figures.entry(_template_id(c.id))
+		view.setup(c.id, c.team, entry, _figures.instantiate(entry))
 		view.place(_column_position(c.column))
 		_units[c.id] = view
+	for err in _figures.errors:
+		push_error(err)
+		_write(CombatLogFormat.tr_fmt("LOG_DATA_ERROR", {"error": err}), CombatLogFormat.COLOR_BAD)
+	_figures.errors.clear()
+	_face_enemies()
 	_refresh()
+
+
+## Id персонажа или существа, из которого собран участник арены.
+func _template_id(combatant_id: String) -> String:
+	for raw: Variant in JsonRead.get_array(_arena_data, "combatants"):
+		if typeof(raw) != TYPE_DICTIONARY:
+			continue
+		var entry: Dictionary = raw
+		if JsonRead.get_str(entry, "id") == combatant_id:
+			var character := JsonRead.get_str(entry, "character")
+			return character if character != "" else JsonRead.get_str(entry, "creature")
+	return ""
+
+
+## В начале боя каждый смотрит на середину противников.
+func _face_enemies() -> void:
+	for c in _state.combatants:
+		var sum := Vector3.ZERO
+		var count := 0
+		for other in _state.combatants:
+			if other.team != c.team:
+				sum += _column_position(other.column)
+				count += 1
+		if count > 0:
+			_units[c.id].face(sum / count)
 
 
 func _add_tile(grid: BattleGrid, column: Vector2i) -> void:
@@ -369,14 +443,25 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key != null:
 		if key.pressed and key.keycode == KEY_ESCAPE:
 			_cancel_selection()
+		elif key.pressed:
+			_pan_by_key(key.keycode)
 		return
 	var motion := event as InputEventMouseMotion
 	if motion != null:
+		if motion.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
+			_pan(Vector3(-motion.relative.x, 0.0, -motion.relative.y) * PAN_DRAG_SPEED * _zoom)
+			return
 		_on_hover(motion.position)
 		return
 	var click := event as InputEventMouseButton
 	if click != null and click.pressed:
-		if click.button_index == MOUSE_BUTTON_RIGHT:
+		if click.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom = maxf(ZOOM_MIN, _zoom - ZOOM_STEP)
+			_place_camera()
+		elif click.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom = minf(ZOOM_MAX, _zoom + ZOOM_STEP)
+			_place_camera()
+		elif click.button_index == MOUSE_BUTTON_RIGHT:
 			_cancel_selection()
 		elif click.button_index == MOUSE_BUTTON_LEFT:
 			_on_left_click(click.position)
@@ -641,10 +726,12 @@ func _play_events(events: Array[CombatEvent]) -> void:
 		match e.type:
 			CombatEvent.MOVED:
 				await _animate_move(e)
+			CombatEvent.ACTION:
+				await _animate_action(e)
 			CombatEvent.ATTACK:
-				var target := JsonRead.get_str(e.data, "target")
-				if JsonRead.get_bool(e.data, "hit") and _units.has(target):
-					_units[target].flash()
+				await _animate_attack(e)
+			CombatEvent.COMBAT_ENDED:
+				_celebrate(JsonRead.get_str(e.data, "winner"))
 		var line := CombatLogFormat.line(_state, e)
 		if line.text != "":
 			_write(line.text, line.color)
@@ -654,13 +741,66 @@ func _play_events(events: Array[CombatEvent]) -> void:
 func _animate_move(e: CombatEvent) -> void:
 	var view := _units[JsonRead.get_str(e.data, "id")]
 	_clear_highlight()
+	view.walk(true)
 	for cell: Variant in JsonRead.get_array(e.data, "path"):
 		var xyz: Array = cell
 		var column := Vector2i(JsonRead.to_int(xyz[0]), JsonRead.to_int(xyz[2]))
+		var to := _column_position(column)
+		view.face(to)
 		var tween := create_tween()
-		tween.tween_property(view, "position", _column_position(column), MOVE_STEP_TIME)
+		tween.tween_property(view, "position", to, MOVE_STEP_TIME)
 		await tween.finished
-		view.place(_column_position(column))
+		view.place(to)
+	view.walk(false)
+
+
+## Удар или выстрел: поворот к цели, анимация, вздрагивание цели при попадании.
+func _animate_attack(e: CombatEvent) -> void:
+	var actor := _state.get_combatant(JsonRead.get_str(e.data, "id"))
+	var target_id := JsonRead.get_str(e.data, "target")
+	if actor == null or not _units.has(actor.id) or not _units.has(target_id):
+		return
+	var view := _units[actor.id]
+	var target_view := _units[target_id]
+	view.face(target_view.position)
+	var action := actor.get_action(JsonRead.get_str(e.data, "action"))
+	var role := "melee"
+	if action != null and action.attack_type == ActionDef.RANGED:
+		role = "throw" if action.resource.begins_with("item_") else "ranged"
+	await get_tree().create_timer(view.play(role)).timeout
+	if JsonRead.get_bool(e.data, "hit"):
+		target_view.flash()
+
+
+## Заговоры и умения (атаки анимирует _animate_attack): поворот к цели или точке.
+func _animate_action(e: CombatEvent) -> void:
+	var actor := _state.get_combatant(JsonRead.get_str(e.data, "id"))
+	if actor == null or not _units.has(actor.id):
+		return
+	var action := actor.get_action(JsonRead.get_str(e.data, "action"))
+	if action == null or action.special != "":
+		return
+	if action.kind == ActionDef.KIND_ATTACK or action.kind == ActionDef.KIND_MULTI:
+		return
+	var view := _units[actor.id]
+	var target_id := JsonRead.get_str(e.data, "target")
+	if action.target == ActionDef.TARGET_POINT:
+		var cell := JsonRead.to_vec2i(e.data.get("cell", []))
+		view.face(_column_position(cell))
+	elif _units.has(target_id) and target_id != actor.id:
+		view.face(_units[target_id].position)
+	var helpful := (
+		action.kind == ActionDef.KIND_HEAL
+		or action.target == ActionDef.TARGET_ALLY
+		or action.target == ActionDef.TARGET_SELF
+	)
+	await get_tree().create_timer(view.play("support" if helpful else "cast")).timeout
+
+
+func _celebrate(winner: String) -> void:
+	for c in _state.combatants:
+		if c.team == winner and c.is_alive() and _units.has(c.id):
+			_units[c.id].play("victory")
 
 
 func _refresh() -> void:

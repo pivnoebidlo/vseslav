@@ -1,0 +1,21 @@
+{
+  "_comment": "Облик участников боя: id персонажа или существа → модель (KayKit, CC0, см. CREDITS.md), снаряжение в руках, свои анимации. figure — простая фигура без модели.",
+  "figures": {
+    "ratnik": { "file": "knight.glb", "hold": ["1H_Sword", "Round_Shield"] },
+    "lovchiy": { "file": "rogue_hooded.glb", "hold": ["2H_Crossbow"] },
+    "volkhv": { "file": "mage.glb", "hold": ["2H_Staff"] },
+    "razboynik": { "file": "rogue.glb", "hold": ["Knife"],
+      "animations": { "ranged": ["1H_Ranged_Shoot"] } },
+    "ataman": { "file": "barbarian.glb", "hold": ["1H_Axe", "Barbarian_Round_Shield"] },
+    "upyr": { "file": "skeleton_warrior.glb", "hold": [],
+      "animations": {
+        "idle": ["Idle_Combat", "Idle"],
+        "melee": ["Unarmed_Melee_Attack_Punch_A"],
+        "downed": ["Death_C_Skeletons"],
+        "downed_idle": ["Death_C_Pose"],
+        "revive": ["Death_C_Skeletons_Resurrect"]
+      } },
+    "volk": { "figure": "beast" },
+    "poludnitsa": { "figure": "spirit" }
+  }
+}

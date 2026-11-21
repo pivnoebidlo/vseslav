@@ -36,7 +36,7 @@ godot --headless --import
 ```sh
 godot --path .                 # тестовый бой: ЛКМ по клетке — идти, по врагу — атаковать, внизу — заговоры и умения
 tools/fetch_sample_models.sh   # скачать образцы моделей в пользовательскую папку
-godot --path . -- --arena=polyana                 # тестовый бой на выбраной арене, доступные арены: doroga | polyana | pogost
+godot --path . -- --arena=polyana                 # тестовый бой на выбранной арене, доступные арены: doroga | polyana | pogost
 godot --path . res://game/spikes/model_viewer.tscn   # просмотр моделей и ретаргетинг анимаций
 tools/test.sh                  # тесты
 tools/lint.sh                  # линтер

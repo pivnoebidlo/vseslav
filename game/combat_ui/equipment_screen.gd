@@ -270,13 +270,11 @@ func _give_menu(inv: Inventory, item_id: String) -> MenuButton:
 func _stats_column(inv: Inventory) -> VBoxContainer:
 	var col := _column(240)
 	col.add_child(_heading("UI_EQ_STATS_TITLE"))
-	var errors: Array[String] = []
-	var hero := CombatantBuilder.from_character(
-		_db, _db.characters[_current], errors, _party.inventory_copy(_current)
-	)
+	var hero := _party.build_hero(_db, _current)
 	var stats := Label.new()
 	stats.text = CombatLogFormat.tr_fmt(
-		"UI_EQ_STATS", {"ac": hero.armor_class, "hp": hero.max_hp, "speed": hero.speed}
+		"UI_EQ_STATS",
+		{"ac": hero.armor_class, "hp": "%d/%d" % [hero.hp, hero.max_hp], "speed": hero.speed}
 	)
 	stats.add_theme_font_size_override("font_size", 14)
 	col.add_child(stats)

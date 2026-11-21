@@ -178,6 +178,7 @@ func _setup_ui() -> void:
 	_add_button(buttons, "UI_RESTART", _on_restart)
 	_add_button(buttons, "UI_EQUIPMENT", _on_equipment)
 	_add_button(buttons, "UI_TRADE", _on_trade)
+	_add_button(buttons, "UI_REST", _on_rest)
 
 	var arena_row := HBoxContainer.new()
 	box.add_child(arena_row)
@@ -954,6 +955,14 @@ func _on_trade() -> void:
 	if not _busy:
 		_preview.visible = false
 		_screens.open_trade(_state)
+
+
+func _on_rest() -> void:
+	if _busy:
+		return
+	_preview.visible = false
+	if not _screens.open_rest(_state):
+		_write(tr("LOG_REST_NOT_NOW"), Color(1.0, 0.75, 0.4))
 
 
 func _on_party_changed() -> void:

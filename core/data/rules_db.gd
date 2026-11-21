@@ -69,6 +69,8 @@ func validate() -> void:
 	for id in common_actions:
 		if not actions.has(id):
 			errors.append("common action '%s' is not defined" % id)
+	for id: String in _sorted(classes):
+		Rest.validate_class(classes[id], errors)
 	for id: String in _sorted(characters):
 		CombatantBuilder.from_character(self, characters[id], errors)
 	for id: String in _sorted(creatures):

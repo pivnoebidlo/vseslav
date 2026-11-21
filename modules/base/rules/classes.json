@@ -1,7 +1,7 @@
 {
   "classes": [
     {
-      "id": "ratnik", "name_key": "CLASS_RATNIK", "hit_die": 10, "saves": ["str", "con"],
+      "id": "ratnik", "name_key": "CLASS_RATNIK", "recharge": { "second_wind": "short_one", "action_surge": "short" }, "hit_die": 10, "saves": ["str", "con"],
       "armor": ["light", "medium", "heavy", "shield"], "weapons": ["simple", "martial"], "weapon_mastery": true,
       "levels": {
         "1": { "actions": ["second_wind"], "resources": { "second_wind": 2 },
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "id": "lovchiy", "name_key": "CLASS_LOVCHIY", "hit_die": 10, "saves": ["str", "dex"],
+      "id": "lovchiy", "name_key": "CLASS_LOVCHIY", "recharge": { "favored_enemy": "long", "slot_1": "long" }, "hit_die": 10, "saves": ["str", "dex"],
       "armor": ["light", "medium", "shield"], "weapons": ["simple", "martial"], "weapon_mastery": true,
       "spell_ability": "wis", "spell_list": ["cure_wounds", "healing_word", "entangle"],
       "levels": {
@@ -35,7 +35,7 @@
       ]
     },
     {
-      "id": "volkhv", "name_key": "CLASS_VOLKHV", "hit_die": 8, "saves": ["int", "wis"],
+      "id": "volkhv", "name_key": "CLASS_VOLKHV", "recharge": { "slot_1": "long" }, "hit_die": 8, "saves": ["int", "wis"],
       "armor": ["light", "medium", "shield"], "weapons": ["simple"], "weapon_mastery": false,
       "spell_ability": "wis",
       "spell_list": ["produce_flame", "thorn_whip", "cure_wounds", "healing_word", "entangle", "thunderwave"],

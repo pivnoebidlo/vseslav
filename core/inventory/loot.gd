@@ -10,9 +10,9 @@ extends RefCounted
 ## [param rng] — отдельный генератор, чтобы не трогать состояние боя.
 static func collect(state: CombatState, db: RulesDb, before: Party, rng: Rng) -> Inventory:
 	var pile := Inventory.new()
-	var heroes := _player_team(state)
-	if heroes == "" or state.winner != heroes:
+	if not heroes_won(state):
 		return pile
+	var heroes := _player_team(state)
 	for c in state.sorted_combatants():
 		if c.team == heroes or c.is_standing() or not db.creatures.has(c.template):
 			continue
@@ -75,6 +75,12 @@ static func _recover_thrown(state: CombatState, before: Party, pile: Inventory) 
 				before.inventories[c.template].count_of(a.item) - c.inventory.count_of(a.item)
 			)
 			pile.add(a.item, IntMath.floor_div(maxi(thrown, 0), 2))
+
+
+## Бой закончился победой команды персонажей игрока.
+static func heroes_won(state: CombatState) -> bool:
+	var heroes := _player_team(state)
+	return heroes != "" and state.ended and state.winner == heroes
 
 
 ## Команда персонажей игрока; пусто — таких нет.

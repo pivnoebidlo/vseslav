@@ -23,6 +23,8 @@ static func from_entry(
 			return null
 		var inv := party.inventory_copy(char_id) if party != null else null
 		c = from_character(db, db.characters[char_id], errors, inv)
+		if c != null and party != null:
+			party.state_of(char_id).apply_to(c)
 	elif entry.has("creature"):
 		var creature_id := JsonRead.get_str(entry, "creature")
 		if not db.creatures.has(creature_id):

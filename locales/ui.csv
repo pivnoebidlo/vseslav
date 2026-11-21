@@ -245,3 +245,23 @@ UI_LOOT_EMPTY,Всё разобрано.,Nothing left.
 UI_LOOT_LOADS,Нагрузка (фунт.): {list},Load (lb): {list}
 UI_LB,фунт.,lb
 LOG_LOOT_TAKEN,Добыча разобрана.,Loot taken.
+UI_REST,Отдых,Rest
+UI_REST_SHORT,Короткий отдых (час),Short rest (an hour)
+UI_REST_SHORT_HINT,"Тратьте кости хитов по одной: кость + Телосложение (минимум 1 хит). В конце отдыха восстанавливаются умения короткого отдыха: «Натиск», одно «Второе дыхание».","Spend Hit Point Dice one at a time: die + Constitution (at least 1 HP). At the end, short-rest abilities recover: Action Surge, one use of Second Wind."
+UI_REST_SHORT_FINISH,Завершить короткий отдых,Finish the short rest
+UI_REST_HERO,{name} · хиты {hp}/{max} · кости хитов {dice}/{level} (к{die}),{name} · HP {hp}/{max} · Hit Dice {dice}/{level} (d{die})
+UI_REST_DEAD,{name} — погиб,{name} — dead
+UI_REST_ROLL,Бросить кость,Roll a die
+UI_REST_LONG,Длинный отдых (ночь),Long rest (a night)
+UI_REST_LONG_HINT,"Каждый съедает день еды (сухари) — из своего мешка или у товарищей. Сытые восстанавливают все хиты и кости хитов; заряды и ячейки заговоров восстанавливаются у всех.","Everyone eats a day of food (rusks) — from their own bag or a companion's. Fed heroes regain all HP and Hit Dice; charges and spell slots recover for everyone."
+UI_REST_FOOD,"Еды в мешках: {food}, живых героев: {heroes}","Food in the bags: {food}, heroes alive: {heroes}"
+UI_REST_LONG_DO,Отдохнуть ночь,Rest for the night
+LOG_REST_HIT_DIE,"{name}: к{die} [{roll}] {con} — восстанавливает {healed} хитов","{name}: d{die} [{roll}] {con} — regains {healed} HP"
+LOG_REST_SHORT_DONE,Короткий отдых окончен: умения короткого отдыха восстановлены.,Short rest finished: short-rest abilities recovered.
+LOG_REST_LONG_DONE,"Ночь прошла: хиты, кости и заряды восстановлены.","The night passed: HP, Hit Dice and charges recovered."
+LOG_REST_LONG_HUNGRY,"Ночь прошла. Без еды хиты не восстановили: {names}.","The night passed. Without food, no HP regained: {names}."
+LOG_REST_SAVED,Отдых окончен — партия сохранена.,Rest over — party saved.
+LOG_REST_NOT_NOW,Отдыхать можно после боя.,You can rest after the fight.
+err_rest_dead,Погибший не отдыхает.,The dead don't rest.
+err_rest_no_dice,Кости хитов кончились — до длинного отдыха.,No Hit Dice left until a long rest.
+err_rest_full_hp,Хиты и так полные.,HP already full.

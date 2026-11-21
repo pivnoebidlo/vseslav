@@ -44,7 +44,7 @@
     { "id": "sheynaya_grivna", "weight": 0.5, "price": 100, "name_key": "ITEM_SHEYNAYA_GRIVNA", "type": "treasure" },
     { "id": "fakel", "weight": 1, "price": 1, "name_key": "ITEM_FAKEL", "type": "gear" },
     { "id": "verevka", "weight": 5, "price": 4, "name_key": "ITEM_VEREVKA", "type": "gear" },
-    { "id": "suhari", "weight": 2, "price": 2, "name_key": "ITEM_SUHARI", "type": "gear" },
+    { "id": "suhari", "weight": 2, "price": 2, "name_key": "ITEM_SUHARI", "type": "gear", "food": true },
     { "id": "ognivo", "weight": 1, "price": 2, "name_key": "ITEM_OGNIVO", "type": "gear" }
   ]
 }

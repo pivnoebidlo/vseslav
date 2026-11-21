@@ -16,6 +16,7 @@ var _db: RulesDb
 var _equipment: EquipmentScreen
 var _trade: TradeScreen
 var _loot: LootScreen
+var _rest: RestScreen
 
 
 func setup(db: RulesDb) -> void:
@@ -31,7 +32,8 @@ func setup(db: RulesDb) -> void:
 	_equipment = EquipmentScreen.new()
 	_trade = TradeScreen.new()
 	_loot = LootScreen.new()
-	for screen: PanelContainer in [_equipment, _trade, _loot]:
+	_rest = RestScreen.new()
+	for screen: PanelContainer in [_equipment, _trade, _loot, _rest]:
 		screen.set_anchors_preset(Control.PRESET_CENTER)
 		screen.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		screen.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -39,6 +41,7 @@ func setup(db: RulesDb) -> void:
 	_equipment.closed.connect(_on_closed)
 	_trade.closed.connect(_on_closed)
 	_loot.closed.connect(_on_loot_closed)
+	_rest.closed.connect(_on_rest_closed)
 
 
 ## Герои партии, которые участвуют в бою [param state].
@@ -60,10 +63,23 @@ func open_trade(state: CombatState) -> void:
 	_trade.open(_db, party, market, heroes_of(state, party), _note(state))
 
 
+## Отдых — только между боями; false — бой ещё идёт.
+func open_rest(state: CombatState) -> bool:
+	if not state.ended:
+		return false
+	_equipment.visible = false
+	_trade.visible = false
+	_rest.open(_db, party, heroes_of(state, party), Rng.new(randi()))
+	return true
+
+
 ## После боя: добыча (если победили), затем потраченное списывается из снаряжения.
 ## Добыча считается отдельным генератором — копией генератора боя, — состояние
 ## боя не меняется. В дымовом прогоне окно добычи не открывается.
 func after_combat(state: CombatState) -> void:
+	# Поражение на арене не сохраняется: партия остаётся такой, как перед боем.
+	if not Loot.heroes_won(state):
+		return
 	var pile := Loot.collect(state, _db, party, Rng.from_dict(state.rng.to_dict()))
 	party.take_from_combat(state)
 	save()
@@ -84,6 +100,12 @@ func save() -> void:
 
 func _note(state: CombatState) -> String:
 	return "" if state.ended else TranslationServer.translate("UI_EQ_RESTART_NOTE")
+
+
+func _on_rest_closed(was_changed: bool) -> void:
+	if was_changed:
+		save()
+		message.emit(TranslationServer.translate("LOG_REST_SAVED"))
 
 
 func _on_loot_closed(was_changed: bool) -> void:

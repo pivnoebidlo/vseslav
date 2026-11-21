@@ -49,6 +49,8 @@ var concentration: String = ""
 var reaction_ready: bool = true
 ## Колонка на сетке (x, z); уровень берётся из сетки.
 var column: Vector2i = Vector2i.ZERO
+## Снаряжение героя (ADR-0024); у существ — null.
+var inventory: Inventory = null
 
 
 ## В строю: хиты больше 0. Лежащий без сознания персонаж ещё не выбыл из боя,
@@ -109,6 +111,20 @@ func save_modifier(ability_id: String) -> int:
 	if save_proficiencies.has(ability_id):
 		mod += proficiency
 	return mod
+
+
+## Под рукой ли предмет действия: в руке или на поясе. Не предмет — всегда да.
+func item_ready(action: ActionDef) -> bool:
+	if action.item == "":
+		return true
+	return inventory != null and inventory.ready_count(action.item) > 0
+
+
+## Сколько предметов действия под рукой (для расходников и метательного).
+func item_count(action: ActionDef) -> int:
+	if action.item == "" or inventory == null:
+		return 0
+	return inventory.ready_count(action.item)
 
 
 func resource_left(resource_id: String) -> int:
@@ -182,6 +198,7 @@ func to_dict() -> Dictionary:
 		"concentration": concentration,
 		"reaction_ready": reaction_ready,
 		"at": [column.x, column.y],
+		"inventory": inventory.to_dict() if inventory != null else null,
 	}
 
 
@@ -228,6 +245,10 @@ static func from_dict(data: Dictionary, errors: Array[String] = []) -> Combatant
 	c.concentration = JsonRead.get_str(data, "concentration")
 	c.reaction_ready = JsonRead.get_bool(data, "reaction_ready", true)
 	c.column = JsonRead.to_vec2i(data.get("at", [0, 0]))
+	var inv: Variant = data.get("inventory")
+	if typeof(inv) == TYPE_DICTIONARY:
+		var inv_data: Dictionary = inv
+		c.inventory = Inventory.from_dict(inv_data)
 	return c
 
 

@@ -9,10 +9,6 @@ const SLOT_MAIN := "main_hand"
 const SLOT_OFF := "off_hand"
 const SLOTS: Array[String] = [SLOT_ARMOR, SLOT_MAIN, SLOT_OFF]
 const BELT_SIZE := 4
-## Грузоподъёмность SRD 5.2 (средний размер): нести — Сила × 15 фунтов,
-## тащить — Сила × 30; вес хранится в десятых долях фунта.
-const CARRY_PER_STR := 150
-const DRAG_PER_STR := 300
 
 const ERR_UNKNOWN_ITEM := "err_item_unknown"
 const ERR_NOT_HERE := "err_item_not_here"
@@ -30,43 +26,6 @@ var belt: Array[ItemStack] = []
 var bag: Array[ItemStack] = []
 var purse: int = 0
 
-# --- Свойства предметов ---------------------------------------------------------
-
-
-static func _item(db: RulesDb, item_id: String) -> Dictionary:
-	if not db.items.has(item_id):
-		return {}
-	return db.items[item_id]
-
-
-static func item_type(db: RulesDb, item_id: String) -> String:
-	return JsonRead.get_str(_item(db, item_id), "type")
-
-
-static func has_property(db: RulesDb, item_id: String, prop: String) -> bool:
-	return JsonRead.get_str_array(_item(db, item_id), "properties").has(prop)
-
-
-## Вес одного предмета в десятых долях фунта (в данных — фунты, можно с половинами).
-static func item_weight(db: RulesDb, item_id: String) -> int:
-	var raw: Variant = _item(db, item_id).get("weight", 0)
-	if typeof(raw) != TYPE_INT and typeof(raw) != TYPE_FLOAT:
-		return 0
-	# Перевод при чтении данных: половины фунта точны в двоичной записи.
-	var pounds: float = raw
-	return maxi(roundi(pounds * 10.0), 0)
-
-
-static func item_price(db: RulesDb, item_id: String) -> int:
-	return maxi(JsonRead.get_int(_item(db, item_id), "price"), 0)
-
-
-## На пояс — только то, что пригодится в бою: оружие и расходники.
-static func fits_belt(db: RulesDb, item_id: String) -> bool:
-	var t := item_type(db, item_id)
-	return t == "weapon" or t == "consumable"
-
-
 # --- Запросы --------------------------------------------------------------------
 
 
@@ -83,7 +42,7 @@ func slot_item(slot: String) -> String:
 
 ## Сколько таких предметов всего: в руках, на доспехе, на поясе и в мешке.
 func count_of(item_id: String) -> int:
-	var n := _count_in(bag, item_id) + _count_in(belt, item_id)
+	var n := ItemStack.count_in(bag, item_id) + ItemStack.count_in(belt, item_id)
 	for slot in SLOTS:
 		if slot_item(slot) == item_id:
 			n += 1
@@ -91,35 +50,47 @@ func count_of(item_id: String) -> int:
 
 
 func belt_count(item_id: String) -> int:
-	return _count_in(belt, item_id)
+	return ItemStack.count_in(belt, item_id)
 
 
 func bag_count(item_id: String) -> int:
-	return _count_in(bag, item_id)
+	return ItemStack.count_in(bag, item_id)
+
+
+## Предмет в руке.
+func in_hands(item_id: String) -> bool:
+	return item_id != "" and (main_hand == item_id or off_hand == item_id)
+
+
+## Сколько таких предметов под рукой: в руках и на поясе.
+func ready_count(item_id: String) -> int:
+	var n := belt_count(item_id)
+	if main_hand == item_id:
+		n += 1
+	if off_hand == item_id:
+		n += 1
+	return n
+
+
+## Есть ли место на поясе для стопки [param item_id] (своя стопка уже есть или свободно).
+func belt_has_room(item_id: String) -> bool:
+	return belt_count(item_id) > 0 or belt.size() < BELT_SIZE
 
 
 ## Общий вес в десятых долях фунта.
 func weight(db: RulesDb) -> int:
 	var total := 0
 	for slot in SLOTS:
-		total += item_weight(db, slot_item(slot))
+		total += ItemInfo.weight(db, slot_item(slot))
 	for s in belt:
-		total += item_weight(db, s.item) * s.count
+		total += ItemInfo.weight(db, s.item) * s.count
 	for s in bag:
-		total += item_weight(db, s.item) * s.count
+		total += ItemInfo.weight(db, s.item) * s.count
 	return total
 
 
-static func carry_limit(strength: int) -> int:
-	return maxi(strength, 0) * CARRY_PER_STR
-
-
-static func drag_limit(strength: int) -> int:
-	return maxi(strength, 0) * DRAG_PER_STR
-
-
-func two_handed_in_main(db: RulesDb) -> bool:
-	return main_hand != "" and has_property(db, main_hand, "two_handed")
+func _two_handed_in_main(db: RulesDb) -> bool:
+	return main_hand != "" and ItemInfo.has_property(db, main_hand, "two_handed")
 
 
 # --- Изменения ------------------------------------------------------------------
@@ -129,7 +100,7 @@ func two_handed_in_main(db: RulesDb) -> bool:
 func add(item_id: String, count: int = 1) -> void:
 	if count <= 0:
 		return
-	_add_to(bag, item_id, count)
+	ItemStack.add_to(bag, item_id, count)
 
 
 ## Убирает [param count] предметов из мешка, затем с пояса. false — столько нет.
@@ -137,8 +108,8 @@ func remove(item_id: String, count: int = 1) -> bool:
 	if bag_count(item_id) + belt_count(item_id) < count:
 		return false
 	var from_bag := mini(bag_count(item_id), count)
-	_take_from(bag, item_id, from_bag)
-	_take_from(belt, item_id, count - from_bag)
+	ItemStack.take_from(bag, item_id, from_bag)
+	ItemStack.take_from(belt, item_id, count - from_bag)
 	return true
 
 
@@ -152,12 +123,12 @@ func equip(db: RulesDb, item_id: String, slot: String) -> String:
 	if err != "":
 		return err
 	if bag_count(item_id) > 0:
-		_take_from(bag, item_id, 1)
+		ItemStack.take_from(bag, item_id, 1)
 	else:
-		_take_from(belt, item_id, 1)
+		ItemStack.take_from(belt, item_id, 1)
 	var previous := slot_item(slot)
 	if previous != "":
-		_add_to(bag, previous, 1)
+		ItemStack.add_to(bag, previous, 1)
 	_set_slot(slot, item_id)
 	return ""
 
@@ -168,21 +139,21 @@ func unequip(slot: String) -> String:
 	if item_id == "":
 		return ERR_NOT_HERE
 	_set_slot(slot, "")
-	_add_to(bag, item_id, 1)
+	ItemStack.add_to(bag, item_id, 1)
 	return ""
 
 
 ## Переложить все такие предметы из мешка на пояс.
 func to_belt(db: RulesDb, item_id: String) -> String:
-	if not fits_belt(db, item_id):
+	if not ItemInfo.fits_belt(db, item_id):
 		return ERR_NOT_FOR_BELT
 	var n := bag_count(item_id)
 	if n <= 0:
 		return ERR_NOT_HERE
 	if belt_count(item_id) == 0 and belt.size() >= BELT_SIZE:
 		return ERR_BELT_FULL
-	_take_from(bag, item_id, n)
-	_add_to(belt, item_id, n)
+	ItemStack.take_from(bag, item_id, n)
+	ItemStack.add_to(belt, item_id, n)
 	return ""
 
 
@@ -191,8 +162,8 @@ func from_belt(item_id: String) -> String:
 	var n := belt_count(item_id)
 	if n <= 0:
 		return ERR_NOT_HERE
-	_take_from(belt, item_id, n)
-	_add_to(bag, item_id, n)
+	ItemStack.take_from(belt, item_id, n)
+	ItemStack.add_to(bag, item_id, n)
 	return ""
 
 
@@ -203,10 +174,10 @@ func give(
 ) -> String:
 	if count <= 0 or bag_count(item_id) < count:
 		return ERR_NOT_HERE
-	var added := item_weight(db, item_id) * count
-	if other.weight(db) + added > drag_limit(other_strength):
+	var added := ItemInfo.weight(db, item_id) * count
+	if other.weight(db) + added > ItemInfo.drag_limit(other_strength):
 		return ERR_TOO_HEAVY
-	_take_from(bag, item_id, count)
+	ItemStack.take_from(bag, item_id, count)
 	other.add(item_id, count)
 	return ""
 
@@ -239,7 +210,7 @@ func validate(db: RulesDb, owner_id: String, errors: Array[String]) -> void:
 	for s in belt:
 		if not db.items.has(s.item):
 			errors.append("%s: unknown item '%s'" % [owner_id, s.item])
-		elif not fits_belt(db, s.item):
+		elif not ItemInfo.fits_belt(db, s.item):
 			errors.append("%s: %s cannot go on the belt" % [owner_id, s.item])
 	for s in bag:
 		if not db.items.has(s.item):
@@ -247,7 +218,7 @@ func validate(db: RulesDb, owner_id: String, errors: Array[String]) -> void:
 
 
 func to_dict() -> Dictionary:
-	var d := {"belt": _stacks_to_array(belt), "bag": _stacks_to_array(bag), "purse": purse}
+	var d := {"belt": ItemStack.to_array(belt), "bag": ItemStack.to_array(bag), "purse": purse}
 	for slot in SLOTS:
 		if slot_item(slot) != "":
 			d[slot] = slot_item(slot)
@@ -262,11 +233,11 @@ static func from_dict(data: Dictionary) -> Inventory:
 	for v: Variant in JsonRead.get_array(data, "belt"):
 		var s := ItemStack.from_value(v)
 		if s != null:
-			_add_to(inv.belt, s.item, s.count)
+			ItemStack.add_to(inv.belt, s.item, s.count)
 	for v: Variant in JsonRead.get_array(data, "bag"):
 		var s := ItemStack.from_value(v)
 		if s != null:
-			_add_to(inv.bag, s.item, s.count)
+			ItemStack.add_to(inv.bag, s.item, s.count)
 	inv.purse = maxi(JsonRead.get_int(data, "purse"), 0)
 	return inv
 
@@ -275,7 +246,7 @@ static func from_dict(data: Dictionary) -> Inventory:
 
 
 func _check_slot(db: RulesDb, item_id: String, slot: String) -> String:
-	var t := item_type(db, item_id)
+	var t := ItemInfo.item_type(db, item_id)
 	var fits := false
 	var hands_busy := false
 	match slot:
@@ -283,10 +254,10 @@ func _check_slot(db: RulesDb, item_id: String, slot: String) -> String:
 			fits = t == "armor"
 		SLOT_MAIN:
 			fits = t == "weapon"
-			hands_busy = has_property(db, item_id, "two_handed") and off_hand != ""
+			hands_busy = ItemInfo.has_property(db, item_id, "two_handed") and off_hand != ""
 		SLOT_OFF:
-			fits = t == "shield" or (t == "weapon" and has_property(db, item_id, "light"))
-			hands_busy = two_handed_in_main(db)
+			fits = t == "shield" or (t == "weapon" and ItemInfo.has_property(db, item_id, "light"))
+			hands_busy = _two_handed_in_main(db)
 	if not fits:
 		return ERR_WRONG_SLOT
 	return ERR_HANDS_BUSY if hands_busy else ""
@@ -300,38 +271,3 @@ func _set_slot(slot: String, item_id: String) -> void:
 			main_hand = item_id
 		SLOT_OFF:
 			off_hand = item_id
-
-
-static func _count_in(stacks: Array[ItemStack], item_id: String) -> int:
-	for s in stacks:
-		if s.item == item_id:
-			return s.count
-	return 0
-
-
-static func _add_to(stacks: Array[ItemStack], item_id: String, count: int) -> void:
-	if count <= 0:
-		return
-	for s in stacks:
-		if s.item == item_id:
-			s.count += count
-			return
-	stacks.append(ItemStack.new(item_id, count))
-
-
-static func _take_from(stacks: Array[ItemStack], item_id: String, count: int) -> void:
-	if count <= 0:
-		return
-	for i in stacks.size():
-		if stacks[i].item == item_id:
-			stacks[i].count -= count
-			if stacks[i].count <= 0:
-				stacks.remove_at(i)
-			return
-
-
-static func _stacks_to_array(stacks: Array[ItemStack]) -> Array:
-	var result: Array = []
-	for s in stacks:
-		result.append(s.to_value())
-	return result

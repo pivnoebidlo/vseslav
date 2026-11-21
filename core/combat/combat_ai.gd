@@ -105,12 +105,23 @@ static func attack_value(
 	return dmg * chance
 
 
+## Хватает ли зарядов и предмет под рукой (без учёта действия в этом ходу).
+static func _has_means(actor: Combatant, action: ActionDef) -> bool:
+	if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
+		return false
+	if not actor.item_ready(action):
+		return false
+	if action.item != "" and action.kind == ActionDef.KIND_ATTACK:
+		return InventoryCombat.can_draw(actor.inventory, action.item, action.two_handed) == ""
+	return true
+
+
 ## Есть ли у участника доступная атака, которая добьёт павшего (огонь, осина…).
 static func _can_finish(actor: Combatant, target: Combatant) -> bool:
 	for action in actor.actions:
 		if action.kind != ActionDef.KIND_ATTACK:
 			continue
-		if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
+		if not _has_means(actor, action):
 			continue
 		if _prevents_revive(action, target):
 			return true
@@ -215,7 +226,7 @@ static func _best_action(state: CombatState, actor: Combatant) -> CombatCommand:
 					continue
 				var score := _target_weight(enemy, attack_value(state, actor, action, enemy))
 				# Ресурсы бережём: расходуемое оружие чуть хуже при равной пользе.
-				if action.resource != "":
+				if action.resource != "" or action.consumes:
 					score -= SCALE
 				if score > best_score:
 					best_score = score
@@ -282,7 +293,7 @@ static func _can_attack_from(
 	for action in actor.actions:
 		if action.kind != ActionDef.KIND_ATTACK and action.kind != ActionDef.KIND_MULTI:
 			continue
-		if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
+		if not _has_means(actor, action):
 			continue
 		var reach := (
 			action.range_cells if action.kind == ActionDef.KIND_MULTI else action.max_range()
@@ -301,7 +312,9 @@ static func _prefers_ranged(actor: Combatant) -> bool:
 	var best_melee := 0
 	var best_ranged := 0
 	for action in actor.actions:
-		if action.kind != ActionDef.KIND_ATTACK or action.resource != "":
+		if action.kind != ActionDef.KIND_ATTACK or action.resource != "" or action.consumes:
+			continue
+		if not _has_means(actor, action):
 			continue
 		var dmg := 0
 		var vars := actor.formula_vars(action)

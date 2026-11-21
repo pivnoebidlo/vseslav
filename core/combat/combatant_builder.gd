@@ -179,9 +179,9 @@ static func _collect_class_features(
 		c.masteries = ["*"]
 
 
-## Снаряжение: доспех и щит → КД и скорость; оружие в руках и на поясе → атаки;
-## расходники с пояса → действия. Метательное оружие и расходники тратятся
-## (заряды = сколько их в руках и на поясе). Мешок в бою недоступен.
+## Снаряжение: доспех и щит → КД и скорость; оружие и расходники → действия
+## с привязкой к предмету. Доступны те, чей предмет в руке или на поясе; вещи
+## из мешка сначала достают (ADR-0024). Метательное и расходники тратятся.
 static func _equip(
 	db: RulesDb, c: Combatant, cls: Dictionary, inv: Inventory, errors: Array[String]
 ) -> void:
@@ -202,32 +202,33 @@ static func _equip(
 		var str_req := JsonRead.get_int(item, "str_req")
 		if str_req > 0 and c.abilities.score(Abilities.STR) < str_req:
 			c.speed -= HEAVY_ARMOR_PENALTY
-	if inv.off_hand != "" and Inventory.item_type(db, inv.off_hand) == "shield":
+	if inv.off_hand != "" and ItemInfo.item_type(db, inv.off_hand) == "shield":
 		if not trained_armor.has("shield"):
 			errors.append("%s: not trained with shields" % c.id)
 		c.has_shield = true
 		ac += JsonRead.get_int(db.items[inv.off_hand], "ac", 2)
 	var weapon_masteries: Array[String] = []
-	for item_id in _ready_items(inv):
+	var ready := _ready_items(inv)
+	for item_id in _combat_items(inv):
 		if not db.items.has(item_id):
 			continue
 		var item: Dictionary = db.items[item_id]
 		match JsonRead.get_str(item, "type"):
 			"weapon":
-				_add_weapon(c, cls, item, inv, weapon_masteries, errors)
+				_add_weapon(c, cls, item, ready.has(item_id), weapon_masteries, errors)
 			"consumable":
 				var action_data := JsonRead.get_dict(item, "action").duplicate()
 				action_data["id"] = "use_" + item_id
 				action_data["name_key"] = JsonRead.get_str(item, "name_key", item_id)
-				action_data["resource"] = "item_" + item_id
-				var action := ActionDef.from_dict(action_data, errors)
-				c.resources_max[action.resource] = inv.belt_count(item_id)
-				c.actions.append(action)
+				action_data["item"] = item_id
+				action_data["consumes"] = true
+				c.actions.append(ActionDef.from_dict(action_data, errors))
+	c.inventory = Inventory.from_dict(inv.to_dict())
 	for t in c.traits_of(TraitDef.AC_BONUS):
 		if t.when == TraitDef.WHEN_ARMORED and armored:
 			ac += t.value
 	c.armor_class = ac
-	if inv.weight(db) > Inventory.carry_limit(c.abilities.score(Abilities.STR)):
+	if inv.weight(db) > ItemInfo.carry_limit(c.abilities.score(Abilities.STR)):
 		c.speed = mini(c.speed, OVERLOADED_SPEED)
 	if c.masteries.has("*"):
 		weapon_masteries.sort()
@@ -246,25 +247,34 @@ static func _ready_items(inv: Inventory) -> Array[String]:
 	return ids
 
 
+## Все боевые предметы без повторов: под рукой (руки, пояс), затем мешок.
+static func _combat_items(inv: Inventory) -> Array[String]:
+	var ids := _ready_items(inv)
+	for s in inv.bag:
+		if not ids.has(s.item):
+			ids.append(s.item)
+	return ids
+
+
+## Оружие → атака. Невладение оружием под рукой — ошибка данных; оружием
+## из мешка, которым герой не владеет, он просто не пользуется.
 static func _add_weapon(
 	c: Combatant,
 	cls: Dictionary,
 	item: Dictionary,
-	inv: Inventory,
+	ready: bool,
 	weapon_masteries: Array[String],
 	errors: Array[String]
 ) -> void:
 	var item_id := JsonRead.get_str(item, "id")
 	if not JsonRead.get_str_array(cls, "weapons").has(JsonRead.get_str(item, "category")):
-		errors.append("%s: not trained with %s" % [c.id, item_id])
+		if ready:
+			errors.append("%s: not trained with %s" % [c.id, item_id])
+		return
 	var attack := weapon_action(c, item)
-	if JsonRead.get_bool(item, "thrown"):
-		attack.resource = "item_" + item_id
-		var in_hands := 0
-		for hand: String in [inv.main_hand, inv.off_hand]:
-			if hand == item_id:
-				in_hands += 1
-		c.resources_max[attack.resource] = in_hands + inv.belt_count(item_id)
+	attack.item = item_id
+	attack.consumes = JsonRead.get_bool(item, "thrown")
+	attack.two_handed = JsonRead.get_str_array(item, "properties").has("two_handed")
 	c.actions.append(attack)
 	if attack.mastery != "":
 		weapon_masteries.append(attack.mastery)

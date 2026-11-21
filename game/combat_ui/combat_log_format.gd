@@ -96,6 +96,8 @@ static func line(state: CombatState, e: CombatEvent) -> Line:
 				tr_fmt(key, {"name": who, "target": _name(state, JsonRead.get_str(d, "target"))}),
 				COLOR_INFO
 			)
+		CombatEvent.ITEM_MOVED:
+			return _item_moved(state, d, who)
 		CombatEvent.DOWNED:
 			var key := "LOG_DOWNED_REVIVING" if JsonRead.get_bool(d, "reviving") else "LOG_DOWNED"
 			return Line.new(tr_fmt(key, {"name": who}), COLOR_BAD)
@@ -113,6 +115,29 @@ static func line(state: CombatState, e: CombatEvent) -> Line:
 				TranslationServer.translate("LOG_WIN" if won else "LOG_LOSS"), COLOR_CRIT
 			)
 	return Line.new()
+
+
+static func _item_moved(state: CombatState, d: Dictionary, who: String) -> Line:
+	var actor_id := JsonRead.get_str(d, "id")
+	var args := {
+		"name": who,
+		"item": _item_name(state, actor_id, JsonRead.get_str(d, "item")),
+		"previous": _item_name(state, actor_id, JsonRead.get_str(d, "previous")),
+	}
+	var key := "LOG_ITEM_" + JsonRead.get_str(d, "op").to_upper()
+	if key == "LOG_ITEM_DRAW" and JsonRead.get_str(d, "previous") != "":
+		key += "_BAG" if JsonRead.get_str(d, "to") == "bag" else "_SWAP"
+	return Line.new(tr_fmt(key, args), COLOR_INFO)
+
+
+## Название предмета по действию участника с этим предметом (или id).
+static func _item_name(state: CombatState, actor_id: String, item_id: String) -> String:
+	var actor := state.get_combatant(actor_id)
+	if actor != null:
+		for a in actor.actions:
+			if a.item == item_id:
+				return TranslationServer.translate(a.name_key)
+	return item_id
 
 
 static func _action(state: CombatState, d: Dictionary, who: String) -> Line:

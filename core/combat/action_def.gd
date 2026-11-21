@@ -82,6 +82,13 @@ var mastery: String = ""
 var special: String = ""
 ## Для multiattack: id действий, которые выполняются по очереди.
 var sub_actions: Array[String] = []
+## Предмет, которым действие делается (оружие, отвар); пусто — не предмет.
+## Доступно, только если предмет в руке или на поясе (ADR-0024).
+var item: String = ""
+## Предмет тратится при использовании (метательное оружие, расходник).
+var consumes: bool = false
+## Оружие двуручное: в руку — только при свободной второй руке.
+var two_handed: bool = false
 
 
 func is_attack() -> bool:
@@ -130,6 +137,9 @@ func to_dict() -> Dictionary:
 		"mastery": mastery,
 		"special": special,
 		"sub_actions": sub_actions.duplicate(),
+		"item": item,
+		"consumes": consumes,
+		"two_handed": two_handed,
 	}
 
 
@@ -174,6 +184,9 @@ static func from_dict(data: Dictionary, errors: Array[String] = []) -> ActionDef
 	a.mastery = JsonRead.get_str(data, "mastery")
 	a.special = JsonRead.get_str(data, "special")
 	a.sub_actions = JsonRead.get_str_array(data, "sub_actions")
+	a.item = JsonRead.get_str(data, "item")
+	a.consumes = JsonRead.get_bool(data, "consumes")
+	a.two_handed = JsonRead.get_bool(data, "two_handed")
 	_check(a, errors)
 	return a
 

@@ -6,7 +6,7 @@ extends RefCounted
 
 ## 2 — этап 1: лист участника, экономика действий, состояния.
 ## Сейвы формата 1 (спайк этапа 0) не переносятся: у них не было пользователей.
-const SAVE_FORMAT := 2
+const SAVE_FORMAT := 3
 ## Предохранитель: сколько ходов подряд можно пропустить (все недееспособны).
 const MAX_SKIPPED_TURNS := 1000
 
@@ -23,6 +23,8 @@ var actions_left: int = 1
 var bonus_used: bool = false
 ## В этот ход было действие «Отход»: перемещение не провоцирует атак.
 var disengaged: bool = false
+## Бесплатное действие с предметом в этом ходу уже сделано (ADR-0024).
+var free_interaction_used: bool = false
 ## Ключи умений «раз в ход», уже использованных в этом ходу.
 var turn_once: Array[String] = []
 var ended: bool = false
@@ -250,6 +252,7 @@ func _begin_turn(c: Combatant, events: Array[CombatEvent]) -> void:
 	actions_left = 1
 	bonus_used = false
 	disengaged = false
+	free_interaction_used = false
 	turn_once.clear()
 	c.reaction_ready = true
 	events.append(CombatEvent.new(CombatEvent.TURN_STARTED, {"id": c.id, "round": round_number}))
@@ -345,6 +348,7 @@ func to_dict() -> Dictionary:
 		"actions_left": actions_left,
 		"bonus_used": bonus_used,
 		"disengaged": disengaged,
+		"free_interaction_used": free_interaction_used,
 		"turn_once": turn_once.duplicate(),
 		"ended": ended,
 		"winner": winner,
@@ -371,6 +375,7 @@ static func from_dict(data: Dictionary, p_grid: BattleGrid) -> CombatState:
 	state.actions_left = JsonRead.get_int(data, "actions_left", 1)
 	state.bonus_used = JsonRead.get_bool(data, "bonus_used")
 	state.disengaged = JsonRead.get_bool(data, "disengaged")
+	state.free_interaction_used = JsonRead.get_bool(data, "free_interaction_used")
 	state.turn_once = JsonRead.get_str_array(data, "turn_once")
 	state.ended = JsonRead.get_bool(data, "ended")
 	state.winner = JsonRead.get_str(data, "winner")

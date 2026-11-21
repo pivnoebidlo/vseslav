@@ -22,6 +22,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -32,6 +33,7 @@
             "effects": [],
             "heal": "0",
             "id": "mech",
+            "item": "mech",
             "kind": "attack",
             "long_range": 0,
             "mastery": "sap",
@@ -48,7 +50,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "str",
@@ -57,6 +60,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -67,6 +71,7 @@
             "effects": [],
             "heal": "0",
             "id": "osinovy_kol",
+            "item": "osinovy_kol",
             "kind": "attack",
             "long_range": 0,
             "mastery": "vex",
@@ -84,7 +89,8 @@
               "wood",
               "aspen"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "str",
@@ -93,6 +99,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": true,
             "cost": "action",
             "damage": [
               {
@@ -103,12 +110,13 @@
             "effects": [],
             "heal": "0",
             "id": "sulitsa",
+            "item": "sulitsa",
             "kind": "attack",
             "long_range": 24,
             "mastery": "slow",
             "name_key": "ITEM_SULITSA",
             "range": 6,
-            "resource": "item_sulitsa",
+            "resource": "",
             "resource_cost": 1,
             "save_ability": "",
             "save_dc": "8 + PROF + MOD",
@@ -119,7 +127,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -128,17 +137,19 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": true,
             "cost": "bonus",
             "damage": [],
             "effects": [],
             "heal": "2d4 + 2",
             "id": "use_otvar",
+            "item": "otvar",
             "kind": "heal",
             "long_range": 0,
             "mastery": "",
             "name_key": "ITEM_OTVAR",
             "range": 1,
-            "resource": "item_otvar",
+            "resource": "",
             "resource_cost": 1,
             "save_ability": "",
             "save_dc": "8 + PROF + MOD",
@@ -146,7 +157,8 @@
             "special": "",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -155,11 +167,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "bonus",
             "damage": [],
             "effects": [],
             "heal": "1d10 + LEVEL",
             "id": "second_wind",
+            "item": "",
             "kind": "heal",
             "long_range": 0,
             "mastery": "",
@@ -173,7 +187,8 @@
             "special": "",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -182,11 +197,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "action_surge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -200,7 +217,8 @@
             "special": "extra_action",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -209,11 +227,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -227,7 +247,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -236,11 +257,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -254,7 +277,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -263,11 +287,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -281,7 +307,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -290,11 +317,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -308,7 +337,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 19,
@@ -330,6 +360,23 @@
         "hp": 28,
         "id": "ratnik",
         "initiative_bonus": 3,
+        "inventory": {
+          "armor": "kolchuga",
+          "bag": [
+            {
+              "count": 3,
+              "item": "suhari"
+            },
+            "ognivo"
+          ],
+          "belt": [
+            "otvar",
+            "osinovy_kol"
+          ],
+          "main_hand": "mech",
+          "off_hand": "shchit",
+          "purse": 40
+        },
         "last_damage_tags": [],
         "level": 3,
         "masteries": [
@@ -344,14 +391,10 @@
         "reaction_ready": true,
         "resources": {
           "action_surge": 0,
-          "item_otvar": 1,
-          "item_sulitsa": 0,
           "second_wind": 2
         },
         "resources_max": {
           "action_surge": 1,
-          "item_otvar": 1,
-          "item_sulitsa": 3,
           "second_wind": 2
         },
         "reviving": false,
@@ -447,6 +490,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -457,6 +501,7 @@
             "effects": [],
             "heal": "0",
             "id": "luk",
+            "item": "luk",
             "kind": "attack",
             "long_range": 120,
             "mastery": "slow",
@@ -473,7 +518,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": true
           },
           {
             "ability": "dex",
@@ -482,6 +528,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -492,6 +539,7 @@
             "effects": [],
             "heal": "0",
             "id": "serebryany_nozh",
+            "item": "serebryany_nozh",
             "kind": "attack",
             "long_range": 0,
             "mastery": "nick",
@@ -508,7 +556,8 @@
               "weapon",
               "silver"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -517,17 +566,19 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": true,
             "cost": "bonus",
             "damage": [],
             "effects": [],
             "heal": "2d4 + 2",
             "id": "use_otvar",
+            "item": "otvar",
             "kind": "heal",
             "long_range": 0,
             "mastery": "",
             "name_key": "ITEM_OTVAR",
             "range": 1,
-            "resource": "item_otvar",
+            "resource": "",
             "resource_cost": 1,
             "save_ability": "",
             "save_dc": "8 + PROF + MOD",
@@ -535,7 +586,8 @@
             "special": "",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -544,6 +596,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": true,
+            "consumes": false,
             "cost": "bonus",
             "damage": [],
             "effects": [
@@ -557,6 +610,7 @@
             ],
             "heal": "0",
             "id": "hunters_mark",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -573,7 +627,8 @@
               "spell",
               "magic"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -582,11 +637,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "2d8 + SPELL",
             "id": "cure_wounds",
+            "item": "",
             "kind": "heal",
             "long_range": 0,
             "mastery": "",
@@ -603,7 +660,8 @@
               "spell",
               "magic"
             ],
-            "target": "ally"
+            "target": "ally",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -612,11 +670,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -630,7 +690,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -639,11 +700,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -657,7 +720,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -666,11 +730,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -684,7 +750,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -693,11 +760,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -711,7 +780,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 15,
@@ -733,6 +803,26 @@
         "hp": 28,
         "id": "lovchiy",
         "initiative_bonus": 3,
+        "inventory": {
+          "armor": "kozhukh",
+          "bag": [
+            "verevka",
+            {
+              "count": 2,
+              "item": "fakel"
+            },
+            {
+              "count": 3,
+              "item": "suhari"
+            }
+          ],
+          "belt": [
+            "serebryany_nozh",
+            "otvar"
+          ],
+          "main_hand": "luk",
+          "purse": 15
+        },
         "last_damage_tags": [
           "weapon",
           "iron",
@@ -750,12 +840,10 @@
         "reaction_ready": true,
         "resources": {
           "favored_enemy": 1,
-          "item_otvar": 1,
           "slot_1": 3
         },
         "resources_max": {
           "favored_enemy": 2,
-          "item_otvar": 1,
           "slot_1": 3
         },
         "reviving": false,
@@ -851,6 +939,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -861,6 +950,7 @@
             "effects": [],
             "heal": "0",
             "id": "posoh",
+            "item": "posoh",
             "kind": "attack",
             "long_range": 0,
             "mastery": "topple",
@@ -877,7 +967,8 @@
               "weapon",
               "wood"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -886,6 +977,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -896,6 +988,7 @@
             "effects": [],
             "heal": "0",
             "id": "thunderwave",
+            "item": "",
             "kind": "save",
             "long_range": 0,
             "mastery": "",
@@ -912,7 +1005,8 @@
               "spell",
               "magic"
             ],
-            "target": "point"
+            "target": "point",
+            "two_handed": false
           },
           {
             "ability": "spell",
@@ -921,6 +1015,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -931,6 +1026,7 @@
             "effects": [],
             "heal": "0",
             "id": "produce_flame",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -948,7 +1044,8 @@
               "magic",
               "fire"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "spell",
@@ -957,6 +1054,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -967,6 +1065,7 @@
             "effects": [],
             "heal": "0",
             "id": "thorn_whip",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -983,7 +1082,8 @@
               "spell",
               "magic"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -992,11 +1092,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "bonus",
             "damage": [],
             "effects": [],
             "heal": "2d4 + SPELL",
             "id": "healing_word",
+            "item": "",
             "kind": "heal",
             "long_range": 0,
             "mastery": "",
@@ -1013,7 +1115,8 @@
               "spell",
               "magic"
             ],
-            "target": "ally"
+            "target": "ally",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1022,11 +1125,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "2d8 + SPELL",
             "id": "cure_wounds",
+            "item": "",
             "kind": "heal",
             "long_range": 0,
             "mastery": "",
@@ -1043,7 +1148,8 @@
               "spell",
               "magic"
             ],
-            "target": "ally"
+            "target": "ally",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1052,6 +1158,7 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": true,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [
@@ -1065,6 +1172,7 @@
             ],
             "heal": "0",
             "id": "entangle",
+            "item": "",
             "kind": "save",
             "long_range": 0,
             "mastery": "",
@@ -1081,7 +1189,8 @@
               "spell",
               "magic"
             ],
-            "target": "point"
+            "target": "point",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1090,11 +1199,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1108,7 +1219,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1117,11 +1229,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1135,7 +1249,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1144,11 +1259,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1162,7 +1279,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1171,11 +1289,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1189,7 +1309,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 15,
@@ -1211,6 +1332,20 @@
         "hp": 9,
         "id": "volkhv",
         "initiative_bonus": 1,
+        "inventory": {
+          "armor": "kozhukh",
+          "bag": [
+            {
+              "count": 2,
+              "item": "suhari"
+            },
+            "ognivo"
+          ],
+          "belt": [],
+          "main_hand": "posoh",
+          "off_hand": "shchit",
+          "purse": 25
+        },
         "last_damage_tags": [
           "slashing"
         ],
@@ -1272,11 +1407,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "kogti",
+            "item": "",
             "kind": "multiattack",
             "long_range": 0,
             "mastery": "",
@@ -1293,7 +1430,8 @@
               "kogot"
             ],
             "tags": [],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1302,6 +1440,7 @@
             "attack_bonus": "5",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -1312,6 +1451,7 @@
             "effects": [],
             "heal": "0",
             "id": "kogot",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -1325,7 +1465,8 @@
             "special": "",
             "sub_actions": [],
             "tags": [],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1334,11 +1475,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1352,7 +1495,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1361,11 +1505,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1379,7 +1525,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1388,11 +1535,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1406,7 +1555,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1415,11 +1565,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1433,7 +1585,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 14,
@@ -1481,6 +1634,7 @@
         "hp": 0,
         "id": "upyr",
         "initiative_bonus": 1,
+        "inventory": null,
         "last_damage_tags": [
           "spell",
           "magic",
@@ -1541,6 +1695,7 @@
             "attack_bonus": "3",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -1551,6 +1706,7 @@
             "effects": [],
             "heal": "0",
             "id": "topor",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -1567,7 +1723,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1576,6 +1733,7 @@
             "attack_bonus": "3",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -1586,6 +1744,7 @@
             "effects": [],
             "heal": "0",
             "id": "luk",
+            "item": "",
             "kind": "attack",
             "long_range": 64,
             "mastery": "",
@@ -1602,7 +1761,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1611,11 +1771,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1629,7 +1791,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1638,11 +1801,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1656,7 +1821,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1665,11 +1831,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1683,7 +1851,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1692,11 +1861,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1710,7 +1881,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 12,
@@ -1732,6 +1904,7 @@
         "hp": 0,
         "id": "razboynik_1",
         "initiative_bonus": 1,
+        "inventory": null,
         "last_damage_tags": [
           "weapon",
           "iron",
@@ -1772,6 +1945,7 @@
             "attack_bonus": "3",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -1782,6 +1956,7 @@
             "effects": [],
             "heal": "0",
             "id": "topor",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -1798,7 +1973,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1807,6 +1983,7 @@
             "attack_bonus": "3",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -1817,6 +1994,7 @@
             "effects": [],
             "heal": "0",
             "id": "luk",
+            "item": "",
             "kind": "attack",
             "long_range": 64,
             "mastery": "",
@@ -1833,7 +2011,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1842,11 +2021,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1860,7 +2041,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1869,11 +2051,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1887,7 +2071,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1896,11 +2081,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1914,7 +2101,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -1923,11 +2111,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -1941,7 +2131,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 12,
@@ -1963,6 +2154,7 @@
         "hp": 0,
         "id": "razboynik_2",
         "initiative_bonus": 1,
+        "inventory": null,
         "last_damage_tags": [
           "weapon",
           "iron",
@@ -2002,6 +2194,7 @@
             "attack_bonus": "3",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -2012,6 +2205,7 @@
             "effects": [],
             "heal": "0",
             "id": "topor",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -2028,7 +2222,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2037,6 +2232,7 @@
             "attack_bonus": "3",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -2047,6 +2243,7 @@
             "effects": [],
             "heal": "0",
             "id": "luk",
+            "item": "",
             "kind": "attack",
             "long_range": 64,
             "mastery": "",
@@ -2063,7 +2260,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2072,11 +2270,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2090,7 +2290,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2099,11 +2300,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2117,7 +2320,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2126,11 +2330,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2144,7 +2350,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2153,11 +2360,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2171,7 +2380,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 12,
@@ -2193,6 +2403,7 @@
         "hp": 0,
         "id": "razboynik_3",
         "initiative_bonus": 1,
+        "inventory": null,
         "last_damage_tags": [
           "weapon",
           "iron",
@@ -2232,6 +2443,7 @@
             "attack_bonus": "3",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -2242,6 +2454,7 @@
             "effects": [],
             "heal": "0",
             "id": "topor",
+            "item": "",
             "kind": "attack",
             "long_range": 0,
             "mastery": "",
@@ -2258,7 +2471,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2267,6 +2481,7 @@
             "attack_bonus": "3",
             "attack_type": "ranged",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [
               {
@@ -2277,6 +2492,7 @@
             "effects": [],
             "heal": "0",
             "id": "luk",
+            "item": "",
             "kind": "attack",
             "long_range": 64,
             "mastery": "",
@@ -2293,7 +2509,8 @@
               "weapon",
               "iron"
             ],
-            "target": "enemy"
+            "target": "enemy",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2302,11 +2519,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dash",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2320,7 +2539,8 @@
             "special": "dash",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2329,11 +2549,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "disengage",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2347,7 +2569,8 @@
             "special": "disengage",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2356,11 +2579,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "action",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "dodge",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2374,7 +2599,8 @@
             "special": "dodge",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           },
           {
             "ability": "",
@@ -2383,11 +2609,13 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "concentration": false,
+            "consumes": false,
             "cost": "free",
             "damage": [],
             "effects": [],
             "heal": "0",
             "id": "stand",
+            "item": "",
             "kind": "effect",
             "long_range": 0,
             "mastery": "",
@@ -2401,7 +2629,8 @@
             "special": "stand",
             "sub_actions": [],
             "tags": [],
-            "target": "self"
+            "target": "self",
+            "two_handed": false
           }
         ],
         "armor_class": 12,
@@ -2423,6 +2652,7 @@
         "hp": 0,
         "id": "razboynik_4",
         "initiative_bonus": 1,
+        "inventory": null,
         "last_damage_tags": [
           "spell",
           "magic",
@@ -2448,6 +2678,7 @@
     ],
     "disengaged": false,
     "ended": true,
+    "free_interaction_used": false,
     "movement_left": 6,
     "order": [
       "lovchiy",
@@ -2464,7 +2695,7 @@
       "state": "-4746331507434003555"
     },
     "round": 6,
-    "save_format": 2,
+    "save_format": 3,
     "turn_index": 6,
     "turn_once": [],
     "winner": "party"

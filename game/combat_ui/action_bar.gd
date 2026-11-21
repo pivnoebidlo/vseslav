@@ -6,6 +6,7 @@ extends PanelContainer
 
 signal action_pressed(action_id: String)
 signal end_turn_pressed
+signal item_pressed(item_id: String, op: String)
 
 const ROWS: Array[String] = [ActionDef.COST_ACTION, ActionDef.COST_BONUS, ActionDef.COST_FREE]
 const ROW_KEYS: Dictionary[String, String] = {
@@ -37,6 +38,9 @@ func refresh(state: CombatState, actor: Combatant, enabled: bool, selected: Stri
 		var row := _cost_row(state, actor, cost, selected)
 		if row != null:
 			box.add_child(row)
+	var items := _items_row(state, actor)
+	if items != null:
+		box.add_child(items)
 	var end := Button.new()
 	end.text = TranslationServer.translate("UI_END_TURN")
 	end.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -102,6 +106,8 @@ func _cost_row(
 		var affordable := ActionResolver.can_afford(state, actor, action) == ""
 		if action.special == ActionDef.SPECIAL_STAND and not affordable:
 			continue
+		if not actor.item_ready(action):
+			continue
 		buttons.add_child(_button(actor, action, affordable, action.id == selected))
 	if buttons.get_child_count() == 0:
 		buttons.free()
@@ -123,6 +129,72 @@ func _cost_row(
 	row.add_child(chip)
 	row.add_child(buttons)
 	return row
+
+
+## Строка «Предметы»: взять оружие с пояса в руку или убрать (бесплатно, раз за ход),
+## достать из мешка (действие). null — у участника нет инвентаря.
+func _items_row(state: CombatState, actor: Combatant) -> HBoxContainer:
+	if actor.inventory == null:
+		return null
+	var inv := actor.inventory
+	var buttons := HFlowContainer.new()
+	buttons.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buttons.add_theme_constant_override("h_separation", 4)
+	buttons.add_theme_constant_override("v_separation", 4)
+	var seen: Array[String] = []
+	for action in actor.actions:
+		if action.item == "" or seen.has(action.item):
+			continue
+		seen.append(action.item)
+		var name := TranslationServer.translate(action.name_key)
+		if inv.bag_count(action.item) > 0 and inv.ready_count(action.item) == 0:
+			buttons.add_child(_item_button(state, actor, action.item, ItemCommand.OP_FETCH, name))
+		elif action.kind == ActionDef.KIND_ATTACK and not inv.in_hands(action.item):
+			buttons.add_child(_item_button(state, actor, action.item, ItemCommand.OP_DRAW, name))
+	if inv.main_hand != "":
+		var held := inv.main_hand
+		for action in actor.actions:
+			if action.item == held:
+				held = TranslationServer.translate(action.name_key)
+				break
+		buttons.add_child(_item_button(state, actor, inv.main_hand, ItemCommand.OP_STOW, held))
+	if buttons.get_child_count() == 0:
+		buttons.free()
+		return null
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var chip := _chip(
+		TranslationServer.translate("UI_ITEMS"),
+		not state.free_interaction_used,
+		UiStyle.cost_color(ActionDef.COST_FREE)
+	)
+	chip.custom_minimum_size = Vector2(HEADER_WIDTH, 0)
+	chip.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	chip.tooltip_text = TranslationServer.translate("UI_ITEMS_HINT")
+	row.add_child(chip)
+	row.add_child(buttons)
+	return row
+
+
+func _item_button(
+	state: CombatState, actor: Combatant, item_id: String, op: String, name: String
+) -> Button:
+	var cmd := ItemCommand.new(actor.id, item_id, op)
+	var err := cmd.validate(state)
+	var button := Button.new()
+	var key := "UI_ITEM_" + op.to_upper()
+	button.text = CombatLogFormat.tr_fmt(key, {"item": name})
+	button.disabled = err != ""
+	button.add_theme_font_size_override("font_size", 13)
+	var cost := ActionDef.COST_ACTION if op == ItemCommand.OP_FETCH else ActionDef.COST_FREE
+	UiStyle.style_cost_button(button, cost, false)
+	button.tooltip_text = TranslationServer.translate(
+		"UI_ITEM_FETCH_HINT" if op == ItemCommand.OP_FETCH else "UI_ITEMS_HINT"
+	)
+	if err != "":
+		button.tooltip_text += "\n" + TranslationServer.translate(err)
+	button.pressed.connect(func() -> void: item_pressed.emit(item_id, op))
+	return button
 
 
 ## Ярлык с отметкой «есть ● / потрачено ○» в цвете части хода.
@@ -148,6 +220,8 @@ func _button(actor: Combatant, action: ActionDef, affordable: bool, selected: bo
 	var text := TranslationServer.translate(action.name_key)
 	if action.resource != "":
 		text += " ×%d" % actor.resource_left(action.resource)
+	elif action.consumes:
+		text += " ×%d" % actor.item_count(action)
 	button.text = text
 	button.disabled = not affordable
 	button.toggle_mode = true

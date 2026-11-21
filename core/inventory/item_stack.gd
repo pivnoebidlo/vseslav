@@ -27,3 +27,38 @@ static func from_value(value: Variant) -> ItemStack:
 		if s.item != "" and s.count > 0:
 			return s
 	return null
+
+
+static func count_in(stacks: Array[ItemStack], item_id: String) -> int:
+	for s in stacks:
+		if s.item == item_id:
+			return s.count
+	return 0
+
+
+static func add_to(stacks: Array[ItemStack], item_id: String, count: int) -> void:
+	if count <= 0:
+		return
+	for s in stacks:
+		if s.item == item_id:
+			s.count += count
+			return
+	stacks.append(ItemStack.new(item_id, count))
+
+
+static func take_from(stacks: Array[ItemStack], item_id: String, count: int) -> void:
+	if count <= 0:
+		return
+	for i in stacks.size():
+		if stacks[i].item == item_id:
+			stacks[i].count -= count
+			if stacks[i].count <= 0:
+				stacks.remove_at(i)
+			return
+
+
+static func to_array(stacks: Array[ItemStack]) -> Array:
+	var result: Array = []
+	for s in stacks:
+		result.append(s.to_value())
+	return result

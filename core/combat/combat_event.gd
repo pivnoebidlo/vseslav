@@ -21,6 +21,8 @@ const DIED := "died"
 const REVIVED := "revived"
 const DEATH_SAVE := "death_save"
 const COMBAT_ENDED := "combat_ended"
+## Предмет переложен: {id, item, op: draw|stow|fetch, previous, to}.
+const ITEM_MOVED := "item_moved"
 
 var type: String = ""
 var data: Dictionary = {}

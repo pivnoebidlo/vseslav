@@ -23,12 +23,6 @@ const LOW_OBSTACLE_HEIGHT := 0.6
 const AI_STEP_DELAY := 0.3
 const MOVE_STEP_TIME := 0.22
 const SCREENSHOT_TIMEOUT := 25.0
-const CAMERA_OFFSET := Vector3(0.0, 14.0, 10.0)
-const ZOOM_MIN := 0.45
-const ZOOM_MAX := 1.3
-const ZOOM_STEP := 0.1
-const PAN_STEP := 0.75
-const PAN_DRAG_SPEED := 0.02
 const DEFAULT_LANG := "ru"
 const NO_CELL := ActionResolver.NO_CELL
 
@@ -38,9 +32,6 @@ var _db: RulesDb
 var _figures: FigureCatalog
 var _state: CombatState
 var _world: Node3D
-var _camera: Camera3D = null
-var _camera_target := Vector3.ZERO
-var _zoom := 1.0
 var _tiles: Dictionary[Vector2i, MeshInstance3D] = {}
 var _units: Dictionary[String, UnitView] = {}
 var _highlighted: Array[Vector2i] = []
@@ -153,47 +144,11 @@ func _setup_environment() -> void:
 
 
 func _setup_camera(grid: BattleGrid) -> void:
-	var center := Vector3((grid.width - 1) * CELL / 2.0, 0.0, (grid.depth - 1) * CELL / 2.0)
-	var camera := Camera3D.new()
+	var camera := ArenaCamera.new()
 	camera.name = "Camera"
 	_world.add_child(camera)
-	camera.fov = 50.0
-	# Цель взгляда смещена к камере, чтобы поле не уходило под лог внизу экрана.
-	_camera_target = center + Vector3(-1.5, 0.0, 2.0)
-	_camera = camera
-	_zoom = 1.1
-	_place_camera()
+	camera.frame(grid.width, grid.depth, CELL)
 	camera.current = true
-
-
-func _pan_by_key(keycode: Key) -> void:
-	match keycode:
-		KEY_A, KEY_LEFT:
-			_pan(Vector3(-PAN_STEP, 0.0, 0.0))
-		KEY_D, KEY_RIGHT:
-			_pan(Vector3(PAN_STEP, 0.0, 0.0))
-		KEY_W, KEY_UP:
-			_pan(Vector3(0.0, 0.0, -PAN_STEP))
-		KEY_S, KEY_DOWN:
-			_pan(Vector3(0.0, 0.0, PAN_STEP))
-
-
-func _pan(delta: Vector3) -> void:
-	if _state == null:
-		return
-	var grid := _state.grid
-	var size := Vector3(grid.width * CELL, 0.0, grid.depth * CELL)
-	_camera_target = (_camera_target + delta).clamp(-size * 0.25, size * 1.25)
-	_place_camera()
-
-
-## Камера смотрит на поле сверху-спереди; колесо мыши приближает и отдаляет,
-## WASD, стрелки и средняя кнопка мыши двигают.
-func _place_camera() -> void:
-	if _camera == null:
-		return
-	_camera.position = _camera_target + CAMERA_OFFSET * _zoom
-	_camera.look_at(_camera_target)
 
 
 func _setup_ui() -> void:
@@ -256,6 +211,7 @@ func _setup_ui() -> void:
 	_actions.size_flags_vertical = Control.SIZE_SHRINK_END
 	_actions.action_pressed.connect(_on_action_pressed)
 	_actions.end_turn_pressed.connect(_on_end_turn)
+	_actions.item_pressed.connect(_on_item_pressed)
 	bottom.add_child(_actions)
 
 	_reaction_dialog = ReactionDialog.new()
@@ -488,28 +444,19 @@ func _player_command(cmd: CombatCommand) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if key != null:
-		if key.pressed and key.keycode == KEY_ESCAPE:
-			_cancel_selection()
-		elif key.pressed:
-			_pan_by_key(key.keycode)
+	if key != null and key.pressed and key.keycode == KEY_ESCAPE:
+		_cancel_selection()
+		return
+	var camera := get_viewport().get_camera_3d() as ArenaCamera
+	if camera != null and camera.handle_input(event):
 		return
 	var motion := event as InputEventMouseMotion
 	if motion != null:
-		if motion.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
-			_pan(Vector3(-motion.relative.x, 0.0, -motion.relative.y) * PAN_DRAG_SPEED * _zoom)
-			return
 		_on_hover(motion.position)
 		return
 	var click := event as InputEventMouseButton
 	if click != null and click.pressed:
-		if click.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom = maxf(ZOOM_MIN, _zoom - ZOOM_STEP)
-			_place_camera()
-		elif click.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom = minf(ZOOM_MAX, _zoom + ZOOM_STEP)
-			_place_camera()
-		elif click.button_index == MOUSE_BUTTON_RIGHT:
+		if click.button_index == MOUSE_BUTTON_RIGHT:
 			_cancel_selection()
 		elif click.button_index == MOUSE_BUTTON_LEFT:
 			_on_left_click(click.position)
@@ -571,7 +518,7 @@ func _best_attack(actor: Combatant, target: Combatant) -> ActionDef:
 			continue
 		var value := CombatAi.attack_value(_state, actor, action, target)
 		# Расходуемое оружие — только если оно заметно лучше.
-		if action.resource != "":
+		if action.resource != "" or action.consumes:
 			value -= CombatAi.SCALE
 		if value > best_value:
 			best = action
@@ -600,6 +547,13 @@ func _on_action_pressed(action_id: String) -> void:
 		return
 	_selected = action
 	_refresh()
+
+
+func _on_item_pressed(item_id: String, op: String) -> void:
+	if _busy or not _is_player_turn():
+		return
+	_cancel_selection()
+	_player_command(ItemCommand.new(_state.current().id, item_id, op))
 
 
 func _cancel_selection() -> void:
@@ -825,7 +779,7 @@ func _animate_attack(e: CombatEvent) -> void:
 	var action := actor.get_action(JsonRead.get_str(e.data, "action"))
 	var role := "melee"
 	if action != null and action.attack_type == ActionDef.RANGED:
-		role = "throw" if action.resource.begins_with("item_") else "ranged"
+		role = "throw" if action.consumes else "ranged"
 	await get_tree().create_timer(view.play(role)).timeout
 	if JsonRead.get_bool(e.data, "hit"):
 		target_view.flash()

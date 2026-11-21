@@ -124,12 +124,18 @@ func _opportunity_attacks(
 	return result
 
 
-## Каким ударом участник бьёт при отходе: первая атака ближнего боя с досягаемостью 1.
+## Каким ударом участник бьёт при отходе: оружие ближнего боя в руке, иначе первое
+## под рукой, которое можно взять в руку (досягаемость 1).
 static func opportunity_action(c: Combatant) -> ActionDef:
+	var fallback: ActionDef = null
 	for a in c.actions:
-		if a.is_melee_attack() and a.range_cells <= 1:
+		if not a.is_melee_attack() or a.range_cells > 1 or not c.item_ready(a):
+			continue
+		if a.item == "" or c.inventory.in_hands(a.item):
 			return a
-	return null
+		if fallback == null and InventoryCombat.can_draw(c.inventory, a.item, a.two_handed) == "":
+			fallback = a
+	return fallback
 
 
 func _attack_of_opportunity(
@@ -142,7 +148,9 @@ func _attack_of_opportunity(
 			CombatEvent.REACTION, {"id": reactor.id, "kind": "opportunity", "target": target.id}
 		)
 	)
-	ActionResolver.attack(state, reactor, opportunity_action(reactor), target, events)
+	var strike := opportunity_action(reactor)
+	ActionResolver.ready_weapon(reactor, strike, events)
+	ActionResolver.attack(state, reactor, strike, target, events)
 	return events
 
 

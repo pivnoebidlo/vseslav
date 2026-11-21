@@ -14,6 +14,7 @@ const ERR_OUT_OF_RANGE := "err_out_of_range"
 const ERR_NOT_PRONE := "err_not_prone"
 const ERR_NO_MOVEMENT := "err_no_movement"
 const ERR_NO_LINE_OF_SIGHT := "err_no_line_of_sight"
+const ERR_ITEM_NOT_READY := "err_item_not_ready"
 
 const NO_CELL := Vector2i(-1, -1)
 
@@ -45,6 +46,12 @@ static func can_afford(state: CombatState, actor: Combatant, action: ActionDef) 
 			return ERR_REACTION_ONLY
 	if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
 		return ERR_NO_RESOURCE
+	if not actor.item_ready(action):
+		return ERR_ITEM_NOT_READY
+	if action.item != "" and action.kind == ActionDef.KIND_ATTACK:
+		var hands := InventoryCombat.can_draw(actor.inventory, action.item, action.two_handed)
+		if hands != "":
+			return hands
 	if action.special == ActionDef.SPECIAL_STAND:
 		if not actor.has_condition(Conditions.PRONE):
 			return ERR_NOT_PRONE
@@ -118,6 +125,7 @@ static func apply(
 	var target := state.get_combatant(target_id)
 	if action.target == ActionDef.TARGET_SELF:
 		target = actor
+	ready_weapon(actor, action, events)
 	match action.kind:
 		ActionDef.KIND_ATTACK:
 			attack(state, actor, action, target, events)
@@ -138,7 +146,25 @@ static func apply(
 			CombatRules.heal(state, target, maxi(amount, 0), events)
 		ActionDef.KIND_EFFECT:
 			_effect(state, actor, action, target, events)
+	if action.consumes and actor.inventory != null:
+		InventoryCombat.spend(actor.inventory, action.item)
 	return events
+
+
+## Атака оружием с пояса: сначала оружие в руку, прежнее — на пояс (ADR-0024).
+static func ready_weapon(actor: Combatant, action: ActionDef, events: Array[CombatEvent]) -> void:
+	if action.item == "" or action.kind != ActionDef.KIND_ATTACK or actor.inventory == null:
+		return
+	if actor.inventory.in_hands(action.item):
+		return
+	var previous := actor.inventory.main_hand
+	var to := InventoryCombat.draw(actor.inventory, action.item)
+	events.append(
+		CombatEvent.new(
+			CombatEvent.ITEM_MOVED,
+			{"id": actor.id, "item": action.item, "op": "draw", "previous": previous, "to": to}
+		)
+	)
 
 
 static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> void:

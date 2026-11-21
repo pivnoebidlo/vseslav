@@ -81,8 +81,8 @@ func test_belt_holds_weapons_and_consumables_only() -> void:
 func test_weight_and_capacity() -> void:
 	var inv := _inv({"armor": "kolchuga", "bag": ["otvar", {"item": "suhari", "count": 2}]})
 	assert_eq(inv.weight(_db), 550 + 5 + 40, "tenths of a pound")
-	assert_eq(Inventory.carry_limit(10), 1500)
-	assert_eq(Inventory.drag_limit(10), 3000)
+	assert_eq(ItemInfo.carry_limit(10), 1500)
+	assert_eq(ItemInfo.drag_limit(10), 3000)
 
 
 func test_give_items_and_money() -> void:
@@ -113,11 +113,11 @@ func test_builder_uses_hands_and_belt_not_bag() -> void:
 	assert_eq(errors, [] as Array[String])
 	assert_not_null(c.get_action("mech"))
 	assert_not_null(c.get_action("osinovy_kol"), "belt weapon is ready")
-	assert_eq(c.resources_max["item_sulitsa"], 3)
+	assert_eq(c.item_count(c.get_action("sulitsa")), 3)
 	inv.from_belt("osinovy_kol")
 	inv.unequip(Inventory.SLOT_OFF)
 	c = CombatantBuilder.from_character(_db, data, errors, inv)
-	assert_null(c.get_action("osinovy_kol"), "bag is out of reach in combat")
+	assert_false(c.item_ready(c.get_action("osinovy_kol")), "bag is out of reach in combat")
 	assert_false(c.has_shield)
 	assert_eq(c.armor_class, 16 + 1, "chain mail + Defense style, no shield")
 

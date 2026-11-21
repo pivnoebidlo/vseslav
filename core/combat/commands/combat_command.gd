@@ -58,5 +58,9 @@ static func _from_dict(data: Dictionary) -> CombatCommand:
 			)
 		"end_turn":
 			return EndTurnCommand.new(actor)
+		"item":
+			return ItemCommand.new(
+				actor, JsonRead.get_str(data, "item"), JsonRead.get_str(data, "op")
+			)
 	push_error("Unknown combat command: %s" % JsonRead.get_str(data, "cmd"))
 	return null

@@ -180,3 +180,17 @@ err_item_belt_full,На поясе нет места.,No room on the belt.
 err_item_not_for_belt,"На пояс — только оружие и расходники.","Only weapons and consumables go on the belt."
 err_item_too_heavy,Слишком тяжело — не утащит.,Too heavy to drag.
 err_item_no_money,Не хватает денег.,Not enough money.
+err_item_not_ready,"Предмет в мешке — сначала достаньте его.","The item is in the bag — fetch it first."
+err_item_free_used,Бесплатное действие с предметом в этом ходу уже сделано.,The free item interaction is already used this turn.
+err_item_no_inventory,Нет снаряжения.,No equipment.
+UI_ITEMS,Предметы,Items
+UI_ITEMS_HINT,"Взять оружие с пояса в руку или убрать на пояс — бесплатно, раз за ход. Атака оружием с пояса берёт его в руку сама.","Draw a weapon from the belt or stow it — free, once per turn. Attacking with a belt weapon draws it automatically."
+UI_ITEM_FETCH_HINT,Достать из мешка на пояс — действие.,Fetch from the bag to the belt — takes your action.
+UI_ITEM_DRAW,В руку: {item},Draw: {item}
+UI_ITEM_STOW,Убрать: {item},Stow: {item}
+UI_ITEM_FETCH,Достать: {item},Fetch: {item}
+LOG_ITEM_DRAW,{name} берёт в руку: {item},{name} draws {item}
+LOG_ITEM_DRAW_SWAP,"{name} берёт в руку: {item}, {previous} — на пояс","{name} draws {item}, {previous} goes to the belt"
+LOG_ITEM_DRAW_BAG,"{name} берёт в руку: {item}, {previous} — в мешок","{name} draws {item}, {previous} goes to the bag"
+LOG_ITEM_STOW,{name} убирает на пояс: {item},{name} stows {item}
+LOG_ITEM_FETCH,{name} достаёт из мешка: {item},{name} fetches {item} from the bag

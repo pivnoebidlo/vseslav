@@ -158,14 +158,24 @@ static func _check_chests(
 	for i in area.encounters.size():
 		var e := area.encounters[i]
 		_check_actions(content, e.on_won, "%s: $.encounters[%d].then" % [where, i], errors)
+	for i in area.events.size():
+		var ev := area.events[i]
+		_check_actions(content, ev.actions, "%s: $.events[%d].then" % [where, i], errors)
+		var map := Rect2i(0, 0, area.width(), area.depth())
+		if ev.on == AreaMap.AreaEvent.ON_ENTER_ZONE and not map.encloses(ev.zone):
+			errors.append("%s: $.events[%d].zone: must be inside the map" % [where, i])
 
 
-## set_quest ведёт к существующему квесту и стадии.
+## Ссылки действий (ADR-0034, ADR-0042): квест и стадия, предмет, персонаж, диалог,
+## бой, область и точка появления существуют.
 static func _check_actions(
 	content: ModuleContent, actions: Array, at: String, errors: Array[String]
 ) -> void:
 	for raw: Variant in actions:
 		var a: Dictionary = raw
+		var problem := _action_problem(content, a)
+		if problem != "":
+			errors.append("%s: %s" % [at, problem])
 		if JsonRead.get_str(a, "action") != EventActions.SET_QUEST:
 			continue
 		var quest := JsonRead.get_str(a, "quest")
@@ -179,6 +189,37 @@ static func _check_actions(
 			stages.append(JsonRead.get_str(d, "id"))
 		if not stages.has(stage):
 			errors.append("%s: quest '%s' has no stage '%s'" % [at, quest, stage])
+
+
+## Что не так со ссылками действия, кроме квеста; пусто — всё в порядке.
+static func _action_problem(content: ModuleContent, a: Dictionary) -> String:
+	var rules := content.rules
+	match JsonRead.get_str(a, "action"):
+		EventActions.GIVE_ITEM, EventActions.TAKE_ITEM:
+			var item := JsonRead.get_str(a, "item")
+			if rules != null and not rules.items.has(item):
+				return "unknown item '%s'" % item
+		EventActions.JOIN_PARTY, EventActions.LEAVE_PARTY:
+			var who := JsonRead.get_str(a, "character")
+			if rules != null and not rules.characters.has(who):
+				return "unknown character '%s'" % who
+		EventActions.START_DIALOG:
+			var dialog := JsonRead.get_str(a, "dialog")
+			if not content.dialogs.has(dialog):
+				return "unknown dialog '%s'" % dialog
+		EventActions.START_COMBAT:
+			var encounter := JsonRead.get_str(a, "encounter")
+			for area_id: String in content.areas:
+				if content.area(area_id).get_encounter(encounter) != null:
+					return ""
+			return "unknown encounter '%s'" % encounter
+		EventActions.TELEPORT:
+			var area := content.area(JsonRead.get_str(a, "area"))
+			if area == null:
+				return "unknown area '%s'" % JsonRead.get_str(a, "area")
+			if not area.spawns.has(JsonRead.get_str(a, "spawn")):
+				return "no spawn '%s' in %s" % [JsonRead.get_str(a, "spawn"), area.id]
+	return ""
 
 
 static func _check_encounter(
@@ -267,6 +308,9 @@ static func _check_start(content: ModuleContent, errors: Array[String]) -> void:
 			errors.append(
 				"module.json: $.start.spawn: no spawn '%s' in %s" % [m.start["spawn"], area_id]
 			)
+		for who in JsonRead.get_str_array(m.start, "party"):
+			if content.rules != null and not content.rules.characters.has(who):
+				errors.append("module.json: $.start.party: unknown character '%s'" % who)
 
 
 static func _check_props(content: ModuleContent, errors: Array[String]) -> void:

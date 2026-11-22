@@ -304,3 +304,41 @@ func test_exits_chests_and_quest_actions_are_checked() -> void:
 	assert_true(_has_error(content, "areas/t.json: $.exits[1].to: unknown area 'nowhere'"))
 	assert_true(_has_error(content, "areas/t.json: $.containers[0]: unknown item 'golden_fleece'"))
 	assert_true(_has_error(content, "$.containers[0].then: quest 'q' has no stage 'nope'"))
+
+
+func test_event_action_refs_are_checked() -> void:
+	var area := {
+		"title_key": "t.area",
+		"map": ["....", "...."],
+		"spawns": {"start": [0, 0]},
+		"events":
+		[
+			{
+				"id": "e",
+				"on": "enter_zone",
+				"zone": [3, 0, 4, 2],
+				"then":
+				[
+					{"action": "give_item", "item": "nope"},
+					{"action": "join_party", "character": "nobody"},
+					{"action": "start_dialog", "dialog": "silence"},
+					{"action": "start_combat", "encounter": "ghosts"},
+					{"action": "teleport", "area": "pole", "spawn": "moon"},
+				]
+			}
+		],
+	}
+	var files := {
+		"areas/pole.json": area,
+		"locales/ru.json": _strings(["t.ev.title", "t.area"]),
+	}
+	ModuleFixture.write("t.ev", ["vseslav.base"] as Array[String], files)
+	var roots: Array[String] = ["res://modules", ModuleFixture.ROOT]
+	var content := ModuleLoader.load_all(roots)
+	var at := "areas/pole.json: $.events[0].then: "
+	assert_true(_has_error(content, at + "unknown item 'nope'"))
+	assert_true(_has_error(content, at + "unknown character 'nobody'"))
+	assert_true(_has_error(content, at + "unknown dialog 'silence'"))
+	assert_true(_has_error(content, at + "unknown encounter 'ghosts'"))
+	assert_true(_has_error(content, at + "no spawn 'moon' in pole"))
+	assert_true(_has_error(content, "areas/pole.json: $.events[0].zone: must be inside the map"))

@@ -545,9 +545,172 @@
             "quest",
             "stage"
           ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "give_item"
+            },
+            "item": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 999
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "item"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "take_item"
+            },
+            "item": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 999
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "item"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "give_money"
+            },
+            "kuny": {
+              "type": "integer",
+              "minimum": -100000,
+              "maximum": 100000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "kuny"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "join_party"
+            },
+            "character": {
+              "$ref": "common.schema.json#/$defs/id"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "character"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "leave_party"
+            },
+            "character": {
+              "$ref": "common.schema.json#/$defs/id"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "character"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "message"
+            },
+            "text": {
+              "$ref": "common.schema.json#/$defs/locale_key"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "text"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "start_dialog"
+            },
+            "dialog": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "speaker": {
+              "$ref": "common.schema.json#/$defs/locale_key"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "dialog"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "start_combat"
+            },
+            "encounter": {
+              "$ref": "common.schema.json#/$defs/id"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "encounter"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "teleport"
+            },
+            "area": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "spawn": {
+              "$ref": "common.schema.json#/$defs/id"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "area",
+            "spawn"
+          ]
         }
       ],
-      "description": "Действие (SPEC §8, ADR-0034): set_flag или set_quest."
+      "description": "Действие (SPEC §8, ADR-0034, ADR-0042): set_flag, set_quest, give_item, take_item, give_money, join_party, leave_party, message, start_dialog, start_combat, teleport."
     },
     "event_actions": {
       "type": "array",

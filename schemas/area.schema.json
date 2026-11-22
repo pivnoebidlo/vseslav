@@ -50,6 +50,10 @@
           },
           "dialog": {
             "$ref": "common.schema.json#/$defs/id"
+          },
+          "if": {
+            "$ref": "common.schema.json#/$defs/flag_conditions",
+            "description": "Когда житель на месте (ADR-0042); пусто — всегда."
           }
         },
         "additionalProperties": false,
@@ -338,6 +342,50 @@
         ]
       },
       "description": "Модели в заданных клетках; проходимость по-прежнему задаёт карта."
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "on": {
+            "enum": [
+              "enter_area",
+              "enter_zone"
+            ]
+          },
+          "zone": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "[x, z, ширина, глубина] — для enter_zone."
+          },
+          "if": {
+            "$ref": "common.schema.json#/$defs/flag_conditions"
+          },
+          "then": {
+            "$ref": "common.schema.json#/$defs/event_actions"
+          },
+          "once": {
+            "type": "boolean",
+            "description": "Один раз (по умолчанию да)."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "on",
+          "then"
+        ]
+      },
+      "description": "События области (ADR-0042): при входе в область или в зону."
     }
   },
   "additionalProperties": false,

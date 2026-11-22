@@ -16,16 +16,27 @@ var node_id: String = ""
 
 var _nodes: Dictionary = {}
 var _flags: WorldFlags
+## Контекст действий (ADR-0042): вещи, отряд, запросы к игре.
+var _ctx: EventContext
 
 
-## Начинает разговор: первый узел из "start", чьё условие выполнено.
-static func start(p_id: String, data: Dictionary, flags: WorldFlags) -> DialogRunner:
+## Начинает разговор: первый узел из "start", чьё условие выполнено. [param ctx] —
+## отряд и правила для действий с вещами и составом; без него — только флаги.
+static func start(
+	p_id: String, data: Dictionary, flags: WorldFlags, ctx: EventContext = null
+) -> DialogRunner:
 	var r := DialogRunner.new()
 	r.dialog_id = p_id
 	r._nodes = JsonRead.get_dict(data, "nodes")
 	r._flags = flags
+	r._ctx = ctx if ctx != null else EventContext.new(flags)
 	r._enter(start_node(data, flags))
 	return r
+
+
+## Запросы к игре, накопленные разговором (диалог, бой, перенос, вещи…).
+func take_requests() -> Array[Dictionary]:
+	return _ctx.take_requests()
 
 
 ## "start" — id узла или список [{"if": [...], "node": id}], первый подходящий.
@@ -86,14 +97,20 @@ func choose(index: int, rng: Rng = null, speaker: Abilities = null) -> void:
 		)
 		if not last_check.success:
 			next = JsonRead.get_str(option, "fail")
-	quests_changed.append_array(EventActions.apply(JsonRead.get_array(option, "then"), _flags))
+	_run(JsonRead.get_array(option, "then"))
 	_enter(next)
 
 
 func _enter(id: String) -> void:
 	node_id = id if _nodes.has(id) else ""
 	if node_id != "":
-		quests_changed.append_array(EventActions.apply(JsonRead.get_array(_node(), "then"), _flags))
+		_run(JsonRead.get_array(_node(), "then"))
+
+
+func _run(actions: Array) -> void:
+	_ctx.quests.clear()
+	EventActions.run(actions, _ctx)
+	quests_changed.append_array(_ctx.quests)
 
 
 func _node() -> Dictionary:

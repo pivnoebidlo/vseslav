@@ -26,6 +26,23 @@ class Npc:
 	## Облик — id из models/models.json.
 	var look: String = ""
 	var dialog: String = ""
+	## Когда житель на месте (флаги); пусто — всегда (ADR-0042). Например, будущий
+	## спутник стоит в деревне, пока не принят в отряд.
+	var conditions: Array = []
+
+
+## Событие области (ADR-0042): при входе в область или в зону, с условиями;
+## по умолчанию срабатывает один раз (флаг event.<область>.<id>).
+class AreaEvent:
+	extends RefCounted
+	const ON_ENTER_AREA := "enter_area"
+	const ON_ENTER_ZONE := "enter_zone"
+	var id: String = ""
+	var on: String = ON_ENTER_AREA
+	var zone: Rect2i = Rect2i()
+	var conditions: Array = []
+	var actions: Array = []
+	var once: bool = true
 
 
 ## Выход в другую область.
@@ -57,6 +74,7 @@ var rows: Array[String] = []
 var grid: BattleGrid = BattleGrid.new()
 var spawns: Dictionary[String, Vector2i] = {}
 var npcs: Array[Npc] = []
+var events: Array[AreaEvent] = []
 var encounters: Array[Encounter] = []
 ## Выходы в другие области (ADR-0034): клетка → область и точка появления.
 var exits: Array[Exit] = []
@@ -110,7 +128,18 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		npc.at = JsonRead.to_vec2i(d.get("at", []))
 		npc.look = JsonRead.get_str(d, "look")
 		npc.dialog = JsonRead.get_str(d, "dialog")
+		npc.conditions = JsonRead.get_array(d, "if")
 		a.npcs.append(npc)
+	for raw: Variant in JsonRead.get_array(data, "events"):
+		var d: Dictionary = raw
+		var ev := AreaEvent.new()
+		ev.id = JsonRead.get_str(d, "id")
+		ev.on = JsonRead.get_str(d, "on", AreaEvent.ON_ENTER_AREA)
+		ev.zone = Encounter.rect_of(JsonRead.get_array(d, "zone"))
+		ev.conditions = JsonRead.get_array(d, "if")
+		ev.actions = JsonRead.get_array(d, "then")
+		ev.once = JsonRead.get_bool(d, "once", true)
+		a.events.append(ev)
 	a.style = JsonRead.get_dict(data, "style")
 	a.surfaces = JsonRead.get_dict(data, "surfaces")
 	a.interior = JsonRead.get_bool(data, "interior")

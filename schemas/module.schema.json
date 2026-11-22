@@ -47,6 +47,15 @@
         },
         "spawn": {
           "$ref": "common.schema.json#/$defs/id"
+        },
+        "party": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "description": "Кто в отряде в начале игры (ADR-0042); без поля — все персонажи."
         }
       },
       "additionalProperties": false,

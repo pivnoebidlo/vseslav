@@ -42,6 +42,7 @@ var _team_color: Color = Color.GRAY
 var _ground_y: float = 0.0
 var _pose: String = ""
 var _was_reviving: bool = false
+var _hide_hp: bool = false
 
 
 ## [param model] — уже загруженная модель облика (её корень станет дочерним) или null.
@@ -78,13 +79,15 @@ func refresh(display_name: String, c: Combatant) -> void:
 			conds.append(CombatLogFormat.condition_name(cond.id))
 	_cond_label.text = ", ".join(conds)
 	_cond_label.visible = not c.dead
-	_name_label.text = "%s  %d/%d" % [display_name, c.hp, c.max_hp]
+	_name_label.text = "%s  %s" % [display_name, CombatLogFormat.hp_text(c)]
+	_hide_hp = not c.player
 	var ratio := clampf(float(c.hp) / float(maxi(c.max_hp, 1)), 0.0, 1.0)
 	_bar_mesh.size = Vector2(BAR_WIDTH * ratio, BAR_HEIGHT * 0.7)
 	_bar_mesh.center_offset = Vector3(-BAR_WIDTH * (1.0 - ratio) / 2.0, 0.0, 0.01)
 	_bar_mat.albedo_color = UiStyle.hp_color(c.hp, c.max_hp)
-	_bar_fill.visible = c.hp > 0
-	_bar_bg.visible = not c.dead
+	# У врагов полоски нет: сколько у них хитов, не видно (только состояние словами).
+	_bar_fill.visible = c.hp > 0 and not _hide_hp
+	_bar_bg.visible = not c.dead and not _hide_hp
 	_dead = c.dead
 
 	var pose := POSE_IDLE

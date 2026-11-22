@@ -22,6 +22,29 @@ class Line:
 		color = p_color
 
 
+## Состояние словами: точные хиты видны только у своих героев, у остальных —
+## «Здоров», «Ранен», «Плох», «При смерти», «Повержен» (docs/rules/combat.md).
+static func health_word(hp: int, max_hp: int, dead: bool = false) -> String:
+	var key := "UI_HEALTH_DYING"
+	if dead or hp <= 0:
+		key = "UI_HEALTH_DOWN"
+	elif hp >= max_hp:
+		key = "UI_HEALTH_FULL"
+	elif hp * 2 >= max_hp:
+		key = "UI_HEALTH_HURT"
+	elif hp * 4 >= max_hp:
+		key = "UI_HEALTH_BAD"
+	return TranslationServer.translate(key)
+
+
+## Хиты участника на экране: «7/11» у своих героев, словами — у остальных.
+static func hp_text(c: Combatant, hp: int = -1) -> String:
+	var value := c.hp if hp < 0 else hp
+	if c.player:
+		return "%d/%d" % [value, c.max_hp]
+	return health_word(value, c.max_hp, c.dead and hp < 0)
+
+
 static func line(state: CombatState, e: CombatEvent) -> Line:
 	var d := e.data
 	var who := _name(state, JsonRead.get_str(d, "id"))
@@ -57,7 +80,7 @@ static func line(state: CombatState, e: CombatEvent) -> Line:
 		CombatEvent.SAVE:
 			return _save(d, who)
 		CombatEvent.DAMAGE:
-			return _damage(d, who)
+			return _damage(d, who, state.get_combatant(JsonRead.get_str(d, "id")))
 		CombatEvent.HEALED:
 			return Line.new(
 				tr_fmt(
@@ -65,7 +88,11 @@ static func line(state: CombatState, e: CombatEvent) -> Line:
 					{
 						"name": who,
 						"amount": JsonRead.get_int(d, "amount"),
-						"hp": JsonRead.get_int(d, "hp")
+						"hp":
+						_hp_after(
+							state.get_combatant(JsonRead.get_str(d, "id")),
+							JsonRead.get_int(d, "hp")
+						)
 					}
 				),
 				COLOR_GOOD
@@ -211,7 +238,7 @@ static func _save(d: Dictionary, who: String) -> Line:
 	return Line.new(text, COLOR_MISS if ok else Color.WHITE)
 
 
-static func _damage(d: Dictionary, who: String) -> Line:
+static func _damage(d: Dictionary, who: String, c: Combatant) -> Line:
 	var parts: PackedStringArray = []
 	for item: Variant in JsonRead.get_array(d, "parts"):
 		var p: Dictionary = item
@@ -232,10 +259,17 @@ static func _damage(d: Dictionary, who: String) -> Line:
 				"name": who,
 				"amount": JsonRead.get_int(d, "amount"),
 				"parts": ", ".join(parts),
-				"hp": JsonRead.get_int(d, "hp")
+				"hp": _hp_after(c, JsonRead.get_int(d, "hp"))
 			}
 		)
 	)
+
+
+## Хиты после урона или лечения: число у своих, слово у остальных.
+static func _hp_after(c: Combatant, hp: int) -> String:
+	if c == null:
+		return str(hp)
+	return hp_text(c, hp)
 
 
 static func _death_save(d: Dictionary, who: String) -> Line:

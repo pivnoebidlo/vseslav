@@ -74,8 +74,7 @@ static func unit_info(state: CombatState, c: Combatant) -> String:
 		"UI_UNIT_INFO",
 		{
 			"name": CombatLogFormat.display_name(c),
-			"hp": c.hp,
-			"max": c.max_hp,
+			"hp": CombatLogFormat.hp_text(c),
 			"ac": state.effective_ac(c)
 		}
 	)

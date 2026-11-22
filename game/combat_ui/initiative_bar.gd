@@ -53,7 +53,9 @@ func _card(c: Combatant, active: bool) -> PanelContainer:
 	)
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(name)
-	box.add_child(UiStyle.hp_bar(c.hp, c.max_hp))
+	# Полоска хитов — только у своих героев: сколько хитов у врага, не видно.
+	if c.player:
+		box.add_child(UiStyle.hp_bar(c.hp, c.max_hp))
 	var status := Label.new()
 	status.add_theme_font_size_override("font_size", 10)
 	status.add_theme_color_override("font_color", Color(0.8, 0.8, 0.82))
@@ -90,7 +92,7 @@ func _status(c: Combatant) -> String:
 		return TranslationServer.translate("UI_DEAD")
 	if c.hp == 0:
 		return TranslationServer.translate("UI_DOWNED")
-	var text := "%d/%d" % [c.hp, c.max_hp]
+	var text := CombatLogFormat.hp_text(c)
 	var shown := 0
 	for cond in c.conditions:
 		if shown == 0:
@@ -107,8 +109,7 @@ func _tooltip(c: Combatant) -> String:
 			"UI_UNIT_INFO",
 			{
 				"name": CombatLogFormat.display_name(c),
-				"hp": c.hp,
-				"max": c.max_hp,
+				"hp": CombatLogFormat.hp_text(c),
 				"ac": c.armor_class
 			}
 		)

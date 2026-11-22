@@ -37,7 +37,7 @@ UI_PREVIEW_AREA,В области: {names},In the area: {names}
 UI_COVER_HALF,укрытие ½ (+2),half cover (+2)
 UI_COVER_THREE_QUARTERS,укрытие ¾ (+5),three-quarters cover (+5)
 UI_PREVIEW_AREA_ALLY,Внимание: заденет своих!,Warning: allies will be hit!
-UI_UNIT_INFO,{name} · хиты {hp}/{max} · КД {ac},{name} · HP {hp}/{max} · AC {ac}
+UI_UNIT_INFO,{name} · {hp} · КД {ac},{name} · {hp} · AC {ac}
 UI_DEFENSES,Защиты: {list},Defenses: {list}
 UI_ADVANTAGE,преимущество: {why},advantage: {why}
 UI_DISADVANTAGE,помеха: {why},disadvantage: {why}
@@ -55,8 +55,8 @@ LOG_SAVE,"{name}: спасбросок {ability}, d20 [{rolls}] {mod} = {total} 
 LOG_SAVE_AUTO_FAIL,{name}: спасбросок {ability} — автоматический провал,{name}: {ability} save — automatic failure
 LOG_RESULT_SAVED,успех,success
 LOG_RESULT_FAILED,провал,failure
-LOG_DAMAGE,"{name} получает {amount} урона ({parts}), хитов: {hp}","{name} takes {amount} damage ({parts}), HP: {hp}"
-LOG_HEALED,"{name} восстанавливает {amount} хитов, хитов: {hp}","{name} regains {amount} HP, HP: {hp}"
+LOG_DAMAGE,"{name} получает {amount} урона ({parts}) — {hp}","{name} takes {amount} damage ({parts}) — {hp}"
+LOG_HEALED,"{name} восстанавливает {amount} хитов — {hp}","{name} regains {amount} HP — {hp}"
 LOG_CONDITION,{name}: {condition},{name}: {condition}
 LOG_CONDITION_GONE,{name}: проходит — {condition},{name}: no longer {condition}
 LOG_CONCENTRATION_ENDED,{name} теряет сосредоточение,{name} loses concentration
@@ -306,3 +306,8 @@ LOG_JOURNAL_UPDATED,"Журнал обновлён: {title}","Journal updated: {
 LOG_CHEST_EMPTY,Пусто.,Empty.
 UI_CHEST_HINT,"Каждую вещь забирает выбранный герой. Не взятое останется в сундуке.","Each item goes to the hero you pick. Whatever is left stays in the chest."
 UI_DEBUG_WIN,Победить (отладка),Win (debug)
+UI_HEALTH_FULL,здоров,unhurt
+UI_HEALTH_HURT,ранен,wounded
+UI_HEALTH_BAD,плох,badly wounded
+UI_HEALTH_DYING,при смерти,near death
+UI_HEALTH_DOWN,повержен,down

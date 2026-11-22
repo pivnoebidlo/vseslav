@@ -83,6 +83,54 @@
       ],
       "look": "znakharka",
       "dialog": "travnitsa"
+    },
+    {
+      "id": "tat",
+      "name_key": "UNIT_TAT",
+      "at": [
+        26,
+        21
+      ],
+      "look": "tat",
+      "dialog": "tat_join",
+      "if": [
+        {
+          "flag": "party.tat",
+          "eq": false
+        }
+      ]
+    },
+    {
+      "id": "yaryy",
+      "name_key": "UNIT_YARYY",
+      "at": [
+        33,
+        17
+      ],
+      "look": "yaryy",
+      "dialog": "yaryy_join",
+      "if": [
+        {
+          "flag": "party.yaryy",
+          "eq": false
+        }
+      ]
+    },
+    {
+      "id": "svyashchennik",
+      "name_key": "UNIT_SVYASHCHENNIK",
+      "at": [
+        38,
+        21
+      ],
+      "look": "svyashchennik",
+      "dialog": "svyashchennik_join",
+      "if": [
+        {
+          "flag": "party.svyashchennik",
+          "eq": false
+        }
+      ]
     }
   ],
   "encounters": [

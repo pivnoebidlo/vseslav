@@ -1,0 +1,48 @@
+{
+  "start": "hello",
+  "nodes": {
+    "hello": {
+      "text": "DLG_PRIEST_HELLO",
+      "options": [
+        {
+          "text": "DLG_PRIEST_TOGETHER",
+          "next": "joined",
+          "then": [
+            {
+              "action": "join_party",
+              "character": "svyashchennik"
+            }
+          ]
+        },
+        {
+          "text": "DLG_PRIEST_ASK_EVIL",
+          "next": "evil"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "evil": {
+      "text": "DLG_PRIEST_EVIL",
+      "options": [
+        {
+          "text": "DLG_PRIEST_TOGETHER",
+          "next": "joined",
+          "then": [
+            {
+              "action": "join_party",
+              "character": "svyashchennik"
+            }
+          ]
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "joined": {
+      "text": "DLG_PRIEST_JOINED"
+    }
+  }
+}

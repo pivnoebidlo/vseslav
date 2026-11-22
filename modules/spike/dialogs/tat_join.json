@@ -1,0 +1,71 @@
+{
+  "start": "hello",
+  "nodes": {
+    "hello": {
+      "text": "DLG_TAT_HELLO",
+      "options": [
+        {
+          "text": "DLG_TAT_ASK_JOIN",
+          "next": "terms"
+        },
+        {
+          "text": "DLG_TAT_ASK_WHO",
+          "check": {
+            "ability": "wis",
+            "dc": 12
+          },
+          "next": "who_ok",
+          "fail": "who_fail"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "who_ok": {
+      "text": "DLG_TAT_WHO_OK",
+      "options": [
+        {
+          "text": "DLG_TAT_ASK_JOIN",
+          "next": "terms"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "who_fail": {
+      "text": "DLG_TAT_WHO_FAIL",
+      "options": [
+        {
+          "text": "DLG_TAT_ASK_JOIN",
+          "next": "terms"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "terms": {
+      "text": "DLG_TAT_TERMS",
+      "options": [
+        {
+          "text": "DLG_TAT_DEAL",
+          "next": "joined",
+          "then": [
+            {
+              "action": "join_party",
+              "character": "tat"
+            }
+          ]
+        },
+        {
+          "text": "DLG_TAT_LATER"
+        }
+      ]
+    },
+    "joined": {
+      "text": "DLG_TAT_JOINED"
+    }
+  }
+}

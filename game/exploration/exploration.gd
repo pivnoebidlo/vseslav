@@ -1,3 +1,4 @@
+class_name Exploration
 extends Node3D
 ## Исследование в реальном времени (ADR-0029, ADR-0030): клик по земле — выбранный герой
 ## идёт туда, сцепленные спутники следом; клик по жителю — подойти и поговорить.
@@ -66,6 +67,8 @@ var _look := Vector3.ZERO
 var _talk_to := ""
 var _hovered := ""
 var _dialog := DialogPanel.new()
+var _events := EventPlayer.new()
+var _runner: DialogRunner = null
 var _dice := DiceRoll.new()
 var _party_bar := PartyBar.new()
 var _side := SideMenu.new()
@@ -86,7 +89,7 @@ func _ready() -> void:
 	_world.add_child(_path_preview)
 	_world.add_child(_board)
 	add_child(_session)
-	_setup_ui()
+	ExplorationUi.setup(self)
 	var start := _content.start()
 	var save := _take_save()
 	var area_id := save.area if save != null else JsonRead.get_str(start, "area")
@@ -121,6 +124,8 @@ func _ready() -> void:
 	_camera.focus(_look, CAMERA_ZOOM)
 	if save != null and save.mode == GameSave.MODE_COMBAT:
 		_resume_combat(save)
+	else:
+		_fire_events(AreaMap.AreaEvent.ON_ENTER_AREA, _leader_cell())
 
 
 func _process(delta: float) -> void:
@@ -150,7 +155,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if pressed and key.keycode == KEY_ESCAPE and not _in_combat():
 		_toggle_menu()
 		return
-	if _menu.is_open() or _dialog.is_open() or _screens.is_open() or _heroes.is_empty():
+	if _input_blocked():
 		return
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
@@ -179,6 +184,13 @@ func _save_key(keycode: Key) -> bool:
 	else:
 		return false
 	return true
+
+
+## Окно, разговор, событие на экране — карта не слушает мышь и клавиши.
+func _input_blocked() -> bool:
+	if _menu.is_open() or _dialog.is_open() or _screens.is_open():
+		return true
+	return _heroes.is_empty() or _events.is_busy()
 
 
 func _on_key(keycode: Key) -> void:
@@ -451,8 +463,59 @@ func _arrived() -> void:
 		return
 	_set_hovered("")
 	_path_preview.clear()
-	var runner := DialogRunner.start(npc.dialog, _content.dialogs[npc.dialog], flags)
-	_dialog.open(tr(npc.name_key), runner, _names[_group.selected], _abilities(_group.selected))
+	_talk(npc.dialog, tr(npc.name_key))
+
+
+## Разговор: действия ответов идут через контекст событий (вещи, отряд, ADR-0042).
+func _talk(dialog_id: String, speaker: String) -> void:
+	if not _content.dialogs.has(dialog_id):
+		_events.resume()
+		return
+	_runner = DialogRunner.start(dialog_id, _content.dialogs[dialog_id], flags, _event_ctx())
+	_dialog.open(speaker, _runner, _names[_group.selected], _abilities(_group.selected))
+
+
+func _event_ctx() -> EventContext:
+	var ctx := EventContext.new(flags, _screens.party, _content.rules)
+	ctx.receiver = _group.selected
+	return ctx
+
+
+## Действия вне диалога (победа, сундук, событие): применить и исполнить запросы.
+func _run_actions(actions: Array) -> void:
+	var ctx := _event_ctx()
+	EventActions.run(actions, ctx)
+	_quests_updated(ctx.quests)
+	_events.play(ctx.take_requests())
+
+
+func _fire_events(on: String, cell: Vector2i) -> void:
+	var due := AreaEvents.due(_area, on, cell, flags)
+	if due.is_empty():
+		return
+	var ctx := _event_ctx()
+	for ev in due:
+		AreaEvents.fire(_area, ev, ctx)
+	_quests_updated(ctx.quests)
+	_events.play(ctx.take_requests())
+
+
+func _on_dialog_finished() -> void:
+	if _runner != null:
+		_events.play(_runner.take_requests())
+		_runner = null
+	_events.resume()
+
+
+## Очередь событий пуста: жители по условиям, состав отряда (принят или отпущен —
+## сцена пересобирается на том же месте).
+func _on_events_finished() -> void:
+	_refresh_npcs()
+	if _screens.party.members != _group.ids and not _in_combat():
+		_screens.save()
+		var s := _make_save()
+		SaveStore.pending = s
+		Loading.change_scene(self, SCENE)
 
 
 ## Характеристики героя для проверок в разговоре.
@@ -497,10 +560,12 @@ func _cell_pos(c: Vector2i) -> Vector3:
 
 ## Герои — в клетках [param cells] (из сохранения) или цепочкой у точки [param at].
 func _spawn_party(at: Vector2i, cells: Dictionary[String, Vector2i] = {}) -> void:
-	var ids: Array[String] = []
-	ids.assign(_screens.party.inventories.keys())
-	ids.sort()
+	var ids: Array[String] = _screens.party.members.duplicate()
 	_group = PartyGroup.new(ids)
+	var taken: Dictionary[Vector2i, bool] = {}
+	for c: Vector2i in cells.values():
+		taken[c] = true
+	var near: Vector2i = cells.values()[0] if not cells.is_empty() else at
 	for i in ids.size():
 		var w := Walker.new()
 		_names[ids[i]] = _name_of(ids[i])
@@ -508,6 +573,11 @@ func _spawn_party(at: Vector2i, cells: Dictionary[String, Vector2i] = {}) -> voi
 		w.view.place(_cell_pos(at) - Vector3(FOLLOW_GAP * i, 0.0, 0.0))
 		if cells.has(ids[i]):
 			w.view.place(_cell_pos(cells[ids[i]]))
+		elif not cells.is_empty():
+			# Новичок отряда встаёт рядом с остальными.
+			var spot := Encounter.nearest_free(_area.grid, near, taken)
+			taken[spot] = true
+			w.view.place(_cell_pos(spot))
 		w.view.face(w.view.position + Vector3.RIGHT)
 		_heroes[ids[i]] = w
 	for i in range(ids.size() * 8, -1, -1):
@@ -517,11 +587,26 @@ func _spawn_party(at: Vector2i, cells: Dictionary[String, Vector2i] = {}) -> voi
 
 
 func _spawn_npcs() -> void:
-	for npc in _area.npcs:
+	for npc in AreaEvents.present_npcs(_area, flags):
 		var view := _add_person(npc.id, "village", npc.look, tr(npc.name_key))
 		view.place(_cell_pos(npc.at))
 		view.face(view.position + Vector3.BACK)
 		_npcs[npc.id] = view
+
+
+## Жители по условиям (ADR-0042): ушедшие исчезают, пришедшие появляются.
+func _refresh_npcs() -> void:
+	var present: Dictionary[String, bool] = {}
+	for npc in AreaEvents.present_npcs(_area, flags):
+		present[npc.id] = true
+		if not _npcs.has(npc.id):
+			var view := _add_person(npc.id, "village", npc.look, tr(npc.name_key))
+			view.place(_cell_pos(npc.at))
+			_npcs[npc.id] = view
+	for id: String in _npcs.keys():
+		if not present.has(id):
+			_npcs[id].queue_free()
+			_npcs.erase(id)
 
 
 ## Противники энкаунтеров, над которыми ещё не победили, стоят на своих местах.
@@ -586,6 +671,9 @@ func _check_encounters() -> void:
 	if cells == _hero_cells:
 		return
 	_hero_cells = cells
+	_fire_events(AreaMap.AreaEvent.ON_ENTER_ZONE, _leader_cell())
+	if _in_combat():
+		return
 	for e in _area.encounters:
 		if not e.is_done(flags) and e.triggered(_area, cells):
 			_start_combat(e)
@@ -678,7 +766,7 @@ func _on_combat_ended(winner: String) -> void:
 		_game_over.set_can_load(SaveStore.has_any())
 		return
 	flags.set_flag(_encounter.won_flag(), true)
-	_quests_updated(EventActions.apply(_encounter.on_won, flags))
+	_run_actions(_encounter.on_won)
 	# Добыча, траты и раны — в партию (ADR-0026, ADR-0027).
 	_screens.after_combat(state)
 	for c in _encounter.combatants:
@@ -754,6 +842,19 @@ func _travel(x: AreaMap.Exit) -> void:
 	Loading.change_scene(self, SCENE)
 
 
+## Перенос событием: как выход, но в любую область и точку.
+func _teleport(area_id: String, spawn: String) -> void:
+	var x := AreaMap.Exit.new()
+	x.to_area = area_id
+	x.to_spawn = spawn
+	_travel(x)
+
+
+func _item_name(item_id: String) -> String:
+	var item: Dictionary = _content.rules.items.get(item_id, {})
+	return tr(JsonRead.get_str(item, "name_key", item_id))
+
+
 func _cells_at_spawn(spawn: String) -> Dictionary[String, Vector2i]:
 	var ids: Array[String] = []
 	ids.assign(_screens.party.inventories.keys())
@@ -772,7 +873,7 @@ func _open_chest(box: AreaMap.Chest) -> void:
 	var key := "%s.%s" % [_area.id, box.id]
 	if not chests.has(key):
 		chests[key] = box.contents.duplicate(true)
-		_quests_updated(EventActions.apply(box.on_open, flags))
+		_run_actions(box.on_open)
 	var stored: Dictionary = chests[key]
 	var pile := Inventory.from_dict(stored)
 	if pile.purse == 0 and pile.bag.is_empty():
@@ -803,6 +904,7 @@ func _take_save() -> GameSave:
 		flags = WorldFlags.new()
 		chests = {}
 		_screens.party = Party.from_db(_content.rules)
+		_screens.party.set_members(JsonRead.get_str_array(_content.start(), "party"))
 		_screens.save()
 		return null
 	if save == null:
@@ -880,106 +982,16 @@ func _notify(text: String) -> void:
 		_hint.text = text
 
 
-# --- Интерфейс ----------------------------------------------------------------
+# --- Интерфейс (ExplorationUi) ---------------------------------------------------
 
 
-## Окна из колонки слева и по клавишам: вещи, торг, отдых — только вне боя
-## и разговора; журнал — всегда, кроме разговора; меню — всегда.
 func _open_window(id: String) -> void:
-	if id == "menu":
-		_toggle_menu()
-		return
-	if _dialog.is_open() or _screens.is_open():
-		return
-	if id == "journal":
-		_journal.toggle(_content.quests, flags)
-		return
-	if _in_combat():
-		return
-	_path_preview.clear()
-	match id:
-		"items":
-			_screens.open_equipment_for(_group.ids)
-		"trade":
-			_screens.open_trade_for(_group.ids)
-		"rest":
-			_screens.open_rest_for(_group.ids)
+	ExplorationUi.open_window(self, id)
 
 
 func _toggle_menu() -> void:
-	if _menu.is_open():
-		_menu.close()
-		return
-	var can_save := not _in_combat() or _session.can_save()
-	_menu.open(can_save and _area != null, SaveStore.has_any())
+	ExplorationUi.toggle_menu(self)
 
 
-func _apply_options() -> void:
-	_session.set_log_visible(GameSettings.show_combat_log)
-	if not _in_combat() and _area != null:
-		_area_view.set_grid_visible(GameSettings.show_grid)
-
-
-## Бой: окна партии гаснут, портреты показывают хиты бойцов.
 func _set_combat_ui(on: bool) -> void:
-	for id: String in ["items", "trade", "rest"]:
-		_side.set_item_enabled(id, not on)
-	_refresh_bar()
-
-
-func _setup_ui() -> void:
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	# Слева сверху — название области и подсказка, под ними — колонка кнопок окон.
-	var column := VBoxContainer.new()
-	column.position = Vector2(12, 12)
-	column.add_theme_constant_override("separation", 12)
-	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(column)
-	var panel := PanelContainer.new()
-	UiStyle.panel(panel)
-	column.add_child(panel)
-	var box := VBoxContainer.new()
-	panel.add_child(box)
-	_title.add_theme_font_size_override("font_size", 20)
-	box.add_child(_title)
-	_hint.text = tr("UI_EXPLORE_HINT")
-	_hint.modulate = Color(1, 1, 1, 0.7)
-	_hint.add_theme_font_size_override("font_size", 12)
-	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hint.custom_minimum_size = Vector2(300, 0)
-	box.add_child(_hint)
-	_side.add_item("items", "I", "UI_SIDE_ITEMS")
-	_side.add_item("journal", "J", "UI_SIDE_JOURNAL")
-	_side.add_item("trade", "T", "UI_TRADE")
-	_side.add_item("rest", "R", "UI_REST")
-	_side.add_item("menu", "Esc", "UI_SIDE_MENU")
-	_side.chosen.connect(_open_window)
-	_side.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	column.add_child(_side)
-	layer.add_child(_party_bar)
-	_party_bar.hero_selected.connect(_select)
-	_party_bar.chain_toggled.connect(_toggle_chain)
-	_session.setup(layer, _board, _world)
-	_session.show_ui(false)
-	_session.status_changed.connect(_on_combat_status)
-	_session.turn_started.connect(func(id: String) -> void: _combat_focus = id)
-	_session.ended.connect(_on_combat_ended)
-	_screens.setup(_content.rules, _content.merchants_data())
-	_screens.dry_run = SaveStore.disabled
-	layer.add_child(_screens)
-	layer.add_child(_dialog)
-	layer.add_child(_game_over)
-	_game_over.load_pressed.connect(_load_latest)
-	_game_over.menu_pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
-	layer.add_child(_dice)
-	_journal = JournalPanel.new()
-	layer.add_child(_journal)
-	_menu.setup()
-	layer.add_child(_menu)
-	_menu.save_pressed.connect(_quick_save)
-	_menu.load_pressed.connect(_load_latest)
-	_menu.quit_pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
-	_menu.options_changed.connect(_apply_options)
-	_dialog.quests_changed.connect(_quests_updated)
-	_dialog.setup(_dice, rng)
+	ExplorationUi.set_combat_ui(self, on)

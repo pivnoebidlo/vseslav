@@ -10,6 +10,11 @@
   ],
   "start": {
     "area": "derevnya",
-    "spawn": "start"
+    "spawn": "start",
+    "party": [
+      "ratnik",
+      "lovchiy",
+      "volkhv"
+    ]
   }
 }

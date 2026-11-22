@@ -1,0 +1,48 @@
+{
+  "start": "hello",
+  "nodes": {
+    "hello": {
+      "text": "DLG_YARYY_HELLO",
+      "options": [
+        {
+          "text": "DLG_YARYY_FIGHT",
+          "next": "joined",
+          "then": [
+            {
+              "action": "join_party",
+              "character": "yaryy"
+            }
+          ]
+        },
+        {
+          "text": "DLG_YARYY_NO_MEAD",
+          "next": "mead"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "mead": {
+      "text": "DLG_YARYY_MEAD",
+      "options": [
+        {
+          "text": "DLG_YARYY_PROMISE",
+          "next": "joined",
+          "then": [
+            {
+              "action": "join_party",
+              "character": "yaryy"
+            }
+          ]
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "joined": {
+      "text": "DLG_YARYY_JOINED"
+    }
+  }
+}

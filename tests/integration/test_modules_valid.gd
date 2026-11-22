@@ -21,8 +21,12 @@ func test_all_builtin_modules_load_cleanly() -> void:
 	assert_eq(ids, ["vseslav.base", "vseslav.spike"] as Array[String])
 	assert_eq(_content.arena_ids(), ["doroga", "pogost", "polyana"] as Array[String])
 	assert_eq(_content.rules.errors, [] as Array[String])
-	assert_eq(_content.start(), {"area": "derevnya", "spawn": "start"})
-	assert_eq(_content.area("derevnya").npcs.size(), 3)
+	var start := _content.start()
+	assert_eq(JsonRead.get_str(start, "area"), "derevnya")
+	assert_eq(
+		JsonRead.get_str_array(start, "party"), ["ratnik", "lovchiy", "volkhv"] as Array[String]
+	)
+	assert_eq(_content.area("derevnya").npcs.size(), 6, "3 villagers + 3 future companions")
 	assert_eq(_content.area("derevnya").encounters.size(), 2)
 	assert_gte(_content.props.size(), 20, "KayKit props")
 

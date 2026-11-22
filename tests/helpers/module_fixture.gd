@@ -12,6 +12,12 @@ static func fresh_root() -> String:
 	return ROOT
 
 
+## Папка для модулей (создаётся, содержимое не трогает).
+static func fresh_root_keep() -> String:
+	DirAccess.make_dir_recursive_absolute(ROOT)
+	return ROOT
+
+
 static func remove_all() -> void:
 	_remove(ROOT)
 

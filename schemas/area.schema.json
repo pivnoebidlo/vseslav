@@ -16,10 +16,10 @@
       "items": {
         "type": "string",
         "pattern": "^[.,#T=+]+$",
-        "maxLength": 128
+        "maxLength": 256
       },
       "minItems": 1,
-      "maxItems": 128,
+      "maxItems": 256,
       "description": ". земля, , дорога, # постройка, T дерево, = плетень, + могила"
     },
     "spawns": {
@@ -271,8 +271,10 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^[0-9]+$"
+        "pattern": "^[0-9]+$",
+        "maxLength": 256
       },
+      "maxItems": 256,
       "description": "Рельеф (ADR-0037): строки цифр того же размера, что map; цифра — уровень клетки, 5 футов на уровень."
     },
     "surfaces": {

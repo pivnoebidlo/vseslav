@@ -13,11 +13,28 @@ const SUB := 4
 ## Полуширина окна сглаживания в долях клетки: у центра ровная площадка.
 const SMOOTH := 0.45
 
+## Сторона куска рельефа в клетках (ADR-0040): рисуется и проверяется кликом только
+## видимое, большие карты (до 256 × 256) не тормозят.
+const CHUNK := 32
 
-## Сетка земли на всю область; для плоской области — тоже сетка (из 4 вершин на клетку).
-static func build(grid: BattleGrid) -> ArrayMesh:
-	var xs := _axis(grid.width)
-	var zs := _axis(grid.depth)
+
+## Прямоугольники кусков, покрывающие область.
+static func chunks(grid: BattleGrid) -> Array[Rect2i]:
+	var result: Array[Rect2i] = []
+	for z in range(0, grid.depth, CHUNK):
+		for x in range(0, grid.width, CHUNK):
+			result.append(Rect2i(x, z, mini(CHUNK, grid.width - x), mini(CHUNK, grid.depth - z)))
+	return result
+
+
+## Сетка земли куска [param rect] (по умолчанию — вся область). Соседние куски
+## сходятся по общим вершинам на границе — шва нет.
+static func build(grid: BattleGrid, rect: Rect2i = Rect2i()) -> ArrayMesh:
+	if rect.size == Vector2i.ZERO:
+		rect = Rect2i(0, 0, grid.width, grid.depth)
+	var flat := is_flat(grid, rect)
+	var xs := _axis(rect.position.x, rect.end.x, flat)
+	var zs := _axis(rect.position.y, rect.end.y, flat)
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for j in zs.size():
@@ -62,14 +79,26 @@ static func height_at(grid: BattleGrid, p: Vector2) -> float:
 	return total / weight * LEVEL if weight > 0.0 else own_level * LEVEL
 
 
-## Положения вершин по оси: край карты, по SUB точек внутри каждой клетки
-## (не на границах клеток — так обрыв ложится ровно на границу), край карты.
-static func _axis(cells: int) -> PackedFloat32Array:
+## Ровный ли кусок вместе с соседними клетками: тогда хватит одного прямоугольника.
+static func is_flat(grid: BattleGrid, rect: Rect2i) -> bool:
+	var level := _level(grid, rect.position)
+	for z in range(rect.position.y - 1, rect.end.y + 1):
+		for x in range(rect.position.x - 1, rect.end.x + 1):
+			if _level(grid, Vector2i(x, z)) != level:
+				return false
+	return true
+
+
+## Положения вершин по оси для клеток [from, to): край, по SUB точек внутри каждой
+## клетки (не на границах клеток — так обрыв ложится ровно на границу), край.
+## Ровному куску хватает краёв.
+static func _axis(from: int, to: int, flat: bool = false) -> PackedFloat32Array:
 	var values := PackedFloat32Array()
-	values.append(-0.5)
-	for k in cells * SUB:
-		values.append(-0.5 + (k + 0.5) / SUB)
-	values.append(cells - 0.5)
+	values.append(from - 0.5)
+	if not flat:
+		for k in (to - from) * SUB:
+			values.append(from - 0.5 + (k + 0.5) / SUB)
+	values.append(to - 0.5)
 	return values
 
 

@@ -110,3 +110,21 @@ func test_reachable_without_falls_skips_cells_only_a_jump_reaches() -> void:
 	assert_true(Pathfinder.reachable(g, Vector2i(0, 0), 6).has(Vector2i(1, 0)))
 	var none: Dictionary[Vector2i, bool] = {}
 	assert_false(Pathfinder.reachable(g, Vector2i(0, 0), 6, none, none, false).has(Vector2i(1, 0)))
+
+
+func test_large_area_path_is_fast_enough() -> void:
+	# Карта 256 × 256 (ADR-0040) со стенами-«гребёнкой»: путь из угла в угол.
+	var rows: Array[String] = []
+	for z in 256:
+		var row := ""
+		for x in 256:
+			var wall := x % 16 == 8 and (z + x) % 64 < 56
+			row += "#" if wall else "."
+		rows.append(row)
+	var g := _grid(rows)
+	var started := Time.get_ticks_msec()
+	var p := Pathfinder.find_path(g, Vector2i(0, 0), Vector2i(255, 255))
+	var took := Time.get_ticks_msec() - started
+	assert_true(p.found())
+	gut.p("256×256 path: %d ms, %d cells" % [took, p.cells.size()])
+	assert_lt(took, 5000, "big maps must not freeze walking")

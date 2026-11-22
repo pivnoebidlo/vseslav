@@ -33,10 +33,14 @@ func build(p_area: AreaMap, props: PropCatalog = null, surfaces: SurfaceCatalog 
 	_surfaces = surfaces
 	_build_area()
 	_flush()
-	_build_grid()
+	_grid.visible = false
+	add_child(_grid)
 
 
+## Сетка строится при первом показе (на больших картах это заметное время, ADR-0040).
 func set_grid_visible(on: bool) -> void:
+	if on and _grid.mesh == null:
+		_build_grid()
 	_grid.visible = on
 
 
@@ -70,8 +74,6 @@ func _build_grid() -> void:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.albedo_color = Color(0.1, 0.1, 0.08, 0.45)
 	_grid.material_override = mat
-	_grid.visible = false
-	add_child(_grid)
 
 
 func _cell_pos(c: Vector2i) -> Vector3:
@@ -85,19 +87,22 @@ static func cell_pos(p_area: AreaMap, c: Vector2i) -> Vector3:
 
 
 func _build_area() -> void:
-	var ground := MeshInstance3D.new()
-	ground.mesh = TerrainMesh.build(area.grid)
-	var body := StaticBody3D.new()
-	body.collision_layer = TERRAIN_LAYER
-	body.collision_mask = 0
-	var shape := CollisionShape3D.new()
-	shape.shape = ground.mesh.create_trimesh_shape()
-	body.add_child(shape)
-	ground.add_child(body)
 	var floor_color := Color(0.42, 0.33, 0.24) if area.interior else Color(0.42, 0.52, 0.3)
 	var textured := _ground_material()
-	ground.material_override = textured if textured != null else _material(floor_color)
-	add_child(ground)
+	var ground_mat: Material = textured if textured != null else _material(floor_color)
+	# Рельеф кусками (ADR-0040): каждый со своей коллизией для кликов.
+	for rect in TerrainMesh.chunks(area.grid):
+		var ground := MeshInstance3D.new()
+		ground.mesh = TerrainMesh.build(area.grid, rect)
+		ground.material_override = ground_mat
+		var body := StaticBody3D.new()
+		body.collision_layer = TERRAIN_LAYER
+		body.collision_mask = 0
+		var shape := CollisionShape3D.new()
+		shape.shape = ground.mesh.create_trimesh_shape()
+		body.add_child(shape)
+		ground.add_child(body)
+		add_child(ground)
 	var road_textured: bool = textured != null and textured.get_shader_parameter("has_road") == true
 	var road := _material(Color(0.55, 0.47, 0.34))
 	var wall := _wall_material(Color(0.47, 0.34, 0.22))

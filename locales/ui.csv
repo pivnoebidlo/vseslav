@@ -467,7 +467,7 @@ UI_MAP_STYLE_FENCE,Плетни,Fences
 UI_MAP_STYLE_GRAVE,Могилы,Graves
 UI_MAP_STYLE_YARD,Двор,Yard
 UI_MAP_STYLE_SCATTER,Мелочи,Scatter
-UI_MAP_PREVIEW_TITLE,"Предпросмотр: колесо — масштаб, WASD — сдвиг, Q/E — поворот, G — сетка","Preview: wheel zooms, WASD pans, Q/E rotate, G grid"
+UI_MAP_PREVIEW_TITLE,"Предпросмотр: колесо — масштаб, WASD — сдвиг, Q/E — поворот, G — сетка, клик — инструмент карты","Preview: wheel zooms, WASD pans, Q/E rotate, G grid, click — map tool"
 UI_AS_TAB,Ассеты,Assets
 UI_AS_TITLE,Свои ассеты модуля,Module's own assets
 UI_AS_LICENSE,"Кладите только то, что можно распространять (CC0, CC BY, своё), и запишите автора и лицензию в CREDITS.md (docs/LICENSING.md).","Add only what may be distributed (CC0, CC BY, your own) and record the author and licence in CREDITS.md (docs/LICENSING.md)."

@@ -219,6 +219,11 @@ func _on_stroke(cells: Array[Vector2i]) -> void:
 		edited.emit(AreaOps.paint_height(_doc, _area, cells, int(_level.value)))
 
 
+## Клик по клетке из 3D-предпросмотра — как по карте сверху.
+func click_cell(cell: Vector2i) -> void:
+	_on_click(cell)
+
+
 func _on_click(cell: Vector2i) -> void:
 	if not _editable:
 		_show_inspector()

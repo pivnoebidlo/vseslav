@@ -131,6 +131,9 @@ func _apply(edit: DocEdit) -> void:
 		return
 	_undo.push(_doc, edit)
 	_refresh()
+	# Открытый предпросмотр показывает правку сразу (свои модели — после сохранения).
+	if _preview.visible and _area != "":
+		_preview.open(_area, _doc.entry(ModuleDoc.KIND_AREA, _area), _content, true)
 
 
 func _undo_edit() -> void:
@@ -514,6 +517,7 @@ func _build() -> void:
 		Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 40
 	)
 	add_child(_preview)
+	_preview.cell_clicked.connect(_map_panel.click_cell)
 	_prompt.setup()
 	add_child(_prompt)
 

@@ -128,3 +128,12 @@ func test_check_schema_flags_unsupported_keywords_and_bad_refs() -> void:
 	assert_has(errors, "bad.schema.json.properties.a: unsupported keyword 'format'")
 	assert_has(errors, "bad.schema.json.properties.b: unresolved $ref #/$defs/nope")
 	assert_eq(errors.size(), 2, "the good schemas are clean")
+
+
+func test_fractional_bounds() -> void:
+	_js.schemas["f.schema.json"] = {"type": "number", "minimum": 0.1, "maximum": 2.5}
+	var errors: Array[String] = []
+	_js.validate(0.05, "f.schema.json", "f", errors)
+	_js.validate(3.0, "f.schema.json", "f", errors)
+	_js.validate(1.5, "f.schema.json", "f", errors)
+	assert_eq(errors, ["f: $: less than 0.1", "f: $: greater than 2.5"] as Array[String])

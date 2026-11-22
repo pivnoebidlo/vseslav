@@ -21,6 +21,9 @@ var merchants: Dictionary[String, Dictionary] = {}
 var figures: Dictionary[String, Dictionary] = {}
 ## Папка models/ модуля, откуда взято описание облика.
 var figure_dirs: Dictionary[String, String] = {}
+## Модели окружения из props/props.json (ADR-0033): id → описание, и папка модуля.
+var props: Dictionary[String, Dictionary] = {}
+var prop_dirs: Dictionary[String, String] = {}
 ## Строки: язык → ключ → текст. Поздний модуль заменяет строку раннего.
 var locales: Dictionary[String, Dictionary] = {}
 

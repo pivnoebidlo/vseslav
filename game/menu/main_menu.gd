@@ -1,8 +1,8 @@
 class_name MainMenu
 extends Control
-## Главное меню: продолжить (последнее сохранение), новая игра в деревне, арена,
-## выход. Запуск с аргументами
-## (--arena, --autoplay, --screenshot, …) сразу открывает арену — для дымовых проверок.
+## Главное меню: продолжить (последнее сохранение), новая игра, выход. Бой идёт прямо
+## на карте (ADR-0032). Тестовая арена — инструмент разработчика: открывается только
+## запуском с аргументами (--arena, --autoplay, --screenshot, …) для баланса и проверок.
 
 const SCENE := "res://game/menu/main_menu.tscn"
 const ARENA_SCENE := "res://game/arena/arena.tscn"
@@ -58,7 +58,6 @@ func _build() -> void:
 	if SaveStore.has_any():
 		_button(box, "UI_MENU_CONTINUE", _continue)
 	_button(box, "UI_MENU_EXPLORE", _new_game)
-	_button(box, "UI_MENU_ARENA", _open.bind(ARENA_SCENE))
 	_button(box, "UI_MENU_QUIT", get_tree().quit)
 	var first: Button = box.get_child(3)
 	first.grab_focus.call_deferred()

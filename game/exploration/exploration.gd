@@ -88,7 +88,7 @@ func _ready() -> void:
 			push_error(err)
 		return
 	_title.text = tr(_area.title_key)
-	_area_view.build(_area)
+	_area_view.build(_area, PropCatalog.from_content(_content))
 	_area_view.set_grid_visible(grid_on)
 	_world.add_child(_area_view)
 	var save := _take_save()
@@ -129,7 +129,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _dialog.is_open() or _heroes.is_empty():
+	if _dialog.is_open() or _screens.is_open() or _heroes.is_empty():
 		return
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
@@ -734,6 +734,20 @@ func _notify(text: String) -> void:
 # --- Интерфейс ----------------------------------------------------------------
 
 
+## Кнопка экрана партии: снаряжение, торг, отдых — только вне боя и разговора.
+func _party_button(row: HBoxContainer, key: String, open: Callable) -> void:
+	var b := Button.new()
+	b.text = tr(key)
+	b.focus_mode = Control.FOCUS_NONE
+	b.pressed.connect(
+		func() -> void:
+			if not _in_combat() and not _dialog.is_open():
+				_path_preview.clear()
+				open.call()
+	)
+	row.add_child(b)
+
+
 func _setup_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
@@ -764,6 +778,13 @@ func _setup_ui() -> void:
 	_grid_button.set_pressed_no_signal(grid_on)
 	_grid_button.toggled.connect(_set_grid)
 	row.add_child(_grid_button)
+	var party_row := HBoxContainer.new()
+	box.add_child(party_row)
+	_party_button(
+		party_row, "UI_EQUIPMENT", func() -> void: _screens.open_equipment_for(_group.ids)
+	)
+	_party_button(party_row, "UI_TRADE", func() -> void: _screens.open_trade_for(_group.ids))
+	_party_button(party_row, "UI_REST", func() -> void: _screens.open_rest_for(_group.ids))
 	column.add_child(_party_bar)
 	_party_bar.hero_selected.connect(_select)
 	_party_bar.chain_toggled.connect(_toggle_chain)

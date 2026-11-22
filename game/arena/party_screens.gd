@@ -55,22 +55,41 @@ static func heroes_of(state: CombatState, p: Party) -> Array[String]:
 
 
 func open_equipment(state: CombatState) -> void:
-	_trade.visible = false
-	_equipment.open(_db, party, heroes_of(state, party), _note(state))
+	open_equipment_for(heroes_of(state, party), _note(state))
 
 
 func open_trade(state: CombatState) -> void:
+	open_trade_for(heroes_of(state, party), _note(state))
+
+
+## Вне боя (на карте): героев называет сцена.
+func open_equipment_for(heroes: Array[String], note: String = "") -> void:
+	_trade.visible = false
+	_rest.visible = false
+	_equipment.open(_db, party, heroes, note)
+
+
+func open_trade_for(heroes: Array[String], note: String = "") -> void:
 	_equipment.visible = false
-	_trade.open(_db, party, market, heroes_of(state, party), _note(state))
+	_rest.visible = false
+	_trade.open(_db, party, market, heroes, note)
+
+
+func open_rest_for(heroes: Array[String]) -> void:
+	_equipment.visible = false
+	_trade.visible = false
+	_rest.open(_db, party, heroes, Rng.new(randi()))
+
+
+func is_open() -> bool:
+	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible
 
 
 ## Отдых — только между боями; false — бой ещё идёт.
 func open_rest(state: CombatState) -> bool:
 	if not state.ended:
 		return false
-	_equipment.visible = false
-	_trade.visible = false
-	_rest.open(_db, party, heroes_of(state, party), Rng.new(randi()))
+	open_rest_for(heroes_of(state, party))
 	return true
 
 

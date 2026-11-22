@@ -138,6 +138,84 @@
         ],
         "description": "Энкаунтер (ADR-0032): кто ждёт на карте и что запускает бой."
       }
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "tree": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Модели для T."
+        },
+        "house": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Для построек # до 8 клеток."
+        },
+        "house_large": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Для построек # больше 8 клеток."
+        },
+        "well": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Для построек # из одной клетки."
+        },
+        "fence": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Для плетня =."
+        },
+        "grave": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Для могил +."
+        },
+        "yard": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Мелочи на клетках постройки, не занятых домом."
+        },
+        "scatter": {
+          "$ref": "common.schema.json#/$defs/ids",
+          "description": "Мелочи на земле (без влияния на проходимость)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Какими моделями рисовать символы карты (ADR-0033). Без стиля — простая геометрия."
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "prop": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "at": {
+            "$ref": "common.schema.json#/$defs/cell"
+          },
+          "size": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Клетки [ширина, глубина], по умолчанию 1×1."
+          },
+          "rotation": {
+            "enum": [
+              0,
+              90,
+              180,
+              270
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "prop",
+          "at"
+        ]
+      },
+      "description": "Модели в заданных клетках; проходимость по-прежнему задаёт карта."
     }
   },
   "additionalProperties": false,

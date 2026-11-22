@@ -217,3 +217,23 @@ func test_start_must_point_to_an_area_spawn() -> void:
 	file.close()
 	var content := ModuleFixture.load_root()
 	assert_true(_has_error(content, "module.json: $.start.area: unknown area 'nowhere'"))
+
+
+func test_area_props_are_checked() -> void:
+	var area := {
+		"title_key": "t.area",
+		"map": ["T..", "..."],
+		"spawns": {"start": [1, 1]},
+		"style": {"tree": ["oak"], "grave": ["ghost_stone"]},
+		"objects": [{"prop": "oak", "at": [2, 1], "size": [2, 2]}],
+	}
+	var files := {
+		"areas/pole.json": area,
+		"props/props.json": {"props": {"oak": {"file": "oak.glb", "fit": 1.5, "spin": "free"}}},
+		"locales/ru.json": _strings(["t.props.title", "t.area"]),
+	}
+	ModuleFixture.write("t.props", [], files)
+	var content := ModuleFixture.load_root()
+	assert_true(_has_error(content, "props/props.json: $.props.oak: file oak.glb not found"))
+	assert_true(_has_error(content, "areas/pole.json: $.style.grave: unknown prop 'ghost_stone'"))
+	assert_true(_has_error(content, "areas/pole.json: $.objects[0]: must be inside the map"))

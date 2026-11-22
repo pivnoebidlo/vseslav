@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "props.schema.json",
+  "title": "Модели окружения (props/props.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "props": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+\\.glb$"
+          },
+          "fit": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 4,
+            "description": "Во сколько раз модель может быть больше своих клеток (кроны деревьев шире клетки); 1 — вписана."
+          },
+          "jitter": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.5,
+            "description": "Разброс размера: от (1 − jitter) до 1."
+          },
+          "spin": {
+            "enum": [
+              "none",
+              "quarter",
+              "free"
+            ],
+            "description": "Случайный поворот: нет, на четверть оборота, любой."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "file"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "props"
+  ]
+}

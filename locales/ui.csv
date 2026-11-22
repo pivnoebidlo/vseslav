@@ -267,9 +267,8 @@ err_rest_dead,Погибший не отдыхает.,The dead don't rest.
 err_rest_no_dice,Кости хитов кончились — до длинного отдыха.,No Hit Dice left until a long rest.
 err_rest_full_hp,Хиты и так полные.,HP already full.
 UI_GAME_TITLE,Всеслав,Vseslav
-UI_MENU_SUBTITLE,"Рабочая сборка: набросок деревни и тестовые бои","Work in progress: village sketch and test fights"
-UI_MENU_EXPLORE,Новая игра — деревня,New game — village
-UI_MENU_ARENA,Арена — пошаговый бой,Arena — turn-based combat
+UI_MENU_SUBTITLE,"Рабочая сборка: деревня, лес и погост","Work in progress: village, forest and graveyard"
+UI_MENU_EXPLORE,Новая игра,New game
 UI_MENU_QUIT,Выход,Quit
 UI_MENU,В меню,Menu
 UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб, Q/E — поворот, F5 — сохранить, F9 — загрузить.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms, Q/E rotate, F5 saves, F9 loads."

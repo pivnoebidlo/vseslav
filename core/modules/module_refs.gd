@@ -15,6 +15,7 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	for e in market_errors:
 		errors.append("merchants: " + e)
 	_check_figures(content, errors)
+	_check_props(content, errors)
 	var area_ids: Array[String] = []
 	area_ids.assign(content.areas.keys())
 	area_ids.sort()
@@ -77,10 +78,36 @@ static func _check_area(content: ModuleContent, id: String, errors: Array[String
 			errors.append("%s: unknown dialog '%s'" % [at, npc.dialog])
 		if npc.look != "" and not content.figures.has(npc.look):
 			errors.append("%s: unknown look '%s'" % [at, npc.look])
+	_check_area_props(content, area, where, errors)
 	for i in area.encounters.size():
 		_check_encounter(
 			content, area, area.encounters[i], "%s: $.encounters[%d]" % [where, i], errors
 		)
+
+
+## Модели стиля и объектов есть в наборе, объекты — на карте.
+static func _check_area_props(
+	content: ModuleContent, area: AreaMap, where: String, errors: Array[String]
+) -> void:
+	var keys: Array[String] = []
+	keys.assign(area.style.keys())
+	keys.sort()
+	for key in keys:
+		for id in JsonRead.get_str_array(area.style, key):
+			if not content.props.has(id):
+				errors.append("%s: $.style.%s: unknown prop '%s'" % [where, key, id])
+	var map := Rect2i(0, 0, area.width(), area.depth())
+	for i in area.objects.size():
+		var o := area.objects[i]
+		var at := "%s: $.objects[%d]" % [where, i]
+		var id := JsonRead.get_str(o, "prop")
+		if not content.props.has(id):
+			errors.append("%s: unknown prop '%s'" % [at, id])
+		var size := Vector2i(1, 1)
+		if o.has("size"):
+			size = JsonRead.to_vec2i(o["size"])
+		if not map.encloses(Rect2i(JsonRead.to_vec2i(o.get("at", [])), size)):
+			errors.append("%s: must be inside the map" % at)
 
 
 static func _check_encounter(
@@ -158,6 +185,16 @@ static func _check_start(content: ModuleContent, errors: Array[String]) -> void:
 			errors.append(
 				"module.json: $.start.spawn: no spawn '%s' in %s" % [m.start["spawn"], area_id]
 			)
+
+
+static func _check_props(content: ModuleContent, errors: Array[String]) -> void:
+	var ids: Array[String] = []
+	ids.assign(content.props.keys())
+	ids.sort()
+	for id in ids:
+		var file := JsonRead.get_str(content.props[id], "file")
+		if not FileAccess.file_exists(content.prop_dirs[id].path_join(file)):
+			errors.append("props/props.json: $.props.%s: file %s not found" % [id, file])
 
 
 static func _check_figures(content: ModuleContent, errors: Array[String]) -> void:

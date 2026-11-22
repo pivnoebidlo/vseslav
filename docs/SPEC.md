@@ -172,7 +172,7 @@ tests/     unit (core), integration (загрузка модулей, сохра
 - Каждый тип файла имеет JSON Schema в `schemas/`; модуль валидируется при загрузке и при сохранении в редакторе. Валидатор — свой, подмножество JSON Schema 2020-12 ([ADR-0028](adr/0028-module-loader-and-schemas.md)).
 - Модули ищутся в `res://modules` и `user://modules`; зависимости загружаются раньше. Запись модуля с тем же id, что у записи его зависимости, целиком её заменяет; совпадение id с независимым модулем — ошибка.
 - Модуль с любой ошибкой (схема, ссылка, лишний файл, несовместимая версия) не загружается вместе с зависящими от него; игрок видит ошибки с файлом и путём внутри JSON.
-- Сейчас в формате: `module.json` (с `start`), `rules/*.json`, `areas/*.json`, `dialogs/*.json` ([ADR-0029](adr/0029-exploration-sketch.md)), `arenas/*.json` (тестовые арены этапа 1), `merchants.json`, `models/models.json`, `locales/*.json`; квесты и события добавляются со своими пунктами этапа 2.
+- Сейчас в формате: `module.json` (с `start`), `rules/*.json`, `areas/*.json`, `dialogs/*.json` ([ADR-0029](adr/0029-exploration-sketch.md)), `arenas/*.json` (тестовые арены этапа 1), `merchants.json`, `models/models.json`, `props/props.json` (модели окружения, [ADR-0033](adr/0033-environment-props.md)), `locales/*.json`; квесты и события добавляются со своими пунктами этапа 2.
 - Версии: semver для модуля, `format` для структуры пакета, `api_version` для событий (и будущего Lua API).
 - Импорт zip: проверка путей (zip-slip), лимиты на число и размер файлов, распаковка в `user://modules/<id>/<version>/`.
 

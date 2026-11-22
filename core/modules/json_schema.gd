@@ -179,13 +179,22 @@ func _check_string(s: String, schema: Dictionary, path: String, errors: Array[St
 			errors.append("%s: '%s' does not match %s" % [path, s, schema["pattern"]])
 
 
-## Границы в схемах — целые; JSON отдаёт все числа как float, сравнение float с int точное.
+## Границы — целые или дробные; JSON отдаёт все числа как float.
 func _check_number(value: Variant, schema: Dictionary, path: String, errors: Array[String]) -> void:
 	var f: float = value
-	if schema.has("minimum") and f < _int(schema["minimum"]):
-		errors.append("%s: less than %d" % [path, _int(schema["minimum"])])
-	if schema.has("maximum") and f > _int(schema["maximum"]):
-		errors.append("%s: greater than %d" % [path, _int(schema["maximum"])])
+	if schema.has("minimum"):
+		var lo: float = schema["minimum"]
+		if f < lo:
+			errors.append("%s: less than %s" % [path, _num(lo)])
+	if schema.has("maximum"):
+		var hi: float = schema["maximum"]
+		if f > hi:
+			errors.append("%s: greater than %s" % [path, _num(hi)])
+
+
+## 4 → "4", 0.1 → "0.1".
+func _num(v: float) -> String:
+	return str(int(v)) if v == floorf(v) else str(v)
 
 
 ## anyOf: подходит хотя бы один вариант. Если не подошёл ни один, а по типу подходит

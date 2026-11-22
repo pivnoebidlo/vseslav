@@ -17,6 +17,13 @@ This work includes material from the System Reference Document 5.2 ("SRD 5.2") b
 
 Файлы переименованы в `snake_case`, содержимое не менялось. Атрибуция для CC0 не обязательна, но мы её оставляем.
 
+Окружение карты ([ADR-0033](docs/adr/0033-environment-props.md)): `.gltf` переведены в `.glb` скриптом `tools/import_kaykit_props.sh` (геометрия и текстура не менялись), имена — наши.
+
+| Файлы | Автор | Источник | Лицензия | Проверено |
+|---|---|---|---|---|
+| `modules/base/props/`: `house_a`, `house_b`, `house_c`, `house_large`, `smithy`, `well`, `fence_wood`, `tree_a`, `tree_b`, `rock_a`, `rock_b`, `tent`, `barrel`, `crate`, `sack`, `wheelbarrow`, `lumber`, `weaponrack` (`.glb`) | Kay Lousberg ([kaylousberg.com](https://www.kaylousberg.com)) | [KayKit Medieval Hexagon Pack 1.0](https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0) (`Assets/gltf`, `LICENSE.txt`) | CC0 1.0 | 2026-11-22 |
+| `modules/base/props/`: `grave_a`, `grave_b`, `gravestone`, `gravemarker_a`, `gravemarker_b`, `crypt`, `tree_dead_a`, `tree_dead_b` (`.glb`) | Kay Lousberg ([kaylousberg.com](https://www.kaylousberg.com)) | [KayKit Halloween Bits 1.0](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) (`Assets/gltf`, `LICENSE.txt`) | CC0 1.0 | 2026-11-22 |
+
 ## Инструменты
 
 - [GUT](https://github.com/bitwes/Gut) — тесты, MIT (`addons/gut`, только для разработки, в сборку не входит).

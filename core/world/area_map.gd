@@ -31,6 +31,9 @@ var grid: BattleGrid = BattleGrid.new()
 var spawns: Dictionary[String, Vector2i] = {}
 var npcs: Array[Npc] = []
 var encounters: Array[Encounter] = []
+## Облик (ADR-0033): какие модели ставить на символы карты и явные объекты.
+var style: Dictionary = {}
+var objects: Array[Dictionary] = []
 
 
 ## Область из уже проверенных схемой данных.
@@ -66,6 +69,10 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		npc.look = JsonRead.get_str(d, "look")
 		npc.dialog = JsonRead.get_str(d, "dialog")
 		a.npcs.append(npc)
+	a.style = JsonRead.get_dict(data, "style")
+	for raw: Variant in JsonRead.get_array(data, "objects"):
+		var o: Dictionary = raw
+		a.objects.append(o)
 	for raw: Variant in JsonRead.get_array(data, "encounters"):
 		var e: Dictionary = raw
 		a.encounters.append(Encounter.from_dict(e))

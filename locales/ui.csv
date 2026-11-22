@@ -394,7 +394,7 @@ UI_ED_QUEST_HINT,Стадию выставляет действие «квест
 UI_ED_ADD_STAGE,+ стадия,+ stage
 UI_ED_STAGE,Стадия,Stage
 UI_ED_FINAL,последняя,final
-UI_ED_AREAS,Жители (области),Villagers (areas)
+UI_ED_AREAS,Области,Areas
 UI_ED_TAKE_AREA,"Взять область в модуль: id (например, derevnya)",Take an area into the module: id (e.g. derevnya)
 UI_ED_AREA,Область,Area
 UI_ED_ADD_NPC,+ житель,+ villager
@@ -404,3 +404,68 @@ UI_ED_NAME_EN,Имя по-английски,English name
 UI_ED_CELL,"Клетка (x, y):","Cell (x, y):"
 UI_ED_LOOK,Облик:,Look:
 UI_ED_DIALOG,Диалог:,Dialog:
+UI_MAP_TAB,Карта,Map
+UI_MAP_NPCS_TAB,Жители,Villagers
+UI_MAP_NEW_AREA_TITLE,Название новой области,New area title
+UI_MAP_TOOL_SELECT,Выбор,Select
+UI_MAP_TOOL_TILE,Клетки,Tiles
+UI_MAP_TOOL_HEIGHT,Высота,Height
+UI_MAP_TOOL_OBJECT,Модель,Model
+UI_MAP_TOOL_EXIT,Выход,Exit
+UI_MAP_TOOL_CHEST,Сундук,Chest
+UI_MAP_TOOL_SPAWN,Точка входа,Spawn
+UI_MAP_TOOL_ENCOUNTER,Бой,Fight
+UI_MAP_TILE_GROUND,Земля,Ground
+UI_MAP_TILE_ROAD,Дорога,Road
+UI_MAP_TILE_BUILDING,Постройка,Building
+UI_MAP_TILE_TREE,Дерево,Tree
+UI_MAP_TILE_FENCE,Плетень,Fence
+UI_MAP_TILE_GRAVE,Могила,Grave
+UI_MAP_LEVEL,ур. ,lvl 
+UI_MAP_BRUSH,кисть ,brush 
+UI_MAP_FIT,Вся карта,Fit
+UI_MAP_PREVIEW,3D,3D
+UI_MAP_NEW_EXIT,Новый выход,New exit
+UI_MAP_NEW_CHEST,Новый сундук,New chest
+UI_MAP_NEW_SPAWN,Новая точка входа,New spawn
+UI_MAP_NEW_ENCOUNTER,Новый бой,New fight
+UI_MAP_NPC_HINT,Житель — свойства во вкладке «Жители».,A villager — see the Villagers tab.
+UI_MAP_OBJECT,Модель,Model
+UI_MAP_MODEL,Модель:,Model:
+UI_MAP_SIZE,Размер (клеток):,Size (cells):
+UI_MAP_ROTATION,Поворот:,Rotation:
+UI_MAP_EXIT,Выход,Exit
+UI_MAP_TO_AREA,Ведёт в область:,Leads to area:
+UI_MAP_TO_SPAWN,к точке:,to spawn:
+UI_MAP_CHEST,Сундук,Chest
+UI_MAP_PURSE,куны ,kuny 
+UI_MAP_ITEMS,Вещи в сундуке:,Items in the chest:
+UI_MAP_ADD_ITEM,+ вещь,+ item
+UI_MAP_CHEST_THEN,Когда открыли впервые:,When first opened:
+UI_MAP_SPAWN,Точка входа,Spawn
+UI_MAP_ENCOUNTER,Бой,Fight
+UI_MAP_TRIGGER,Начинается:,Starts:
+UI_MAP_SIGHT,взгляд ,sight 
+UI_MAP_ZONE,Зона: войти — начнётся бой,Zone: entering starts the fight
+UI_MAP_BATTLE,Поле боя,Battlefield
+UI_MAP_FOES,Противники:,Enemies:
+UI_MAP_ADD_FOE,+ противник,+ enemy
+UI_MAP_AREA_SIZE,Размер:,Size:
+UI_MAP_APPLY,Изменить,Apply
+UI_MAP_INTERIOR,"Помещение (без крыш, тёмный фон)","Interior (no roofs, dark background)"
+UI_MAP_SURFACES,Поверхности,Surfaces
+UI_MAP_SURFACE_GROUND,Земля:,Ground:
+UI_MAP_SURFACE_ROAD,Дорога:,Road:
+UI_MAP_SURFACE_WALL,Стены:,Walls:
+UI_MAP_SURFACE_CLIFF,Обрывы:,Cliffs:
+UI_MAP_STYLE,Стиль: модели на символах карты,Style: models for map tiles
+UI_MAP_STYLE_HINT,Каждый символ рисуется случайной моделью из своего списка; пусто — простая геометрия.,Each tile uses a random model from its list; empty — plain shapes.
+UI_MAP_STYLE_TREE,Деревья,Trees
+UI_MAP_STYLE_HOUSE,Дома,Houses
+UI_MAP_STYLE_HOUSE_LARGE,Большие дома,Large houses
+UI_MAP_STYLE_WELL,Колодцы,Wells
+UI_MAP_STYLE_FENCE,Плетни,Fences
+UI_MAP_STYLE_GRAVE,Могилы,Graves
+UI_MAP_STYLE_YARD,Двор,Yard
+UI_MAP_STYLE_SCATTER,Мелочи,Scatter
+UI_MAP_PREVIEW_TITLE,"Предпросмотр: колесо — масштаб, WASD — сдвиг, Q/E — поворот, G — сетка","Preview: wheel zooms, WASD pans, Q/E rotate, G grid"

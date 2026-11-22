@@ -8,6 +8,7 @@ const SCENE := "res://game/editor/editor_screen.tscn"
 const DEFAULT_DEPS: Array[String] = ["vseslav.base", "vseslav.spike"]
 const INSPECTOR_WIDTH := 400
 const LIST_WIDTH := 220
+const NEW_AREA_SIZE := 64
 
 ## Последний открытый модуль: после «Сыграть» редактор открывается на нём же.
 static var last_module := ""
@@ -28,6 +29,9 @@ var _dialogs := ItemList.new()
 var _quests := ItemList.new()
 var _areas := ItemList.new()
 var _npc_panel := NpcPanel.new()
+var _map_panel := MapPanel.new()
+var _area_tabs := TabContainer.new()
+var _preview := MapPreview.new()
 var _graph := DialogGraph.new()
 var _inspector := DialogInspector.new()
 var _quest_panel := QuestPanel.new()
@@ -191,14 +195,27 @@ func _new_quest() -> void:
 	_prompt.ask(tr("UI_ED_NEW_QUEST"), tr("UI_ED_QUEST_NAME"), create, taken)
 
 
-## Берёт область в свой модуль, чтобы расставлять жителей (запись заменит исходную).
+## «+» у областей: id существующей области — она копируется в свой модуль (запись
+## заменит исходную), новый id — новая область 64 × 64 с названием.
 func _take_area() -> void:
-	var take := func(id: String, _text: String) -> void:
+	var take := func(id: String, text: String) -> void:
 		_select(id)
-		_apply(NpcOps.copy_area(_doc, id, _content.areas[id]))
-	var missing := func(id: String) -> bool:
-		return not _content.areas.has(id) or _doc.has(ModuleDoc.KIND_AREA, id)
-	_prompt.ask(tr("UI_ED_TAKE_AREA"), "", take, missing)
+		if _content.areas.has(id):
+			_apply(NpcOps.copy_area(_doc, id, _content.areas[id]))
+		else:
+			var title := text if text != "" else id
+			_apply(AreaOps.new_area(_doc, id, title, Vector2i(NEW_AREA_SIZE, NEW_AREA_SIZE)))
+	var taken := func(id: String) -> bool: return _doc.has(ModuleDoc.KIND_AREA, id)
+	_prompt.ask(tr("UI_ED_TAKE_AREA"), tr("UI_MAP_NEW_AREA_TITLE"), take, taken)
+
+
+## Сохраняет модуль, перечитывает модули (свои модели и текстуры) и строит 3D.
+func _preview_area() -> void:
+	if _editable:
+		_save()
+	_content = ModuleLoader.load_all()
+	ModuleLocales.apply(_content.locales)
+	_preview.open(_area, _doc.entry(ModuleDoc.KIND_AREA, _area), _content)
 
 
 func _add_npc() -> void:
@@ -321,9 +338,10 @@ func _refresh() -> void:
 	_inspector.visible = showing_dialog
 	_quest_panel.visible = showing_quest
 	var showing_area := _area != "" and _doc != null and _doc.has(ModuleDoc.KIND_AREA, _area)
-	_npc_panel.visible = showing_area
+	_area_tabs.visible = showing_area
 	if showing_area:
 		_npc_panel.show_area(_doc, _area, _text_of, _looks(), _dialog_ids(), _editable)
+		_map_panel.show_area(_doc, _area, _content, _text_of, _quest_stages(), _editable)
 	if showing_dialog:
 		_graph.build(_doc, _dialog, func(key: String) -> String: return _text_of(key), _node)
 		_inspector.show_node(_doc, _dialog, _node, _text_of, _quest_stages(), _editable)
@@ -381,11 +399,19 @@ func _build() -> void:
 	center.add_child(_graph)
 	_quest_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.add_child(_quest_panel)
-	_npc_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	center.add_child(_npc_panel)
-	_npc_panel.visible = false
+	_area_tabs.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.add_child(_area_tabs)
+	_area_tabs.visible = false
+	_map_panel.name = tr("UI_MAP_TAB")
+	_npc_panel.name = tr("UI_MAP_NPCS_TAB")
+	_area_tabs.add_child(_map_panel)
+	_area_tabs.add_child(_npc_panel)
 	_npc_panel.edited.connect(_apply)
 	_npc_panel.add_requested.connect(_add_npc)
+	_map_panel.edited.connect(_apply)
+	_map_panel.preview_requested.connect(_preview_area)
+	_map_panel.ask_id = func(title: String, hint: String, ok: Callable, taken: Callable) -> void:
+		_prompt.ask(title, hint, ok, taken)
 	_inspector.custom_minimum_size = Vector2(INSPECTOR_WIDTH, 0)
 	split.add_child(_inspector)
 	_errors.custom_minimum_size = Vector2(0, 90)
@@ -414,6 +440,10 @@ func _build() -> void:
 	)
 	_inspector.delete_node_requested.connect(_delete_node)
 	_quest_panel.edited.connect(_apply)
+	_preview.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 40
+	)
+	add_child(_preview)
 	_prompt.setup()
 	add_child(_prompt)
 

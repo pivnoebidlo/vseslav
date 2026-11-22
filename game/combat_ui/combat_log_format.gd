@@ -215,6 +215,8 @@ static func _attack(state: CombatState, d: Dictionary, who: String) -> Line:
 		color = COLOR_MISS
 	text += cover_text(JsonRead.get_int(d, "cover"))
 	text += height_text(JsonRead.get_int(d, "height"))
+	if JsonRead.get_int(d, "bless") > 0:
+		text += " · " + tr_fmt("LOG_BLESS", {"bless": JsonRead.get_int(d, "bless")})
 	text += reasons(JsonRead.get_dict(d, "mods"))
 	return Line.new(text, color)
 

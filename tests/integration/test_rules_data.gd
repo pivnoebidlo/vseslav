@@ -17,7 +17,7 @@ func _character(id: String) -> Combatant:
 
 func test_base_module_loads_without_errors() -> void:
 	assert_eq(_db.errors, [] as Array[String])
-	assert_eq(_db.classes.size(), 3)
+	assert_eq(_db.classes.size(), 6)
 	assert_eq(_db.origins.size(), 2)
 	assert_gte(_db.items.size(), 10, "10+ items of the era")
 	assert_between(_db.creatures.size(), 4, 6)
@@ -77,6 +77,42 @@ func test_volkhv_sheet() -> void:
 	assert_eq(c.resources_max["slot_1"], 4)
 	assert_eq(c.masteries, [] as Array[String], "druids have no weapon mastery")
 	assert_eq(ActionResolver.save_dc(c, c.get_action("entangle")), 8 + 2 + 3)
+
+
+func test_tat_sheet() -> void:
+	var c := _character("tat")
+	assert_eq(c.abilities.score(Abilities.DEX), 17)
+	var knife := c.get_action("skramasaks")
+	assert_eq(knife.ability, Abilities.DEX, "finesse picks Dex")
+	assert_true(knife.tags.has("finesse"))
+	assert_eq(c.traits_of(TraitDef.BONUS_DAMAGE).size(), 2, "sneak attack 1d6 at 1st and 3rd")
+	assert_eq(c.get_action("cunning_dash").cost, ActionDef.COST_BONUS)
+	assert_eq(c.initiative_bonus, 3 + 2, "Dex +3 and ambush +2")
+	# 8 + 2 + 2 × (5 + 2) + Крепкий 2 × 3.
+	assert_eq(c.max_hp, 30)
+
+
+func test_yaryy_sheet() -> void:
+	var c := _character("yaryy")
+	assert_eq(c.armor_class, 10 + 1 + 3, "unarmored defense: 10 + Dex + Con")
+	# 12 + 3 + 2 × (7 + 3).
+	assert_eq(c.max_hp, 35)
+	assert_eq(c.resources_max["rage"], 3)
+	assert_true(c.get_action("sekira").two_handed)
+	assert_not_null(c.get_action("reckless_attack"))
+	assert_eq(c.traits_of(TraitDef.UNARMORED_DEFENSE).size(), 1)
+
+
+func test_svyashchennik_sheet() -> void:
+	var c := _character("svyashchennik")
+	assert_eq(c.armor_class, 14 + 0 + 2, "kuyak + shield")
+	assert_eq(c.resources_max["slot_1"], 4)
+	assert_eq(c.resources_max["channel"], 2)
+	assert_eq(ActionResolver.heal_bonus(c, c.get_action("cure_wounds")), 3, "disciple of life")
+	assert_eq(ActionResolver.heal_bonus(c, c.get_action("divine_spark")), 0, "not a slot spell")
+	assert_eq(ActionResolver.save_dc(c, c.get_action("sacred_flame")), 8 + 2 + 3)
+	assert_not_null(c.get_action("guiding_bolt"))
+	assert_not_null(c.get_action("bless"))
 
 
 func test_creatures_build() -> void:

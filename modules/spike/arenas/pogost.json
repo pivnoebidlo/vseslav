@@ -44,6 +44,33 @@
       ]
     },
     {
+      "id": "tat",
+      "character": "tat",
+      "team": "party",
+      "at": [
+        6,
+        8
+      ]
+    },
+    {
+      "id": "yaryy",
+      "character": "yaryy",
+      "team": "party",
+      "at": [
+        2,
+        8
+      ]
+    },
+    {
+      "id": "svyashchennik",
+      "character": "svyashchennik",
+      "team": "party",
+      "at": [
+        4,
+        8
+      ]
+    },
+    {
       "id": "upyr",
       "creature": "upyr",
       "team": "nechist",
@@ -86,6 +113,42 @@
       "at": [
         9,
         4
+      ]
+    },
+    {
+      "id": "upyr_2",
+      "creature": "upyr",
+      "team": "nechist",
+      "at": [
+        5,
+        0
+      ]
+    },
+    {
+      "id": "razboynik_5",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        2,
+        0
+      ]
+    },
+    {
+      "id": "razboynik_6",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        7,
+        0
+      ]
+    },
+    {
+      "id": "razboynik_7",
+      "creature": "razboynik",
+      "team": "nechist",
+      "at": [
+        0,
+        1
       ]
     }
   ]

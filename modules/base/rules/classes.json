@@ -47,6 +47,52 @@
       "paths": [
         { "id": "perunov", "name_key": "PATH_PERUNOV", "level": 3, "actions": ["thunderwave"] }
       ]
+    },
+    {
+      "id": "tat", "name_key": "CLASS_TAT", "hit_die": 8, "saves": ["dex", "int"],
+      "armor": ["light"], "weapons": ["simple", "martial"], "weapon_mastery": true,
+      "levels": {
+        "1": { "traits": [ { "type": "bonus_damage", "formula": "1d6", "when": "sneak", "once_per_turn": true,
+          "name_key": "TRAIT_SNEAK_ATTACK" } ] },
+        "2": { "actions": ["cunning_dash", "cunning_disengage"] },
+        "3": { "traits": [ { "type": "bonus_damage", "formula": "1d6", "when": "sneak", "once_per_turn": true,
+          "name_key": "TRAIT_SNEAK_ATTACK" } ] }
+      },
+      "paths": [
+        { "id": "razboynik", "name_key": "PATH_RAZBOYNIK", "level": 3,
+          "traits": [ { "type": "initiative", "formula": "2", "name_key": "TRAIT_AMBUSH" } ] }
+      ]
+    },
+    {
+      "id": "yaryy", "name_key": "CLASS_YARYY", "recharge": { "rage": "long" }, "hit_die": 12, "saves": ["str", "con"],
+      "armor": ["light", "medium", "shield"], "weapons": ["simple", "martial"], "weapon_mastery": true,
+      "levels": {
+        "1": { "actions": ["rage"], "resources": { "rage": 2 },
+          "traits": [ { "type": "unarmored_defense", "ability": "con", "name_key": "TRAIT_UNARMORED_DEFENSE" },
+            { "type": "bonus_damage", "formula": "2", "when": "raging", "name_key": "TRAIT_RAGE_DAMAGE" } ] },
+        "2": { "actions": ["reckless_attack"] },
+        "3": { "resources": { "rage": 3 } }
+      },
+      "paths": [
+        { "id": "berserk", "name_key": "PATH_BERSERK", "level": 3,
+          "traits": [ { "type": "bonus_damage", "formula": "2d6", "when": "raging_reckless", "once_per_turn": true,
+            "name_key": "TRAIT_FRENZY" } ] }
+      ]
+    },
+    {
+      "id": "svyashchennik", "name_key": "CLASS_SVYASHCHENNIK", "recharge": { "slot_1": "long", "channel": "short" },
+      "hit_die": 8, "saves": ["wis", "cha"], "armor": ["light", "medium", "shield"], "weapons": ["simple"],
+      "weapon_mastery": false, "spell_ability": "wis",
+      "spell_list": ["sacred_flame", "guiding_bolt", "bless", "cure_wounds", "healing_word"],
+      "levels": {
+        "1": { "resources": { "slot_1": 2 } },
+        "2": { "actions": ["divine_spark"], "resources": { "slot_1": 3, "channel": 2 } },
+        "3": { "resources": { "slot_1": 4 } }
+      },
+      "paths": [
+        { "id": "tselitel", "name_key": "PATH_TSELITEL", "level": 3,
+          "traits": [ { "type": "heal_bonus", "value": 3, "name_key": "TRAIT_DISCIPLE_OF_LIFE" } ] }
+      ]
     }
   ]
 }

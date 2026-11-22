@@ -210,6 +210,9 @@ static func _equip(
 		var str_req := JsonRead.get_int(item, "str_req")
 		if str_req > 0 and c.abilities.score(Abilities.STR) < str_req:
 			c.speed -= HEAVY_ARMOR_PENALTY
+	if not armored:
+		for t in c.traits_of(TraitDef.UNARMORED_DEFENSE):
+			ac = maxi(ac, 10 + dex + c.abilities.modifier(t.ability))
 	if inv.off_hand != "" and ItemInfo.item_type(db, inv.off_hand) == "shield":
 		if not trained_armor.has("shield"):
 			errors.append("%s: not trained with shields" % c.id)
@@ -312,6 +315,8 @@ static func weapon_action(c: Combatant, item: Dictionary) -> ActionDef:
 		)
 	]
 	a.tags = JsonRead.get_str_array(item, "tags")
+	if props.has("finesse"):
+		a.tags.append("finesse")
 	a.mastery = JsonRead.get_str(item, "mastery")
 	return a
 

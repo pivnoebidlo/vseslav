@@ -140,7 +140,11 @@
         "dodging",
         "marked",
         "sapped",
-        "vexed"
+        "vexed",
+        "raging",
+        "reckless",
+        "blessed",
+        "guided"
       ]
     },
     "attack_type": {
@@ -232,7 +236,9 @@
             "revive",
             "aura",
             "initiative",
-            "hp_per_level"
+            "hp_per_level",
+            "unarmored_defense",
+            "heal_bonus"
           ]
         },
         "name_key": {
@@ -253,7 +259,10 @@
             "target_wounded",
             "target_marked",
             "armored",
-            "adjacent_ally"
+            "adjacent_ally",
+            "sneak",
+            "raging",
+            "raging_reckless"
           ]
         },
         "attack_type": {
@@ -392,7 +401,8 @@
             "extra_action",
             "stand",
             "shove",
-            "shove_prone"
+            "shove_prone",
+            "reckless"
           ]
         },
         "sub_actions": {

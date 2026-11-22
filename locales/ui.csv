@@ -325,3 +325,12 @@ LOG_PUSHED,{name} отлетает на клетку,{name} is pushed back a squ
 LOG_FELL,"{name} падает с {feet} фт.: [{rolls}] = {damage} урона","{name} falls {feet} ft: [{rolls}] = {damage} damage"
 LOG_HIGH_GROUND,выше цели ({bonus}),higher ground ({bonus})
 LOG_LOW_GROUND,ниже цели ({bonus}),lower ground ({bonus})
+COND_RAGING,в ярости,raging
+COND_RECKLESS,бьёт безрассудно,reckless
+COND_BLESSED,благословлён,blessed
+COND_GUIDED,подсвечен лучом,lit by guiding bolt
+WHY_SELF_RECKLESS,безрассудно,reckless
+WHY_TARGET_RECKLESS,цель безрассудна,target reckless
+WHY_TARGET_GUIDED,цель подсвечена,target lit
+WHY_SELF_RAGING,ярость,rage
+LOG_BLESS,благословение +{bless},bless +{bless}

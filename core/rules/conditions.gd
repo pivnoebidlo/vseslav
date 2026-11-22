@@ -18,6 +18,15 @@ const DODGING := "dodging"
 const MARKED := "marked"
 const SAPPED := "sapped"
 const VEXED := "vexed"
+## Ярость ярого: сопротивление физическому урону, +2 к урону Силой в ближнем бою,
+## преимущество на спасброски Силы (SRD 5.2, Barbarian).
+const RAGING := "raging"
+## Безрассудная атака: свои ближние атаки с преимуществом, атаки по носителю — тоже.
+const RECKLESS := "reckless"
+## Благословение: +1к4 к броскам атаки и спасброскам.
+const BLESSED := "blessed"
+## «Направляющий снаряд»: следующая атака по носителю — с преимуществом.
+const GUIDED := "guided"
 
 const SRD: Array[String] = [
 	BLINDED, FRIGHTENED, INCAPACITATED, POISONED, PRONE, RESTRAINED, STUNNED, UNCONSCIOUS
@@ -35,6 +44,10 @@ const ALL: Array[String] = [
 	MARKED,
 	SAPPED,
 	VEXED,
+	RAGING,
+	RECKLESS,
+	BLESSED,
+	GUIDED,
 ]
 ## Состояния, которые включают в себя другие.
 const IMPLIES: Dictionary[String, Array] = {
@@ -103,6 +116,12 @@ static func attack_modifiers(
 			m.add_disadvantage(_why("target_prone_far"))
 	if has(target, DODGING) and not has(target, INCAPACITATED):
 		m.add_disadvantage(_why("target_dodging"))
+	if has(attacker, RECKLESS) and distance <= 1:
+		m.add_advantage(_why("self_reckless"))
+	if has(target, RECKLESS):
+		m.add_advantage(_why("target_reckless"))
+	if has(target, GUIDED):
+		m.add_advantage(_why("target_guided"))
 	return m
 
 
@@ -125,6 +144,8 @@ static func save_modifiers(list: Array[ConditionState], ability: String) -> Roll
 			m.add_disadvantage(_why("self_restrained"))
 		if has(list, DODGING) and not has(list, INCAPACITATED):
 			m.add_advantage(_why("self_dodging"))
+	if ability == Abilities.STR and has(list, RAGING):
+		m.add_advantage(_why("self_raging"))
 	return m
 
 

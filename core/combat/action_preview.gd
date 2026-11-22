@@ -47,8 +47,9 @@ static func for_target(
 			var p := ActionPreview.new()
 			var r := action.heal.value_range(actor.formula_vars(action))
 			p.chance = 100
-			p.heal_min = maxi(r.x, 0)
-			p.heal_max = maxi(r.y, 0)
+			var extra := ActionResolver.heal_bonus(actor, action)
+			p.heal_min = maxi(r.x + extra, 0)
+			p.heal_max = maxi(r.y + extra, 0)
 			return p
 	var effect := ActionPreview.new()
 	effect.chance = 100
@@ -150,9 +151,11 @@ static func _save(
 	for part in action.damage:
 		var r := part.formula.value_range(vars)
 		var tags := _tags(action, part.damage_type)
-		var lo := DamageRules.modify(maxi(r.x, 0), part.damage_type, tags, target.defenses)
+		var lo := DamageRules.modify(
+			maxi(r.x, 0), part.damage_type, tags, CombatRules.defenses_of(target)
+		)
 		var hi := DamageRules.modify(
-			maxi(r.y, 0), part.damage_type, tags, target.defenses, p.defenses
+			maxi(r.y, 0), part.damage_type, tags, CombatRules.defenses_of(target), p.defenses
 		)
 		if action.save_half:
 			lo = IntMath.floor_div(lo, 2)
@@ -181,12 +184,9 @@ static func _damage_range(
 		var t := actor.traits[i]
 		if t.type != TraitDef.BONUS_DAMAGE:
 			continue
-		if t.attack_type != "" and t.attack_type != action.attack_type:
-			continue
-		if t.when == TraitDef.WHEN_TARGET_MARKED:
-			if not Conditions.has_from(target.conditions, Conditions.MARKED, actor.id):
-				continue
-		if t.when == TraitDef.WHEN_TARGET_WOUNDED and target.hp >= target.max_hp:
+		var mode := ActionResolver.setup_attack(state, actor, action, target).mods.mode()
+		var wounded := target.hp < target.max_hp
+		if not ActionResolver.bonus_applies(state, actor, action, target, t, wounded, mode):
 			continue
 		if t.once_per_turn and state.turn_once.has("trait_%d" % i):
 			continue
@@ -199,8 +199,12 @@ static func _damage_range(
 		var damage_type: String = pair[0]
 		var r: Vector2i = pair[1]
 		var tags := _tags(action, damage_type)
-		total.x += DamageRules.modify(maxi(r.x, 0), damage_type, tags, target.defenses)
-		total.y += DamageRules.modify(maxi(r.y, 0), damage_type, tags, target.defenses, applied)
+		total.x += DamageRules.modify(
+			maxi(r.x, 0), damage_type, tags, CombatRules.defenses_of(target)
+		)
+		total.y += DamageRules.modify(
+			maxi(r.y, 0), damage_type, tags, CombatRules.defenses_of(target), applied
+		)
 	return total
 
 

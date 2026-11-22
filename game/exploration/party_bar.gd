@@ -8,17 +8,17 @@ signal hero_selected(id: String)
 signal chain_toggled(id: String)
 
 const CARD_WIDTH := 150
-const FACE_HEIGHT := 64
+const FACE_SIZE := 40
 
 
 func _init() -> void:
-	add_theme_constant_override("separation", 8)
+	add_theme_constant_override("separation", 6)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	anchor_left = 1.0
 	anchor_right = 1.0
 	offset_left = -CARD_WIDTH - 14
 	offset_right = -14
-	offset_top = 200
+	offset_top = 150
 	grow_horizontal = Control.GROW_DIRECTION_BEGIN
 
 
@@ -62,27 +62,36 @@ func _card(id: String, display_name: String, lit: bool, hp: Vector2i) -> PanelCo
 	box.add_theme_constant_override("separation", 3)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(box)
-	# Места под портрет: пока — первая буква имени на тёмном фоне.
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(row)
+	# Место под портрет: пока — первая буква имени на тёмном фоне.
 	var face := Label.new()
 	face.text = display_name.left(1)
-	face.custom_minimum_size = Vector2(0, FACE_HEIGHT)
+	face.custom_minimum_size = Vector2(FACE_SIZE, FACE_SIZE)
 	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	face.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	face.add_theme_font_size_override("font_size", 30)
+	face.add_theme_font_size_override("font_size", 22)
 	face.add_theme_color_override("font_color", Color(0.75, 0.68, 0.52))
 	face.add_theme_stylebox_override(
 		"normal", UiStyle.box(Color(0.2, 0.18, 0.15), Color.TRANSPARENT, 0, 4)
 	)
-	box.add_child(face)
+	row.add_child(face)
+	var info := VBoxContainer.new()
+	info.add_theme_constant_override("separation", 2)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(info)
 	var name := Label.new()
 	name.text = display_name
-	name.add_theme_font_size_override("font_size", 15)
+	name.add_theme_font_size_override("font_size", 14)
 	name.clip_text = true
 	if lit:
 		name.add_theme_color_override("font_color", UiStyle.ACTIVE)
-	box.add_child(name)
+	info.add_child(name)
 	if hp.y > 0:
-		box.add_child(_hp_bar(hp))
+		info.add_child(_hp_bar(hp))
 	return card
 
 

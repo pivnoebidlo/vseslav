@@ -53,4 +53,4 @@ func test_arenas_load_cleanly() -> void:
 			assert_true(state.grid.is_walkable(c.column), "%s: %s on walkable cell" % [arena, c.id])
 			if c.player:
 				party += 1
-		assert_eq(party, 3, "%s: party of 3" % arena)
+		assert_eq(party, 6, "%s: party of 6 (ADR-0038)" % arena)

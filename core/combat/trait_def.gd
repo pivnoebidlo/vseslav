@@ -24,6 +24,10 @@ const AURA := "aura"
 const INITIATIVE := "initiative"
 ## Дополнительные хиты за уровень.
 const HP_PER_LEVEL := "hp_per_level"
+## Защита без доспеха: КД = 10 + Ловкость + [member ability] (щит можно).
+const UNARMORED_DEFENSE := "unarmored_defense"
+## Прибавка [member value] к лечению заклинаниями (путь Целителя).
+const HEAL_BONUS := "heal_bonus"
 const TYPES: Array[String] = [
 	PACK_TACTICS,
 	BONUS_DAMAGE,
@@ -35,6 +39,8 @@ const TYPES: Array[String] = [
 	AURA,
 	INITIATIVE,
 	HP_PER_LEVEL,
+	UNARMORED_DEFENSE,
+	HEAL_BONUS,
 ]
 
 const WHEN_ALWAYS := ""
@@ -42,6 +48,13 @@ const WHEN_TARGET_WOUNDED := "target_wounded"
 const WHEN_TARGET_MARKED := "target_marked"
 const WHEN_ARMORED := "armored"
 const WHEN_ADJACENT_ALLY := "adjacent_ally"
+## Удар исподтишка: фехтовальное или дальнобойное оружие, и преимущество или союзник
+## рядом с целью (без помехи).
+const WHEN_SNEAK := "sneak"
+## В ярости, ближняя атака Силой.
+const WHEN_RAGING := "raging"
+## В ярости и безрассудно (неистовство берсерка), ближняя атака Силой.
+const WHEN_RAGING_RECKLESS := "raging_reckless"
 
 var type: String = ""
 var name_key: String = ""

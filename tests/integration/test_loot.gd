@@ -24,12 +24,15 @@ func test_dead_enemies_drop_what_they_carry() -> void:
 	_won("doroga")
 	var pile := Loot.collect(_state, _db, _party, Rng.new(1))
 	var bandits := 0
+	var atamans := 0
 	for c in _state.combatants:
 		if c.template == "razboynik":
 			bandits += 1
+		elif c.template == "ataman":
+			atamans += 1
 	assert_eq(pile.bag_count("topor"), bandits, "every bandit drops his axe")
 	assert_eq(pile.bag_count("luk"), bandits)
-	assert_eq(pile.bag_count("mech"), 1, "the ataman's sword")
+	assert_eq(pile.bag_count("mech"), atamans, "each ataman's sword")
 	assert_gt(pile.purse, 0)
 
 
@@ -43,8 +46,8 @@ func test_loot_is_deterministic_for_the_same_rng() -> void:
 func test_wolves_give_pelts_and_no_loot_on_defeat() -> void:
 	_won("polyana")
 	var pile := Loot.collect(_state, _db, _party, Rng.new(1))
-	assert_eq(pile.bag_count("volchya_shkura"), 5)
-	assert_eq(pile.bag_count("serp"), 1)
+	assert_eq(pile.bag_count("volchya_shkura"), 10, "a pelt per wolf")
+	assert_eq(pile.bag_count("serp"), 2, "a sickle per midday spirit")
 	_state.winner = "nechist"
 	assert_true(Loot.collect(_state, _db, _party, Rng.new(1)).bag.is_empty())
 

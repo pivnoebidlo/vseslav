@@ -20,6 +20,10 @@ const NO_CELL := Vector2i(-1, -1)
 ## Высота (ADR-0037, домашнее правило): атакующий выше цели — +2 к броску атаки,
 ## ниже — −2.
 const HIGH_GROUND_BONUS := 2
+## Благословение: кость, прибавляемая к атакам и спасброскам.
+const BLESS_DIE := 4
+## Метка действия: укрытие цели не помогает («Священное пламя»).
+const IGNORE_COVER_TAG := "ignore_cover"
 
 
 static func validate(
@@ -146,6 +150,7 @@ static func apply(
 			_save_action(state, actor, action, target, cell, events)
 		ActionDef.KIND_HEAL:
 			var amount := action.heal.roll(state.rng, actor.formula_vars(action))
+			amount += heal_bonus(actor, action)
 			CombatRules.heal(state, target, maxi(amount, 0), events)
 		ActionDef.KIND_EFFECT:
 			_effect(state, actor, action, target, events)
@@ -203,6 +208,8 @@ class AttackSetup:
 	var cover: int = LineOfSight.Cover.NONE
 	## Поправка за высоту (+2, −2 или 0); уже в [member bonus].
 	var height: int = 0
+	## Благословлён: к броску прибавится 1к4 (в бонус не входит).
+	var bless: bool = false
 
 
 ## [param with_protector] = false — защитник отказался прикрывать (ADR-0023).
@@ -238,6 +245,7 @@ static func setup_attack(
 	for t in actor.traits_of(TraitDef.ATTACK_BONUS):
 		if t.attack_type == "" or t.attack_type == action.attack_type:
 			s.bonus += t.value
+	s.bless = actor.has_condition(Conditions.BLESSED)
 	s.height = height_bonus(state, actor.column, target.column)
 	s.bonus += s.height
 	s.cover = state.cover_between(actor.column, target, actor.id)
@@ -274,6 +282,7 @@ static func attack(
 			)
 		)
 	var d20 := D20Roll.roll(state.rng, s.mods.mode())
+	var bless := state.rng.roll(BLESS_DIE) if s.bless else 0
 	var hit := false
 	var critical := false
 	if d20.natural == 1:
@@ -282,12 +291,13 @@ static func attack(
 		hit = true
 		critical = true
 	else:
-		hit = d20.natural + s.bonus >= s.target_ac
+		hit = d20.natural + s.bonus + bless >= s.target_ac
 	if hit and Conditions.auto_crit(target.conditions, s.distance):
 		critical = true
 	# Одноразовые приёмы расходуются самим броском.
 	CombatRules.remove_condition(actor, Conditions.SAPPED, "", events)
 	CombatRules.remove_condition(target, Conditions.VEXED, actor.id, events)
+	CombatRules.remove_condition(target, Conditions.GUIDED, "", events)
 	var data := {
 		"id": actor.id,
 		"target": target.id,
@@ -295,7 +305,8 @@ static func attack(
 		"rolls": d20.rolls.duplicate(),
 		"natural": d20.natural,
 		"bonus": s.bonus,
-		"total": d20.natural + s.bonus,
+		"total": d20.natural + s.bonus + bless,
+		"bless": bless,
 		"target_ac": s.target_ac,
 		"cover": s.cover,
 		"height": s.height,
@@ -315,7 +326,7 @@ static func attack(
 	var amounts: Array[Array] = []
 	for part in action.damage:
 		amounts.append([part.damage_type, maxi(part.formula.roll(state.rng, vars, critical), 0)])
-	_bonus_damage(state, actor, action, target, wounded_before, critical, amounts)
+	_bonus_damage(state, actor, action, target, wounded_before, critical, s.mods.mode(), amounts)
 	CombatRules.deal_damage(state, target, amounts, action.tags, critical, actor.id, events)
 	if not target.is_alive():
 		return
@@ -332,6 +343,7 @@ static func _bonus_damage(
 	target: Combatant,
 	wounded_before: bool,
 	critical: bool,
+	mode: int,
 	amounts: Array[Array]
 ) -> void:
 	var vars := actor.formula_vars(action)
@@ -339,15 +351,8 @@ static func _bonus_damage(
 		var t := actor.traits[i]
 		if t.type != TraitDef.BONUS_DAMAGE:
 			continue
-		if t.attack_type != "" and t.attack_type != action.attack_type:
+		if not bonus_applies(state, actor, action, target, t, wounded_before, mode):
 			continue
-		match t.when:
-			TraitDef.WHEN_TARGET_MARKED:
-				if not Conditions.has_from(target.conditions, Conditions.MARKED, actor.id):
-					continue
-			TraitDef.WHEN_TARGET_WOUNDED:
-				if not wounded_before:
-					continue
 		var key := "trait_%d" % i
 		if t.once_per_turn:
 			if state.turn_once.has(key):
@@ -355,6 +360,63 @@ static func _bonus_damage(
 			state.turn_once.append(key)
 		var damage_type := t.damage_type if t.damage_type != "" else action.damage[0].damage_type
 		amounts.append([damage_type, maxi(t.formula.roll(state.rng, vars, critical), 0)])
+
+
+## Срабатывает ли черта bonus_damage на эту атаку (без учёта «раз в ход»).
+static func bonus_applies(
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	target: Combatant,
+	t: TraitDef,
+	wounded_before: bool,
+	mode: int
+) -> bool:
+	if t.attack_type != "" and t.attack_type != action.attack_type:
+		return false
+	match t.when:
+		TraitDef.WHEN_TARGET_MARKED:
+			return Conditions.has_from(target.conditions, Conditions.MARKED, actor.id)
+		TraitDef.WHEN_TARGET_WOUNDED:
+			return wounded_before
+		TraitDef.WHEN_SNEAK:
+			return sneak_allowed(state, actor, action, target, mode)
+		TraitDef.WHEN_RAGING:
+			return _rage_strike(actor, action)
+		TraitDef.WHEN_RAGING_RECKLESS:
+			return _rage_strike(actor, action) and actor.has_condition(Conditions.RECKLESS)
+	return true
+
+
+## Удар исподтишка (SRD 5.2): фехтовальное или дальнобойное оружие; преимущество —
+## или союзник рядом с целью, если нет помехи.
+static func sneak_allowed(
+	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant, mode: int
+) -> bool:
+	if not action.tags.has("finesse") and action.attack_type != ActionDef.RANGED:
+		return false
+	if mode > 0:
+		return true
+	return mode == 0 and state.ally_adjacent(target, actor.team, actor.id)
+
+
+## Удар в ярости: ближняя атака Силой.
+static func _rage_strike(actor: Combatant, action: ActionDef) -> bool:
+	return (
+		actor.has_condition(Conditions.RAGING)
+		and action.is_melee_attack()
+		and action.ability == Abilities.STR
+	)
+
+
+## Прибавка к лечению заклинанием (черта heal_bonus, путь Целителя).
+static func heal_bonus(actor: Combatant, action: ActionDef) -> int:
+	if not action.tags.has("spell") or action.resource == "":
+		return 0
+	var total := 0
+	for t in actor.traits_of(TraitDef.HEAL_BONUS):
+		total += t.value
+	return total
 
 
 static func _mastery(actor: Combatant, action: ActionDef) -> String:
@@ -403,7 +465,7 @@ static func origin(actor: Combatant, action: ActionDef, cell: Vector2i) -> Vecto
 static func save_cover(
 	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant, cell: Vector2i
 ) -> int:
-	if action.save_ability != Abilities.DEX:
+	if action.save_ability != Abilities.DEX or action.tags.has(IGNORE_COVER_TAG):
 		return LineOfSight.Cover.NONE
 	return state.cover_between(origin(actor, action, cell), target, actor.id)
 
@@ -493,6 +555,11 @@ static func _effect(
 			state.actions_left += 1
 		ActionDef.SPECIAL_STAND:
 			CombatRules.remove_condition(actor, Conditions.PRONE, "", events)
+		ActionDef.SPECIAL_RECKLESS:
+			var reckless := ConditionState.until_source(
+				Conditions.RECKLESS, actor.id, ConditionState.SOURCE_TURN_START
+			)
+			CombatRules.add_condition(state, actor, reckless, events)
 		ActionDef.SPECIAL_SHOVE, ActionDef.SPECIAL_SHOVE_PRONE:
 			if target != null:
 				var prone := action.special == ActionDef.SPECIAL_SHOVE_PRONE

@@ -45,6 +45,33 @@
       ]
     },
     {
+      "id": "tat",
+      "character": "tat",
+      "team": "party",
+      "at": [
+        2,
+        9
+      ]
+    },
+    {
+      "id": "yaryy",
+      "character": "yaryy",
+      "team": "party",
+      "at": [
+        2,
+        7
+      ]
+    },
+    {
+      "id": "svyashchennik",
+      "character": "svyashchennik",
+      "team": "party",
+      "at": [
+        0,
+        9
+      ]
+    },
+    {
       "id": "razboynik_1",
       "creature": "razboynik",
       "team": "bandits",
@@ -105,6 +132,51 @@
       "at": [
         7,
         9
+      ]
+    },
+    {
+      "id": "razboynik_7",
+      "creature": "razboynik",
+      "team": "bandits",
+      "at": [
+        11,
+        3
+      ]
+    },
+    {
+      "id": "razboynik_8",
+      "creature": "razboynik",
+      "team": "bandits",
+      "at": [
+        9,
+        7
+      ]
+    },
+    {
+      "id": "razboynik_9",
+      "creature": "razboynik",
+      "team": "bandits",
+      "at": [
+        10,
+        9
+      ]
+    },
+    {
+      "id": "razboynik_10",
+      "creature": "razboynik",
+      "team": "bandits",
+      "at": [
+        8,
+        0
+      ]
+    },
+    {
+      "id": "ataman_2",
+      "creature": "ataman",
+      "team": "bandits",
+      "at": [
+        11,
+        6
       ]
     }
   ]

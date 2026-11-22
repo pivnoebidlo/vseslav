@@ -141,6 +141,33 @@
             13,
             24
           ]
+        },
+        {
+          "id": "razboynik_5",
+          "creature": "razboynik",
+          "team": "bandits",
+          "at": [
+            9,
+            12
+          ]
+        },
+        {
+          "id": "razboynik_6",
+          "creature": "razboynik",
+          "team": "bandits",
+          "at": [
+            4,
+            14
+          ]
+        },
+        {
+          "id": "razboynik_7",
+          "creature": "razboynik",
+          "team": "bandits",
+          "at": [
+            11,
+            21
+          ]
         }
       ]
     },
@@ -167,6 +194,15 @@
           "at": [
             59,
             19
+          ]
+        },
+        {
+          "id": "upyr",
+          "creature": "upyr",
+          "team": "nechist",
+          "at": [
+            57,
+            22
           ]
         }
       ]

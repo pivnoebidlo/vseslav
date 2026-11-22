@@ -88,7 +88,11 @@ func test_hungry_heroes_get_charges_but_no_healing() -> void:
 		_party.state_of(id).spent = {"slot_1": 1}
 	_party.inventories["volkhv"].add("suhari", 1)
 	var hungry := Rest.long_rest(_db, _party)
-	assert_eq(hungry, ["ratnik", "volkhv"] as Array[String], "lovchiy ate volkhv's only rusk")
+	assert_eq(
+		hungry,
+		["ratnik", "svyashchennik", "tat", "volkhv", "yaryy"] as Array[String],
+		"lovchiy ate volkhv's only rusk"
+	)
 	assert_eq(_party.state_of("lovchiy").damage, 0)
 	assert_eq(_party.state_of("ratnik").damage, 4)
 	assert_true(_party.state_of("ratnik").spent.is_empty(), "charges come back anyway")

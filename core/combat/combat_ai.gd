@@ -15,6 +15,8 @@ const SCALE := 100
 const AREA_MIN_ENEMIES := 2
 ## Сколько хитов «стоит» сбить цель с ног (для оценки толчка).
 const PRONE_WORTH := 2
+## Оценка благословения союзника: чуть выше обычной атаки — его накладывают в начале боя.
+const BLESS_WORTH := SCALE * 14
 
 
 static func next_command(state: CombatState) -> CombatCommand:
@@ -24,6 +26,8 @@ static func next_command(state: CombatState) -> CombatCommand:
 		cmd = _heal_ally(state, actor, true)
 	if cmd == null:
 		cmd = _bonus_action(state, actor)
+	if cmd == null:
+		cmd = _reckless(state, actor)
 	if cmd == null:
 		cmd = _best_action(state, actor)
 	if cmd == null:
@@ -81,7 +85,7 @@ static func average_damage(actor: Combatant, action: ActionDef, target: Combatan
 		tags.append(part.damage_type)
 		var typed: Array[String] = []
 		typed.assign(tags)
-		total += DamageRules.modify(avg, part.damage_type, typed, target.defenses)
+		total += DamageRules.modify(avg, part.damage_type, typed, CombatRules.defenses_of(target))
 	return total
 
 
@@ -217,6 +221,8 @@ static func _bonus_action(state: CombatState, actor: Combatant) -> CombatCommand
 		if action.kind == ActionDef.KIND_HEAL and action.target == ActionDef.TARGET_SELF:
 			if actor.hp * 2 <= actor.max_hp and _valid(state, actor, action, actor.id):
 				return UseActionCommand.new(actor.id, action.id, actor.id)
+		if _self_buff_ready(state, actor, action):
+			return UseActionCommand.new(actor.id, action.id, actor.id)
 		if action.kind == ActionDef.KIND_EFFECT and action.target == ActionDef.TARGET_ENEMY:
 			if actor.concentration != "":
 				continue
@@ -228,6 +234,66 @@ static func _bonus_action(state: CombatState, actor: Combatant) -> CombatCommand
 			if best != null:
 				return UseActionCommand.new(actor.id, action.id, best.id)
 	return null
+
+
+## Усиление себя бонусным действием (ярость): пока его нет и враг близко.
+static func _self_buff_ready(state: CombatState, actor: Combatant, action: ActionDef) -> bool:
+	if action.kind != ActionDef.KIND_EFFECT or action.target != ActionDef.TARGET_SELF:
+		return false
+	if action.effects.is_empty() or not _valid(state, actor, action, actor.id):
+		return false
+	for e in action.effects:
+		if actor.has_condition(e.condition):
+			return false
+	for enemy in _enemies(state, actor):
+		if enemy.is_alive() and BattleGrid.chebyshev(actor.column, enemy.column) <= actor.speed + 1:
+			return true
+	return false
+
+
+## Безрассудная атака: в ярости (сопротивление окупает ответные удары) и враг рядом.
+static func _reckless(state: CombatState, actor: Combatant) -> CombatCommand:
+	if state.actions_left <= 0 or actor.has_condition(Conditions.RECKLESS):
+		return null
+	if not actor.has_condition(Conditions.RAGING):
+		return null
+	for action in actor.actions:
+		if (
+			action.special != ActionDef.SPECIAL_RECKLESS
+			or not _valid(state, actor, action, actor.id)
+		):
+			continue
+		for enemy in _enemies(state, actor):
+			if enemy.is_alive() and state.in_melee_reach(actor, enemy):
+				return UseActionCommand.new(actor.id, action.id, actor.id)
+	return null
+
+
+## Польза заклинания со спасброском по одной цели: шанс провала × средний урон.
+static func save_value(actor: Combatant, action: ActionDef, target: Combatant) -> int:
+	var save := target.save_modifier(action.save_ability)
+	var fail := clampi((ActionResolver.save_dc(actor, action) - save - 1) * 5, 0, 100)
+	var dmg := average_damage(actor, action, target)
+	if target.hp > 0:
+		dmg = mini(dmg, target.hp)
+	return fail * dmg
+
+
+## Польза усиления союзника (благословение): одно на бой, пока нет концентрации.
+static func _ally_buff(state: CombatState, actor: Combatant, action: ActionDef) -> Combatant:
+	if actor.concentration != "" or action.effects.is_empty():
+		return null
+	var best: Combatant = null
+	for ally in state.sorted_combatants():
+		if ally.team != actor.team or not ally.is_alive():
+			continue
+		if ally.has_condition(action.effects[0].condition):
+			continue
+		if not _valid(state, actor, action, ally.id):
+			continue
+		if best == null or ally.max_hp > best.max_hp:
+			best = ally
+	return best
 
 
 ## Лучшее действие стоимостью «действие»: атака по цели или область по клетке.
@@ -250,6 +316,21 @@ static func _best_action(state: CombatState, actor: Combatant) -> CombatCommand:
 				if score > best_score:
 					best_score = score
 					best = UseActionCommand.new(actor.id, action.id, enemy.id)
+		elif action.kind == ActionDef.KIND_SAVE and action.area == "":
+			for enemy in _enemies(state, actor):
+				if not _valid(state, actor, action, enemy.id):
+					continue
+				var hurt := _target_weight(enemy, save_value(actor, action, enemy))
+				if action.resource != "":
+					hurt -= SCALE
+				if hurt > best_score:
+					best_score = hurt
+					best = UseActionCommand.new(actor.id, action.id, enemy.id)
+		elif action.kind == ActionDef.KIND_EFFECT and action.target == ActionDef.TARGET_ALLY:
+			var ally := _ally_buff(state, actor, action)
+			if ally != null and BLESS_WORTH > best_score:
+				best_score = BLESS_WORTH
+				best = UseActionCommand.new(actor.id, action.id, ally.id)
 		elif action.special == ActionDef.SPECIAL_SHOVE:
 			for enemy in _enemies(state, actor):
 				if not _valid(state, actor, action, enemy.id):

@@ -39,6 +39,8 @@ const SPECIAL_STAND := "stand"
 ## Толкнуть цель на клетку (если некуда — сбить с ног) или сразу сбить с ног (ForcedMove).
 const SPECIAL_SHOVE := "shove"
 const SPECIAL_SHOVE_PRONE := "shove_prone"
+## Безрассудная атака: состояние reckless до начала своего следующего хода.
+const SPECIAL_RECKLESS := "reckless"
 const SPECIALS: Array[String] = [
 	SPECIAL_DASH,
 	SPECIAL_DISENGAGE,
@@ -47,6 +49,7 @@ const SPECIALS: Array[String] = [
 	SPECIAL_STAND,
 	SPECIAL_SHOVE,
 	SPECIAL_SHOVE_PRONE,
+	SPECIAL_RECKLESS,
 ]
 
 ## Приёмы оружия (weapon mastery SRD 5.2). Действуют только реализованные,

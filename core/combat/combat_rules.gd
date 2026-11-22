@@ -15,6 +15,16 @@ const FALL_DIE := 6
 const FALL_DAMAGE_TYPE := "bludgeoning"
 
 
+## Защиты участника с учётом состояний: в ярости — сопротивление физическому урону.
+static func defenses_of(target: Combatant) -> Array[Defense]:
+	if not target.has_condition(Conditions.RAGING):
+		return target.defenses
+	var list := target.defenses.duplicate()
+	var physical: Array[String] = [Defense.PHYSICAL]
+	list.append(Defense.new(Defense.RESIST, physical))
+	return list
+
+
 ## Сколько к6 урона даёт падение на [param levels] уровней вниз.
 static func fall_dice(levels: int) -> int:
 	var feet := levels * BattleGrid.LEVEL_FEET
@@ -64,6 +74,13 @@ static func saving_throw(
 	cover: int = LineOfSight.Cover.NONE
 ) -> CheckResult:
 	var modifier := who.save_modifier(ability) + LineOfSight.ac_bonus(cover)
+	var bless := 0
+	if (
+		who.has_condition(Conditions.BLESSED)
+		and not Conditions.save_auto_fail(who.conditions, ability)
+	):
+		bless = state.rng.roll(ActionResolver.BLESS_DIE)
+		modifier += bless
 	var result: CheckResult
 	if Conditions.save_auto_fail(who.conditions, ability):
 		result = CheckResolver.auto_fail(modifier, dc)
@@ -75,6 +92,7 @@ static func saving_throw(
 	data["ability"] = ability
 	data["reason"] = reason
 	data["cover"] = cover
+	data["bless"] = bless
 	events.append(CombatEvent.new(CombatEvent.SAVE, data))
 	return result
 
@@ -100,7 +118,7 @@ static func deal_damage(
 		var applied: Array[String] = []
 		var all_tags: Array[String] = tags.duplicate()
 		all_tags.append(damage_type)
-		var final := DamageRules.modify(raw, damage_type, all_tags, target.defenses, applied)
+		var final := DamageRules.modify(raw, damage_type, all_tags, defenses_of(target), applied)
 		total += final
 		parts.append({"type": damage_type, "raw": raw, "final": final, "applied": applied})
 	var all_damage_tags: Array[String] = tags.duplicate()

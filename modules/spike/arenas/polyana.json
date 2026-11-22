@@ -45,6 +45,33 @@
       ]
     },
     {
+      "id": "tat",
+      "character": "tat",
+      "team": "party",
+      "at": [
+        3,
+        9
+      ]
+    },
+    {
+      "id": "yaryy",
+      "character": "yaryy",
+      "team": "party",
+      "at": [
+        3,
+        8
+      ]
+    },
+    {
+      "id": "svyashchennik",
+      "character": "svyashchennik",
+      "team": "party",
+      "at": [
+        0,
+        9
+      ]
+    },
+    {
       "id": "volk_1",
       "creature": "volk",
       "team": "beasts",
@@ -96,6 +123,60 @@
       "at": [
         6,
         0
+      ]
+    },
+    {
+      "id": "volk_6",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        11,
+        3
+      ]
+    },
+    {
+      "id": "volk_7",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        10,
+        8
+      ]
+    },
+    {
+      "id": "volk_8",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        8,
+        0
+      ]
+    },
+    {
+      "id": "volk_9",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        11,
+        4
+      ]
+    },
+    {
+      "id": "volk_10",
+      "creature": "volk",
+      "team": "beasts",
+      "at": [
+        9,
+        9
+      ]
+    },
+    {
+      "id": "poludnitsa_2",
+      "creature": "poludnitsa",
+      "team": "beasts",
+      "at": [
+        10,
+        5
       ]
     }
   ]

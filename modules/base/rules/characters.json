@@ -18,6 +18,25 @@
       "abilities": { "str": 10, "dex": 13, "con": 14, "int": 12, "wis": 15, "cha": 8 },
       "inventory": { "armor": "kozhukh", "main_hand": "posoh", "off_hand": "shchit",
         "bag": [ { "item": "suhari", "count": 2 }, "ognivo" ], "purse": 25 },
-      "spells": ["produce_flame", "thorn_whip", "healing_word", "cure_wounds", "entangle"] }
+      "spells": ["produce_flame", "thorn_whip", "healing_word", "cure_wounds", "entangle"] },
+    { "id": "tat", "name_key": "UNIT_TAT", "class": "tat", "path": "razboynik", "level": 3,
+      "origin": "slavyanin", "origin_bonus": { "dex": 2, "con": 1 },
+      "abilities": { "str": 10, "dex": 15, "con": 13, "int": 12, "wis": 10, "cha": 14 },
+      "inventory": { "armor": "stegach", "main_hand": "skramasaks", "off_hand": "nozh",
+        "belt": [ { "item": "otvar", "count": 1 } ],
+        "bag": [ "verevka", { "item": "suhari", "count": 2 } ], "purse": 30 } },
+    { "id": "yaryy", "name_key": "UNIT_YARYY", "class": "yaryy", "path": "berserk", "level": 3,
+      "origin": "varyag", "origin_bonus": { "str": 2, "con": 1 },
+      "abilities": { "str": 15, "dex": 13, "con": 15, "int": 8, "wis": 12, "cha": 10 },
+      "inventory": { "main_hand": "sekira",
+        "belt": [ { "item": "sulitsa", "count": 2 }, { "item": "otvar", "count": 1 } ],
+        "bag": [ { "item": "suhari", "count": 3 }, "volchya_shkura" ], "purse": 10 } },
+    { "id": "svyashchennik", "name_key": "UNIT_SVYASHCHENNIK", "class": "svyashchennik", "path": "tselitel", "level": 3,
+      "origin": "slavyanin", "origin_bonus": { "wis": 2, "con": 1 },
+      "abilities": { "str": 13, "dex": 10, "con": 14, "int": 10, "wis": 15, "cha": 12 },
+      "inventory": { "armor": "kuyak", "main_hand": "bulava", "off_hand": "shchit",
+        "belt": [ { "item": "otvar", "count": 1 } ],
+        "bag": [ { "item": "suhari", "count": 2 }, "fakel" ], "purse": 35 },
+      "spells": ["sacred_flame", "guiding_bolt", "bless", "cure_wounds", "healing_word"] }
   ]
 }

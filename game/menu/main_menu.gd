@@ -1,6 +1,7 @@
 class_name MainMenu
 extends Control
-## Главное меню: деревня (исследование), арена (бой), выход. Запуск с аргументами
+## Главное меню: продолжить (последнее сохранение), новая игра в деревне, арена,
+## выход. Запуск с аргументами
 ## (--arena, --autoplay, --screenshot, …) сразу открывает арену — для дымовых проверок.
 
 const SCENE := "res://game/menu/main_menu.tscn"
@@ -54,9 +55,12 @@ func _build() -> void:
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(subtitle)
 	box.add_child(HSeparator.new())
-	var first := _button(box, "UI_MENU_EXPLORE", _open.bind(EXPLORATION_SCENE))
+	if SaveStore.has_any():
+		_button(box, "UI_MENU_CONTINUE", _continue)
+	_button(box, "UI_MENU_EXPLORE", _new_game)
 	_button(box, "UI_MENU_ARENA", _open.bind(ARENA_SCENE))
 	_button(box, "UI_MENU_QUIT", get_tree().quit)
+	var first: Button = box.get_child(3)
 	first.grab_focus.call_deferred()
 
 
@@ -68,6 +72,19 @@ func _button(box: VBoxContainer, key: String, action: Callable) -> Button:
 	b.pressed.connect(action)
 	box.add_child(b)
 	return b
+
+
+func _continue() -> void:
+	var errors: Array[String] = []
+	SaveStore.pending = SaveStore.latest(errors)
+	SaveStore.new_game = false
+	_open(EXPLORATION_SCENE)
+
+
+func _new_game() -> void:
+	SaveStore.pending = null
+	SaveStore.new_game = true
+	_open(EXPLORATION_SCENE)
 
 
 func _open(scene: String) -> void:

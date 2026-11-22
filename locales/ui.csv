@@ -268,11 +268,11 @@ err_rest_no_dice,Кости хитов кончились — до длинно�
 err_rest_full_hp,Хиты и так полные.,HP already full.
 UI_GAME_TITLE,Всеслав,Vseslav
 UI_MENU_SUBTITLE,"Рабочая сборка: набросок деревни и тестовые бои","Work in progress: village sketch and test fights"
-UI_MENU_EXPLORE,Деревня — исследование,Village — exploration
+UI_MENU_EXPLORE,Новая игра — деревня,New game — village
 UI_MENU_ARENA,Арена — пошаговый бой,Arena — turn-based combat
 UI_MENU_QUIT,Выход,Quit
 UI_MENU,В меню,Menu
-UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms."
+UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб, F5 — сохранить, F9 — загрузить.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms, F5 saves, F9 loads."
 UI_EXPLORE_NO_START,"В загруженных модулях нет начальной области (module.json → start).","No starting area in the loaded modules (module.json → start)."
 UI_DIALOG_LEAVE,Уйти,Leave
 UI_GRID,Сетка (G),Grid (G)
@@ -294,3 +294,10 @@ LOG_ENCOUNTER,"Засада! Бой начинается.","Ambush! The fight be
 UI_GAME_OVER,Поражение,Defeat
 UI_GAME_OVER_TEXT,"Партия пала. Загрузить сохранение или выйти в меню?","The party has fallen. Load a save or return to the menu?"
 UI_LOAD_GAME,Загрузить сохранение,Load save
+UI_MENU_CONTINUE,Продолжить,Continue
+LOG_GAME_SAVED,"Игра сохранена (F9 — загрузить).","Game saved (F9 to load)."
+LOG_GAME_AUTOSAVED,"Автосохранение перед боем.","Autosaved before the fight."
+LOG_SAVE_NOT_NOW,"Сохраниться можно в свой ход, когда ничего не происходит.","You can save on your turn when nothing is happening."
+err_save_format,"Сохранение от более новой версии игры.","The save is from a newer version of the game."
+err_save_module,"Для сохранения нет нужного модуля.","The module this save needs is not loaded."
+err_save_data,"Сохранение повреждено.","The save is damaged."

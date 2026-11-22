@@ -131,6 +131,11 @@ func is_busy() -> bool:
 	return _busy
 
 
+## Можно ли сохраниться посреди боя: ход игрока, ничего не происходит.
+func can_save() -> bool:
+	return state != null and not _busy and not state.ended and _is_player_turn()
+
+
 func show_ui(on: bool) -> void:
 	_ui.visible = on
 

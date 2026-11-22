@@ -17,6 +17,7 @@ const CAMERA_ZOOM := 0.95
 ## Цель взгляда чуть ниже героя по экрану: внизу открывается окно разговора.
 const LOOK_SHIFT := Vector3(0.0, 0.0, 2.2)
 const CAMERA_LAG := 6.0
+const SCENE := "res://game/exploration/exploration.tscn"
 
 
 ## Герой на карте и его путь.
@@ -90,12 +91,20 @@ func _ready() -> void:
 	_area_view.build(_area)
 	_area_view.set_grid_visible(grid_on)
 	_world.add_child(_area_view)
+	var save := _take_save()
 	_spawn_npcs()
 	_spawn_foes()
 	var spawn: Vector2i = _area.spawns.get(JsonRead.get_str(start, "spawn"), Vector2i.ZERO)
-	_spawn_party(spawn)
+	var cells: Dictionary[String, Vector2i] = {}
+	if save != null:
+		cells = save.heroes
+	_spawn_party(spawn, cells)
+	if save != null:
+		_restore_group(save)
 	_look = _look_target()
 	_camera.focus(_look, CAMERA_ZOOM)
+	if save != null and save.mode == GameSave.MODE_COMBAT:
+		_resume_combat(save)
 
 
 func _process(delta: float) -> void:
@@ -126,9 +135,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if button != null and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_camera.handle_input(event)
 		return
+	var key := event as InputEventKey
+	if key != null and key.pressed and not key.echo:
+		if key.keycode == KEY_F5:
+			_quick_save()
+			return
+		if key.keycode == KEY_F9:
+			_load_latest()
+			return
 	if _in_combat():
 		return
-	var key := event as InputEventKey
 	if key != null and key.pressed and not key.echo:
 		_on_key(key.keycode)
 		return
@@ -413,7 +429,8 @@ func _cell_pos(c: Vector2i) -> Vector3:
 # --- Участники ----------------------------------------------------------------
 
 
-func _spawn_party(at: Vector2i) -> void:
+## Герои — в клетках [param cells] (из сохранения) или цепочкой у точки [param at].
+func _spawn_party(at: Vector2i, cells: Dictionary[String, Vector2i] = {}) -> void:
 	var ids: Array[String] = []
 	ids.assign(_screens.party.inventories.keys())
 	ids.sort()
@@ -423,6 +440,8 @@ func _spawn_party(at: Vector2i) -> void:
 		_names[ids[i]] = _name_of(ids[i])
 		w.view = _add_person(ids[i], "party", ids[i], _names[ids[i]])
 		w.view.place(_cell_pos(at) - Vector3(FOLLOW_GAP * i, 0.0, 0.0))
+		if cells.has(ids[i]):
+			w.view.place(_cell_pos(cells[ids[i]]))
 		w.view.face(w.view.position + Vector3.RIGHT)
 		_heroes[ids[i]] = w
 	for i in range(ids.size() * 8, -1, -1):
@@ -508,6 +527,8 @@ func _check_encounters() -> void:
 
 
 func _start_combat(e: Encounter) -> void:
+	# Перед боем — автосохранение: при поражении можно начать бой заново.
+	SaveStore.write(_make_save(), SaveStore.AUTO)
 	_encounter = e
 	_talk_to = ""
 	_path_preview.clear()
@@ -526,6 +547,16 @@ func _start_combat(e: Encounter) -> void:
 	)
 	for err in errors:
 		push_error(err)
+	await _enter_combat(e, state, true)
+	_session.write(tr("LOG_GAME_AUTOSAVED"), CombatLogFormat.COLOR_INFO)
+	await _session.start(state)
+
+
+## Поле, фигуры и интерфейс боя для [param state]; [param animate] — герои
+## перебегают в свои клетки, иначе ставятся сразу (загрузка).
+func _enter_combat(e: Encounter, state: CombatState, animate: bool) -> void:
+	_encounter = e
+	_party_bar.visible = false
 	_board.build(state.grid, e.battle.position)
 	_session.units.clear()
 	for id in _group.ids:
@@ -538,20 +569,33 @@ func _start_combat(e: Encounter) -> void:
 	_session.clear_log()
 	_session.write(tr("LOG_ENCOUNTER"), CombatLogFormat.COLOR_INFO)
 	# Герои встают в клетки поля боя (SPEC §3.2).
-	var tween := create_tween().set_parallel(true)
-	for c in state.combatants:
-		if _session.units.has(c.id):
-			tween.tween_property(
-				_session.units[c.id], "position", _board.position_of(c.column), 0.35
-			)
-	await tween.finished
+	if animate:
+		var tween := create_tween().set_parallel(true)
+		for c in state.combatants:
+			if _session.units.has(c.id):
+				var to := _board.position_of(c.column)
+				tween.tween_property(_session.units[c.id], "position", to, 0.35)
+		await tween.finished
 	for c in state.combatants:
 		if _session.units.has(c.id):
 			_session.units[c.id].place(_board.position_of(c.column))
 	_session.state = state
 	_session.face_enemies()
 	_combat_focus = ""
-	await _session.start(state)
+
+
+func _resume_combat(save: GameSave) -> void:
+	var e := _area.get_encounter(save.encounter)
+	if e == null:
+		return
+	var none: Dictionary[String, Vector2i] = {}
+	var grid := ArenaLoader.grid_from(e.arena_data(_area, none))
+	var state := CombatState.from_dict(save.combat, grid)
+	if state == null:
+		return
+	await _enter_combat(e, state, false)
+	_session.write(tr("LOG_LOADED"), CombatLogFormat.COLOR_GOOD)
+	await _session.resume(state)
 
 
 func _on_combat_status(turn: String, hint: String) -> void:
@@ -563,7 +607,9 @@ func _on_combat_ended(winner: String) -> void:
 	var state := _session.state
 	_session.stop()
 	if winner != Encounter.TEAM_PARTY:
+		_session.show_ui(false)
 		_game_over.open()
+		_game_over.set_can_load(SaveStore.has_any())
 		return
 	flags.set_flag(_encounter.won_flag(), true)
 	# Добыча, траты и раны — в партию (ADR-0026, ADR-0027).
@@ -591,6 +637,93 @@ func _combat_look() -> Vector3:
 	if view == null:
 		return _look
 	return view.position + LOOK_SHIFT
+
+
+# --- Сохранения (ADR-0032) -----------------------------------------------------
+
+
+## Новая игра или сохранение, выбранное в меню / по F9; применяет флаги, партию и RNG.
+## Возвращает сохранение (клетки героев, бой) или null.
+func _take_save() -> GameSave:
+	var save := SaveStore.pending
+	SaveStore.pending = null
+	if SaveStore.new_game:
+		SaveStore.new_game = false
+		flags = WorldFlags.new()
+		_screens.party = Party.from_db(_content.rules)
+		_screens.save()
+		return null
+	if save == null:
+		return null
+	var errors: Array[String] = []
+	save.check(_content, errors)
+	if not errors.is_empty():
+		_hint.text = tr(errors[0])
+		return null
+	flags = save.flags
+	_screens.party = Party.from_dict(save.party, _content.rules, errors)
+	_screens.save()
+	if not save.rng.is_empty():
+		rng = Rng.from_dict(save.rng)
+	return save
+
+
+func _restore_group(save: GameSave) -> void:
+	for id in _group.ids:
+		if not save.chained.get(id, true):
+			_group.toggle_chain(id)
+	if _heroes.has(save.selected):
+		_leader().view.set_active(false)
+		_group.select(save.selected)
+		_leader().view.set_active(true)
+	_trail = [_leader().view.position]
+	_refresh_bar()
+
+
+func _make_save() -> GameSave:
+	var s := GameSave.new()
+	for m in _content.modules:
+		if not m.start.is_empty():
+			s.module_id = m.id
+			s.module_version = m.version
+	s.area = _area.id
+	for id in _group.ids:
+		s.heroes[id] = _cell_of(_heroes[id].view.position)
+		s.chained[id] = _group.is_chained(id)
+	s.selected = _group.selected
+	s.flags = WorldFlags.from_dict(flags.to_dict())
+	s.party = _screens.party.to_dict()
+	s.rng = rng.to_dict()
+	if _in_combat():
+		s.mode = GameSave.MODE_COMBAT
+		s.encounter = _encounter.id
+		s.combat = _session.state.to_dict()
+	return s
+
+
+func _quick_save() -> void:
+	if _dialog.is_open() or (_in_combat() and not _session.can_save()):
+		_notify(tr("LOG_SAVE_NOT_NOW"))
+		return
+	SaveStore.write(_make_save(), SaveStore.QUICK)
+	_notify(tr("LOG_GAME_SAVED"))
+
+
+func _load_latest() -> void:
+	var errors: Array[String] = []
+	var save := SaveStore.latest(errors)
+	if save == null:
+		_notify(tr(errors[0] if not errors.is_empty() else "LOG_NO_SAVE"))
+		return
+	SaveStore.pending = save
+	get_tree().change_scene_to_file.call_deferred(SCENE)
+
+
+func _notify(text: String) -> void:
+	if _in_combat():
+		_session.write(text, CombatLogFormat.COLOR_INFO)
+	else:
+		_hint.text = text
 
 
 # --- Интерфейс ----------------------------------------------------------------
@@ -638,6 +771,7 @@ func _setup_ui() -> void:
 	layer.add_child(_screens)
 	layer.add_child(_dialog)
 	layer.add_child(_game_over)
+	_game_over.load_pressed.connect(_load_latest)
 	_game_over.menu_pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
 	layer.add_child(_dice)
 	_dialog.setup(_dice, rng)

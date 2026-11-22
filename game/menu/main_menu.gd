@@ -89,4 +89,7 @@ func _new_game() -> void:
 
 
 func _open(scene: String) -> void:
-	get_tree().change_scene_to_file(scene)
+	if scene == EDITOR_SCENE:
+		get_tree().change_scene_to_file(scene)
+	else:
+		Loading.change_scene(self, scene)

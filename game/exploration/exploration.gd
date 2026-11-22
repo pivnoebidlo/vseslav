@@ -751,7 +751,7 @@ func _travel(x: AreaMap.Exit) -> void:
 	s.spawn = x.to_spawn
 	SaveStore.write(s, SaveStore.AUTO)
 	SaveStore.pending = s
-	get_tree().change_scene_to_file.call_deferred(SCENE)
+	Loading.change_scene(self, SCENE)
 
 
 func _cells_at_spawn(spawn: String) -> Dictionary[String, Vector2i]:
@@ -870,7 +870,7 @@ func _load_latest() -> void:
 		_notify(tr(errors[0] if not errors.is_empty() else "LOG_NO_SAVE"))
 		return
 	SaveStore.pending = save
-	get_tree().change_scene_to_file.call_deferred(SCENE)
+	Loading.change_scene(self, SCENE)
 
 
 func _notify(text: String) -> void:

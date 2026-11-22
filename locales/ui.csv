@@ -22,7 +22,7 @@ UI_DEAD,погиб,dead
 UI_LOG,Журнал боя,Combat log
 UI_LOG_COLLAPSE,Свернуть ▾,Collapse ▾
 UI_LOG_EXPAND,Развернуть ▴,Expand ▴
-UI_HINT,"ЛКМ: по клетке — идти, по врагу — лучшая атака. Выберите действие внизу для заговоров и умений. ПКМ / Esc — отмена. Колесо — масштаб, WASD / средняя кнопка — сдвиг камеры.","LMB: square — move, enemy — best attack. Pick an action below for spells and abilities. RMB / Esc — cancel. Wheel — zoom, WASD / middle button — pan."
+UI_HINT,"ЛКМ: по клетке — идти, по врагу — лучшая атака. Выберите действие внизу для заговоров и умений. ПКМ / Esc — отмена. Колесо — масштаб, Q/E — поворот, WASD / средняя кнопка — сдвиг камеры.","LMB: square — move, enemy — best attack. Pick an action below for spells and abilities. RMB / Esc — cancel. Wheel — zoom, Q/E — rotate, WASD / middle button — pan."
 UI_TARGETING,Цель для «{action}»: {hint},Target for “{action}”: {hint}
 UI_TARGET_ENEMY,выберите врага,pick an enemy
 UI_TARGET_ALLY,выберите союзника,pick an ally
@@ -272,7 +272,7 @@ UI_MENU_EXPLORE,Новая игра — деревня,New game — village
 UI_MENU_ARENA,Арена — пошаговый бой,Arena — turn-based combat
 UI_MENU_QUIT,Выход,Quit
 UI_MENU,В меню,Menu
-UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб, F5 — сохранить, F9 — загрузить.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms, F5 saves, F9 loads."
+UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб, Q/E — поворот, F5 — сохранить, F9 — загрузить.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms, Q/E rotate, F5 saves, F9 loads."
 UI_EXPLORE_NO_START,"В загруженных модулях нет начальной области (module.json → start).","No starting area in the loaded modules (module.json → start)."
 UI_DIALOG_LEAVE,Уйти,Leave
 UI_GRID,Сетка (G),Grid (G)

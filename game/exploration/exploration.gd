@@ -401,9 +401,14 @@ func _abilities(character_id: String) -> Abilities:
 	return CombatantBuilder.from_character(_content.rules, data, errors).abilities
 
 
+## Смещение взгляда к камере с учётом её поворота.
+func _shift() -> Vector3:
+	return LOOK_SHIFT.rotated(Vector3.UP, _camera.get_yaw())
+
+
 ## Камера следит за выбранным, но не уходит далеко за край области.
 func _look_target() -> Vector3:
-	var p := _leader().view.position + LOOK_SHIFT
+	var p := _leader().view.position + _shift()
 	var margin := 4.0 * CELL
 	p.x = clampf(p.x, margin, maxf(margin, (_area.width() - 1) * CELL - margin))
 	p.z = clampf(p.z, margin, maxf(margin, (_area.depth() - 1) * CELL - margin * 0.5))
@@ -636,7 +641,7 @@ func _combat_look() -> Vector3:
 	var view: UnitView = _session.units.get(_combat_focus, null)
 	if view == null:
 		return _look
-	return view.position + LOOK_SHIFT
+	return view.position + _shift()
 
 
 # --- Сохранения (ADR-0032) -----------------------------------------------------

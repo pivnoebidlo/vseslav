@@ -1,7 +1,8 @@
 class_name ArenaCamera
 extends Camera3D
-## Камера арены: смотрит на поле сверху-спереди; колесо мыши приближает и отдаляет,
-## WASD, стрелки и средняя кнопка мыши сдвигают.
+## Изометрическая камера (арена и карта): смотрит сверху под углом; колесо мыши
+## приближает и отдаляет, Q/E (по месту клавиш, на любой раскладке) поворачивают
+## вокруг точки взгляда, WASD, стрелки и средняя кнопка мыши сдвигают.
 
 const OFFSET := Vector3(0.0, 14.0, 10.0)
 const ZOOM_MIN := 0.45
@@ -9,10 +10,14 @@ const ZOOM_MAX := 1.3
 const ZOOM_STEP := 0.1
 const PAN_STEP := 0.75
 const PAN_DRAG_SPEED := 0.02
+## Скорость поворота при зажатой Q или E, радиан в секунду.
+const ROTATE_SPEED := 1.8
 
 var _target := Vector3.ZERO
 var _zoom := 1.1
 var _size := Vector3.ZERO
+## Поворот камеры вокруг вертикали.
+var _yaw := 0.0
 
 
 ## Наводит камеру на поле размером [param width] × [param depth] клеток по [param cell] м.
@@ -33,6 +38,22 @@ func focus(point: Vector3, zoom: float = -1.0) -> void:
 		_zoom = clampf(zoom, ZOOM_MIN, ZOOM_MAX)
 	_target = point
 	_place()
+
+
+## Поворот вокруг вертикали (для смещений, которые должны поворачиваться с камерой).
+func get_yaw() -> float:
+	return _yaw
+
+
+func _process(delta: float) -> void:
+	var turn := 0.0
+	if Input.is_physical_key_pressed(KEY_Q):
+		turn += 1.0
+	if Input.is_physical_key_pressed(KEY_E):
+		turn -= 1.0
+	if turn != 0.0:
+		_yaw = wrapf(_yaw + turn * ROTATE_SPEED * delta, -PI, PI)
+		_place()
 
 
 ## Обрабатывает ввод камеры; true — событие использовано.
@@ -72,11 +93,12 @@ func _pan_by_key(keycode: Key) -> bool:
 	return true
 
 
+## Сдвиг в плоскости экрана: «вверх» — от камеры, с учётом поворота.
 func _pan(delta: Vector3) -> void:
-	_target = (_target + delta).clamp(-_size * 0.25, _size * 1.25)
+	_target = (_target + delta.rotated(Vector3.UP, _yaw)).clamp(-_size * 0.25, _size * 1.25)
 	_place()
 
 
 func _place() -> void:
-	position = _target + OFFSET * _zoom
+	position = _target + OFFSET.rotated(Vector3.UP, _yaw) * _zoom
 	look_at(_target)

@@ -60,6 +60,7 @@ static func preview_text(
 				"UI_PREVIEW_HEAL", {"action": name, "min": p.heal_min, "max": p.heal_max}
 			)
 	text += CombatLogFormat.cover_text(p.cover)
+	text += CombatLogFormat.height_text(p.height)
 	text += CombatLogFormat.reasons(p.mods.to_dict())
 	if not p.defenses.is_empty():
 		var defs: PackedStringArray = []

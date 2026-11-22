@@ -7,6 +7,11 @@ extends RefCounted
 enum Diagonal { CHEBYSHEV, ALTERNATING }
 
 const CELL_SIZE_M: float = 1.5
+## Уровень высоты — 5 футов, как клетка (ADR-0037); на экране — столько же метров.
+const LEVEL_FEET := 5
+const LEVEL_HEIGHT_M: float = 1.5
+## С какого перепада вниз шаг становится падением (10 футов).
+const FALL_LEVELS := 2
 
 var width: int = 0
 var depth: int = 0
@@ -69,11 +74,15 @@ func cell_at(c: Vector2i) -> Vector3i:
 	return Vector3i(c.x, level_at(c), c.y)
 
 
-## Можно ли шагнуть между соседними колонками: перепад высоты не больше 1 уровня.
-func can_step(from: Vector2i, to: Vector2i) -> bool:
-	if not is_walkable(to):
-		return false
-	return absi(level_at(to) - level_at(from)) <= 1
+## Можно ли шагнуть между соседними колонками. Перепад любой: на уступ выше
+## 1 уровня лезут, с уступа ниже 1 уровня прыгают (docs/rules/movement.md).
+func can_step(_from: Vector2i, to: Vector2i) -> bool:
+	return is_walkable(to)
+
+
+## Падение при шаге [param from] → [param to]: перепад вниз от FALL_LEVELS уровней.
+func is_fall(from: Vector2i, to: Vector2i) -> bool:
+	return level_at(from) - level_at(to) >= FALL_LEVELS
 
 
 ## Расстояние по Чебышёву в колонках (для ближнего боя и эвристики).

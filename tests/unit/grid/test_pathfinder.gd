@@ -59,12 +59,21 @@ func test_goes_around_wall() -> void:
 		assert_false(g.is_blocked(Vector2i(c.x, c.z)))
 
 
-func test_climbing_costs_extra_and_cliffs_block() -> void:
+func test_climbing_costs_a_square_per_level() -> void:
 	var g := _grid([".1", ".."])
 	assert_eq(Pathfinder.find_path(g, Vector2i(0, 0), Vector2i(1, 0)).total_cost(), 2)
 	assert_eq(Pathfinder.find_path(g, Vector2i(1, 0), Vector2i(0, 0)).total_cost(), 1)
-	var cliff := _grid([".2"])
-	assert_false(Pathfinder.find_path(cliff, Vector2i(0, 0), Vector2i(1, 0)).found())
+	var cliff := _grid([".3"])
+	assert_eq(Pathfinder.find_path(cliff, Vector2i(0, 0), Vector2i(1, 0)).total_cost(), 4)
+
+
+func test_path_avoids_jumping_down_when_a_slope_exists() -> void:
+	# Уступ 2 уровня: напрямую — прыжок, в обход через «1» — склон.
+	var g := _grid(["2.", "1."])
+	var p := Pathfinder.find_path(g, Vector2i(0, 0), Vector2i(1, 0))
+	assert_eq(p.cells[0], Vector3i(0, 1, 1), "goes down the slope first")
+	var jump := Pathfinder.find_path(g, Vector2i(0, 0), Vector2i(1, 0), {}, {}, false)
+	assert_eq(jump.total_cost(), 1, "jumps straight down when allowed")
 
 
 func test_occupied_cells_block() -> void:

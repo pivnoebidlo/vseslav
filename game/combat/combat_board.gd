@@ -7,7 +7,7 @@ extends Node3D
 enum Paint { NONE, REACH, RANGE, AREA }
 
 const CELL := BattleGrid.CELL_SIZE_M
-const LEVEL_HEIGHT := 0.75
+const LEVEL_HEIGHT := BattleGrid.LEVEL_HEIGHT_M
 const LIFT := 0.03
 const GLOW_SHADER := preload("res://game/combat/cell_glow.gdshader")
 

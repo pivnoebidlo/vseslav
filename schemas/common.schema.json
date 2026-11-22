@@ -390,7 +390,8 @@
             "disengage",
             "dodge",
             "extra_action",
-            "stand"
+            "stand",
+            "shove"
           ]
         },
         "sub_actions": {

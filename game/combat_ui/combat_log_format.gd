@@ -72,7 +72,11 @@ static func line(state: CombatState, e: CombatEvent) -> Line:
 		CombatEvent.MOVED:
 			if JsonRead.get_array(d, "path").is_empty():
 				return Line.new()
+			if JsonRead.get_bool(d, "forced"):
+				return Line.new(tr_fmt("LOG_PUSHED", {"name": who}), COLOR_INFO)
 			return Line.new(tr_fmt("LOG_MOVED", {"name": who, "cost": JsonRead.get_int(d, "cost")}))
+		CombatEvent.FELL:
+			return _fell(d, who)
 		CombatEvent.ACTION:
 			return _action(state, d, who)
 		CombatEvent.ATTACK:
@@ -210,8 +214,30 @@ static func _attack(state: CombatState, d: Dictionary, who: String) -> Line:
 		text += " " + TranslationServer.translate("LOG_RESULT_MISS")
 		color = COLOR_MISS
 	text += cover_text(JsonRead.get_int(d, "cover"))
+	text += height_text(JsonRead.get_int(d, "height"))
 	text += reasons(JsonRead.get_dict(d, "mods"))
 	return Line.new(text, color)
+
+
+## « · выше цели (+2)» / « · ниже цели (−2)»; без перепада — пусто.
+static func height_text(height: int) -> String:
+	if height == 0:
+		return ""
+	var key := "LOG_HIGH_GROUND" if height > 0 else "LOG_LOW_GROUND"
+	return " · " + tr_fmt(key, {"bonus": signed(height)})
+
+
+static func _fell(d: Dictionary, who: String) -> Line:
+	var rolls: PackedStringArray = []
+	for r: Variant in JsonRead.get_array(d, "rolls"):
+		rolls.append(str(JsonRead.to_int(r)))
+	var args := {
+		"name": who,
+		"feet": JsonRead.get_int(d, "feet"),
+		"rolls": ", ".join(rolls),
+		"damage": JsonRead.get_int(d, "damage"),
+	}
+	return Line.new(tr_fmt("LOG_FELL", args), COLOR_BAD)
 
 
 static func _save(d: Dictionary, who: String) -> Line:

@@ -7,6 +7,8 @@ const INITIATIVE := "initiative"
 const TURN_STARTED := "turn_started"
 const TURN_SKIPPED := "turn_skipped"
 const MOVED := "moved"
+## Падение с высоты (ADR-0037): id, levels, feet, rolls, damage.
+const FELL := "fell"
 const ACTION := "action"
 const ATTACK := "attack"
 const SAVE := "save"

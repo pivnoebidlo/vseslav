@@ -24,6 +24,8 @@ var auto_fail: bool = false
 ## Укрытие цели (LineOfSight.Cover): для атак — от атакующего, для спасбросков
 ## Ловкости — от точки исхода. Бонус уже учтён в target_number или bonus.
 var cover: int = LineOfSight.Cover.NONE
+## Поправка атаки за высоту (+2, −2, 0); уже в [member bonus].
+var height: int = 0
 
 
 ## [param cell] — выбранная точка для действий с областью (центр взрыва, направление конуса).
@@ -76,6 +78,7 @@ static func _attack(
 	p.target_number = s.target_ac
 	p.mods = s.mods
 	p.cover = s.cover
+	p.height = s.height
 	var wins := 0
 	var crits := 0
 	for natural in range(1, 21):
@@ -115,6 +118,7 @@ static func _multi(
 			total.target_number = p.target_number
 			total.mods = p.mods
 			total.cover = p.cover
+			total.height = p.height
 			total.defenses = p.defenses
 			first = false
 		total.damage_min += p.damage_min
@@ -219,4 +223,5 @@ func to_dict() -> Dictionary:
 		"defenses": defenses.duplicate(),
 		"auto_fail": auto_fail,
 		"cover": cover,
+		"height": height,
 	}

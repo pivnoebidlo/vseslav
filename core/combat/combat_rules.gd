@@ -8,6 +8,49 @@ extends RefCounted
 const CONCENTRATION_DC_CAP := 30
 const DEATH_SAVE_DC := 10
 const DEATH_SAVES_TO_END := 3
+## Падение (SRD 5.2): 1к6 дробящего за каждые 10 футов, не больше 20к6.
+const FALL_FEET_PER_DIE := 10
+const MAX_FALL_DICE := 20
+const FALL_DIE := 6
+const FALL_DAMAGE_TYPE := "bludgeoning"
+
+
+## Сколько к6 урона даёт падение на [param levels] уровней вниз.
+static func fall_dice(levels: int) -> int:
+	var feet := levels * BattleGrid.LEVEL_FEET
+	return clampi(IntMath.floor_div(feet, FALL_FEET_PER_DIE), 0, MAX_FALL_DICE)
+
+
+## Падение на [param levels] уровней: бросок урона, урон и «сбит с ног», если урон
+## был (SRD 5.2). Событие FELL — до урона, с бросками.
+static func fall(
+	state: CombatState, who: Combatant, levels: int, events: Array[CombatEvent]
+) -> void:
+	var rolls: Array[int] = []
+	var total := 0
+	for i in fall_dice(levels):
+		var r := state.rng.roll(FALL_DIE)
+		rolls.append(r)
+		total += r
+	events.append(
+		CombatEvent.new(
+			CombatEvent.FELL,
+			{
+				"id": who.id,
+				"levels": levels,
+				"feet": levels * BattleGrid.LEVEL_FEET,
+				"rolls": rolls,
+				"damage": total
+			}
+		)
+	)
+	if total <= 0:
+		return
+	var amounts: Array[Array] = [[FALL_DAMAGE_TYPE, total]]
+	var no_tags: Array[String] = []
+	var dealt := deal_damage(state, who, amounts, no_tags, false, "", events)
+	if dealt > 0 and who.is_present() and not who.has_condition(Conditions.PRONE):
+		add_condition(state, who, ConditionState.new(Conditions.PRONE, ""), events)
 
 
 ## Спасбросок участника с учётом состояний. Событие SAVE добавляется в [param events].

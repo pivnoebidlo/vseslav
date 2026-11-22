@@ -17,6 +17,9 @@ const ERR_NO_LINE_OF_SIGHT := "err_no_line_of_sight"
 const ERR_ITEM_NOT_READY := "err_item_not_ready"
 
 const NO_CELL := Vector2i(-1, -1)
+## Высота (ADR-0037, домашнее правило): атакующий выше цели — +2 к броску атаки,
+## ниже — −2.
+const HIGH_GROUND_BONUS := 2
 
 
 static func validate(
@@ -198,6 +201,8 @@ class AttackSetup:
 	var protector: String = ""
 	## Укрытие цели (LineOfSight.Cover); его бонус уже в [member target_ac].
 	var cover: int = LineOfSight.Cover.NONE
+	## Поправка за высоту (+2, −2 или 0); уже в [member bonus].
+	var height: int = 0
 
 
 ## [param with_protector] = false — защитник отказался прикрывать (ADR-0023).
@@ -233,11 +238,19 @@ static func setup_attack(
 	for t in actor.traits_of(TraitDef.ATTACK_BONUS):
 		if t.attack_type == "" or t.attack_type == action.attack_type:
 			s.bonus += t.value
+	s.height = height_bonus(state, actor.column, target.column)
+	s.bonus += s.height
 	s.cover = state.cover_between(actor.column, target, actor.id)
 	s.target_ac = state.effective_ac(target) + LineOfSight.ac_bonus(s.cover)
 	for t in actor.traits_of(TraitDef.IMPROVED_CRITICAL):
 		s.crit_from = mini(s.crit_from, t.value)
 	return s
+
+
+## Поправка к атаке за высоту: выше цели — +2, ниже — −2 (ADR-0037).
+static func height_bonus(state: CombatState, from: Vector2i, to: Vector2i) -> int:
+	var diff := state.grid.level_at(from) - state.grid.level_at(to)
+	return signi(diff) * HIGH_GROUND_BONUS
 
 
 static func attack(
@@ -285,6 +298,7 @@ static func attack(
 		"total": d20.natural + s.bonus,
 		"target_ac": s.target_ac,
 		"cover": s.cover,
+		"height": s.height,
 		"hit": hit,
 		"critical": critical,
 		"mods": s.mods.to_dict(),
@@ -479,6 +493,9 @@ static func _effect(
 			state.actions_left += 1
 		ActionDef.SPECIAL_STAND:
 			CombatRules.remove_condition(actor, Conditions.PRONE, "", events)
+		ActionDef.SPECIAL_SHOVE:
+			if target != null:
+				ForcedMove.shove(state, actor, target, events)
 	for e in action.effects:
 		if e.on == EffectDef.ALWAYS and target != null:
 			_apply_effect(state, actor, action, e, target, false, events)

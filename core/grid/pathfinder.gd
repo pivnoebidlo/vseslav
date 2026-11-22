@@ -5,6 +5,10 @@ extends RefCounted
 ## При равенстве приоритетов выбирается узел с меньшими (f, h, z, x, parity),
 ## поэтому один и тот же запрос всегда даёт один и тот же путь.
 
+## Падение (прыжок с уступа) в поиске пути «дороже» на столько клеток: путь
+## в обход по склону предпочтительнее, если он вообще есть.
+const FALL_PENALTY := 100
+
 ## Порядок соседей фиксирован: сначала ортогональные, затем диагональные.
 const NEIGHBORS: Array[Vector2i] = [
 	Vector2i(0, -1),
@@ -20,34 +24,42 @@ const NEIGHBORS: Array[Vector2i] = [
 
 ## Путь от [param from] до [param to]. Клетки из [param occupied] непроходимы;
 ## в клетках из [param no_stop] (союзники) нельзя остановиться, но можно пройти.
+## [param avoid_falls] — прыгать с уступов, только если иначе не пройти.
 static func find_path(
 	grid: BattleGrid,
 	from: Vector2i,
 	to: Vector2i,
 	occupied: Dictionary[Vector2i, bool] = {},
-	no_stop: Dictionary[Vector2i, bool] = {}
+	no_stop: Dictionary[Vector2i, bool] = {},
+	avoid_falls: bool = true
 ) -> PathResult:
 	var result := PathResult.new()
 	if from == to or not grid.is_walkable(to) or occupied.has(to) or no_stop.has(to):
 		return result
 	var start := Vector3i(from.x, from.y, 0)
+	# g — цена для поиска (с надбавкой за падения), spent — настоящая стоимость.
 	var g: Dictionary[Vector3i, int] = {start: 0}
+	var spent: Dictionary[Vector3i, int] = {start: 0}
 	var parent: Dictionary[Vector3i, Vector3i] = {}
 	var open: Array[Vector3i] = [start]
 	var closed: Dictionary[Vector3i, bool] = {}
 	while not open.is_empty():
 		var current := _pop_best(open, g, to)
 		if Vector2i(current.x, current.y) == to:
-			return _build(current, parent, g, grid)
+			return _build(current, parent, spent, grid)
 		closed[current] = true
 		for step in _steps(grid, current, occupied):
 			var node: Vector3i = step[0]
 			var step_cost: int = step[1]
+			var fall: bool = step[2]
 			var cost: int = g[current] + step_cost
+			if fall and avoid_falls:
+				cost += FALL_PENALTY
 			if closed.has(node):
 				continue
 			if not g.has(node) or cost < g[node]:
 				g[node] = cost
+				spent[node] = spent[current] + step_cost
 				parent[node] = current
 				if not open.has(node):
 					open.append(node)
@@ -87,7 +99,7 @@ static func reachable(
 	return best
 
 
-## Возможные шаги из узла: массив пар [узел: Vector3i, стоимость: int].
+## Возможные шаги из узла: тройки [узел: Vector3i, стоимость: int, падение: bool].
 static func _steps(
 	grid: BattleGrid, node: Vector3i, occupied: Dictionary[Vector2i, bool]
 ) -> Array[Array]:
@@ -109,9 +121,10 @@ static func _steps(
 			if grid.diagonal == BattleGrid.Diagonal.ALTERNATING:
 				cost = 2 if parity == 1 else 1
 				parity = 1 - parity
-		if grid.level_at(next) > grid.level_at(col):
-			cost += 1  # подъём на уровень стоит дополнительную клетку
-		steps.append([Vector3i(next.x, next.y, parity), cost])
+		var climb := grid.level_at(next) - grid.level_at(col)
+		if climb > 0:
+			cost += climb  # каждый уровень подъёма — ещё клетка (лазание)
+		steps.append([Vector3i(next.x, next.y, parity), cost, grid.is_fall(col, next)])
 	return steps
 
 

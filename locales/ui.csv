@@ -321,3 +321,7 @@ UI_GAME_MENU_QUIT,В главное меню,Main menu
 UI_OPTIONS,Опции,Options
 UI_OPTION_COMBAT_LOG,Журнал боя,Combat log
 UI_EQ_PICK,"Выбери вещь — здесь появятся действия с ней.","Pick an item to see what you can do with it."
+LOG_PUSHED,{name} отлетает на клетку,{name} is pushed back a square
+LOG_FELL,"{name} падает с {feet} фт.: [{rolls}] = {damage} урона","{name} falls {feet} ft: [{rolls}] = {damage} damage"
+LOG_HIGH_GROUND,выше цели ({bonus}),higher ground ({bonus})
+LOG_LOW_GROUND,ниже цели ({bonus}),lower ground ({bonus})

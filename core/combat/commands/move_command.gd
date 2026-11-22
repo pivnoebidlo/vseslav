@@ -3,6 +3,7 @@ extends CombatCommand
 ## Перемещение по сетке в пределах оставшейся скорости. Через союзников пройти можно,
 ## через стоящих противников — нет. Уход из досягаемости противника провоцирует
 ## атаку реакцией, если в этом ходу не было «Отхода» (docs/rules/movement.md).
+## Прыжок с уступа от 10 футов — падение: урон, «сбит с ног», путь обрывается.
 
 const ERR_NO_PATH := "err_no_path"
 const ERR_TOO_FAR := "err_too_far"
@@ -66,6 +67,13 @@ func apply(state: CombatState) -> Array[CombatEvent]:
 		actor.column = next
 		walked.append([cell.x, cell.y, cell.z])
 		spent = path.costs[i]
+		if state.grid.is_fall(prev, next):
+			events.append(_moved_event(actor, from, walked, spent - segment_start))
+			state.movement_left -= spent
+			var drop := state.grid.level_at(prev) - state.grid.level_at(next)
+			CombatRules.fall(state, actor, drop, events)
+			events.append_array(state.check_end())
+			return events
 		prev = next
 	state.movement_left -= spent
 	events.append(_moved_event(actor, from, walked, spent - segment_start))
@@ -73,10 +81,18 @@ func apply(state: CombatState) -> Array[CombatEvent]:
 
 
 ## Путь участника: стоящие противники непроходимы, в занятых клетках не останавливаемся.
+## Сначала — без прыжков с уступов; если так не дойти за оставшееся перемещение, —
+## с прыжками.
 static func path_for(state: CombatState, actor: Combatant, dest: Vector2i) -> PathResult:
-	return Pathfinder.find_path(
-		state.grid, actor.column, dest, state.blocked_for(actor), state.occupied_except(actor.id)
-	)
+	var blocked := state.blocked_for(actor)
+	var no_stop := state.occupied_except(actor.id)
+	var path := Pathfinder.find_path(state.grid, actor.column, dest, blocked, no_stop)
+	if path.found() and path.total_cost() <= state.movement_left:
+		return path
+	var jumping := Pathfinder.find_path(state.grid, actor.column, dest, blocked, no_stop, false)
+	if jumping.found() and jumping.total_cost() <= state.movement_left:
+		return jumping
+	return path
 
 
 ## Достижимые клетки со стоимостью — для подсветки и ИИ.

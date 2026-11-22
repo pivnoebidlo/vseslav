@@ -334,3 +334,63 @@ WHY_TARGET_RECKLESS,цель безрассудна,target reckless
 WHY_TARGET_GUIDED,цель подсвечена,target lit
 WHY_SELF_RAGING,ярость,rage
 LOG_BLESS,благословение +{bless},bless +{bless}
+UI_MENU_EDITOR,Редактор сюжета,Story editor
+UI_ED_TITLE,Редактор,Editor
+UI_ED_NEW_MODULE,Новый модуль,New module
+UI_ED_MODULE_TITLE,Название модуля,Module title
+UI_ED_SAVE,Сохранить,Save
+UI_ED_UNDO,Отменить,Undo
+UI_ED_REDO,Повторить,Redo
+UI_ED_VALIDATE,Проверить,Validate
+UI_ED_PLAY,▶ Сыграть,▶ Play
+UI_ED_SAVED,Сохранено.,Saved.
+UI_ED_SAVE_FAILED,Не удалось сохранить — см. ошибки внизу.,Saving failed — see errors below.
+UI_ED_VALID,Модуль в порядке: игра загрузит его без ошибок.,The module is fine: the game loads it without errors.
+UI_ED_INVALID,Ошибок в модуле: %d — список внизу.,Errors in the module: %d — see the list below.
+UI_ED_READ_ONLY,Этот модуль только для чтения: создайте свой модуль.,This module is read-only: create your own module.
+UI_ED_DIALOGS,Диалоги,Dialogs
+UI_ED_QUESTS,Квесты,Quests
+UI_ED_ADD,+,+
+UI_ED_DELETE_SELECTED,Удалить выбранное,Delete selected
+UI_ED_NEW_DIALOG,Новый диалог,New dialog
+UI_ED_FIRST_LINE,Первая реплика собеседника,The speaker's first line
+UI_ED_NEW_QUEST,Новый квест,New quest
+UI_ED_QUEST_NAME,Название квеста,Quest title
+UI_ED_ID_HINT,"id: латиница, цифры, _ и . (например, starosta_2)","id: latin letters, digits, _ and . (e.g. elder_2)"
+UI_ED_BAD_ID,"id: только строчные латинские буквы, цифры, _ и .","id: lowercase latin letters, digits, _ and . only"
+UI_ED_ID_TAKEN,Такой id уже есть.,This id is taken.
+UI_ED_OK,Готово,OK
+UI_ED_CANCEL,Отмена,Cancel
+UI_ED_START,Начало разговора,Conversation start
+UI_ED_START_NODE,Начать с реплики,Start with
+UI_ED_START_IF,если:,if:
+UI_ED_ADD_START,+ вариант начала с условием,+ conditional start
+UI_ED_NODE,Реплика,Line
+UI_ED_DELETE,Удалить,Delete
+UI_ED_TEXT_RU,Текст по-русски,Russian text
+UI_ED_TEXT_EN,Текст по-английски,English text
+UI_ED_NODE_ACTIONS,Когда звучит реплика:,When this line is spoken:
+UI_ED_OPTIONS,Ответы героя,Hero's answers
+UI_ED_OPTION,Ответ %d,Answer %d
+UI_ED_ADD_OPTION,+ ответ,+ answer
+UI_ED_NEW_OPTION,Новый ответ,New answer
+UI_ED_NEW_LINE,Новая реплика,New line
+UI_ED_LEADS_TO,Ведёт к:,Leads to:
+UI_ED_END,— конец разговора —,— end of conversation —
+UI_ED_NEW_NODE,+ новая реплика,+ new line
+UI_ED_SHOW_IF,"Показывать, если:",Show if:
+UI_ED_CHECK,Проверка,Check
+UI_ED_DC,СЛ ,DC 
+UI_ED_ON_FAIL,при провале →,on failure →
+UI_ED_OPTION_ACTIONS,Если выбран:,When chosen:
+UI_ED_ADD_CONDITION,+ флаг,+ flag
+UI_ED_ADD_ACTION,+ флаг,+ flag
+UI_ED_ADD_QUEST_RULE,+ квест,+ quest
+UI_ED_FLAG,флаг,flag
+UI_ED_QUEST,квест,quest
+UI_ED_NOT_STARTED,не начат,not started
+UI_ED_QUEST_TITLE,Квест,Quest
+UI_ED_QUEST_HINT,Стадию выставляет действие «квест» в ответе или реплике; условие «квест» проверяет её. Последняя стадия — квест выполнен.,A quest action in a line or answer sets the stage; a quest condition checks it. The final stage completes the quest.
+UI_ED_ADD_STAGE,+ стадия,+ stage
+UI_ED_STAGE,Стадия,Stage
+UI_ED_FINAL,последняя,final

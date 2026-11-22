@@ -24,6 +24,12 @@ func set_text(doc: ModuleDoc, key: String, lang: String, text: String) -> DocEdi
 	return set_value(doc, ModuleDoc.KIND_LOCALE, lang, [key], text if text != "" else null)
 
 
+## Добавляет изменения [param other] в эту правку (одна отмена на всё).
+func merge(other: DocEdit) -> DocEdit:
+	_changes.append_array(other._changes)
+	return self
+
+
 func is_empty() -> bool:
 	return _changes.is_empty()
 

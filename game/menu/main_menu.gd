@@ -7,6 +7,7 @@ extends Control
 const SCENE := "res://game/menu/main_menu.tscn"
 const ARENA_SCENE := "res://game/arena/arena.tscn"
 const EXPLORATION_SCENE := "res://game/exploration/exploration.tscn"
+const EDITOR_SCENE := "res://game/editor/editor_screen.tscn"
 const DEFAULT_LANG := "ru"
 
 ## Меню уже открывалось: аргументы запуска ведут на арену только в первый раз,
@@ -58,6 +59,7 @@ func _build() -> void:
 	if SaveStore.has_any():
 		_button(box, "UI_MENU_CONTINUE", _continue)
 	_button(box, "UI_MENU_EXPLORE", _new_game)
+	_button(box, "UI_MENU_EDITOR", func() -> void: _open(EDITOR_SCENE))
 	_button(box, "UI_MENU_QUIT", get_tree().quit)
 	var first: Button = box.get_child(3)
 	first.grab_focus.call_deferred()

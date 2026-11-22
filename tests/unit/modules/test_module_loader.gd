@@ -245,6 +245,7 @@ func test_area_surfaces_are_checked() -> void:
 		"map": [",..", "..."],
 		"spawns": {"start": [1, 1]},
 		"surfaces": {"ground": "grass", "road": "mud"},
+		"heights": ["012"],
 	}
 	var files := {
 		"areas/pole.json": area,
@@ -260,6 +261,7 @@ func test_area_surfaces_are_checked() -> void:
 		)
 	)
 	assert_true(_has_error(content, "areas/pole.json: $.surfaces.road: unknown surface 'mud'"))
+	assert_true(_has_error(content, "areas/pole.json: $.heights: must match the map size"))
 	assert_false(_has_error(content, "areas/pole.json: $.surfaces.ground: unknown surface 'grass'"))
 
 

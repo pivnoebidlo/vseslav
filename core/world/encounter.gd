@@ -81,11 +81,16 @@ func triggered(area: AreaMap, hero_cells: Array[Vector2i]) -> bool:
 ## свободные клетки участка. Координаты участников — клетки сетки боя.
 func arena_data(area: AreaMap, heroes: Dictionary[String, Vector2i]) -> Dictionary:
 	var rows: Array[String] = []
+	var levels: Array[String] = []
 	for z in battle.size.y:
 		var row := ""
+		var level_row := ""
 		for x in battle.size.x:
-			row += _battle_char(area, battle.position + Vector2i(x, z))
+			var c := battle.position + Vector2i(x, z)
+			row += _battle_char(area, c)
+			level_row += str(clampi(area.grid.level_at(c), 0, 9))
 		rows.append(row)
+		levels.append(level_row)
 	var taken: Dictionary[Vector2i, bool] = {}
 	var list: Array = []
 	for c in combatants:
@@ -94,7 +99,7 @@ func arena_data(area: AreaMap, heroes: Dictionary[String, Vector2i]) -> Dictiona
 		var entry := c.duplicate()
 		entry["at"] = [local.x, local.y]
 		list.append(entry)
-	var grid := BattleGrid.from_dict({"map": rows})
+	var grid := BattleGrid.from_dict({"map": rows, "levels": levels})
 	var ids: Array[String] = []
 	ids.assign(heroes.keys())
 	ids.sort()
@@ -102,7 +107,7 @@ func arena_data(area: AreaMap, heroes: Dictionary[String, Vector2i]) -> Dictiona
 		var spot := nearest_free(grid, heroes[hero] - battle.position, taken)
 		taken[spot] = true
 		list.append({"id": hero, "character": hero, "team": TEAM_PARTY, "at": [spot.x, spot.y]})
-	return {"id": "encounter." + id, "grid": {"map": rows}, "combatants": list}
+	return {"id": "encounter." + id, "grid": {"map": rows, "levels": levels}, "combatants": list}
 
 
 ## Ближайшая к [param want] свободная проходимая клетка сетки (кольцами по Чебышёву,

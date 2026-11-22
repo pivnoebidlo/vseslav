@@ -99,7 +99,15 @@ static func _check_area_props(
 		for id in JsonRead.get_str_array(area.style, key):
 			if not content.props.has(id):
 				errors.append("%s: $.style.%s: unknown prop '%s'" % [where, key, id])
-	for key: String in [AreaMap.SURFACE_GROUND, AreaMap.SURFACE_ROAD, AreaMap.SURFACE_WALL]:
+	if not area.heights.is_empty():
+		var same := area.heights.size() == area.rows.size()
+		for z in mini(area.heights.size(), area.rows.size()):
+			same = same and area.heights[z].length() == area.rows[z].length()
+		if not same:
+			errors.append("%s: $.heights: must match the map size" % where)
+	for key: String in [
+		AreaMap.SURFACE_GROUND, AreaMap.SURFACE_ROAD, AreaMap.SURFACE_WALL, AreaMap.SURFACE_CLIFF
+	]:
 		var sid := JsonRead.get_str(area.surfaces, key)
 		if sid != "" and not content.surfaces.has(sid):
 			errors.append("%s: $.surfaces.%s: unknown surface '%s'" % [where, key, sid])

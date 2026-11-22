@@ -14,6 +14,7 @@ const TILES: Array[String] = [GROUND, ROAD, BUILDING, TREE, FENCE, GRAVE]
 const SURFACE_GROUND := "ground"
 const SURFACE_ROAD := "road"
 const SURFACE_WALL := "wall"
+const SURFACE_CLIFF := "cliff"
 
 
 ## Житель области.
@@ -66,6 +67,8 @@ var style: Dictionary = {}
 var objects: Array[Dictionary] = []
 ## Текстуры земли и дороги (ADR-0036): SURFACE_* → id поверхности.
 var surfaces: Dictionary = {}
+## Строки уровней высоты (ADR-0037); пусто — область плоская.
+var heights: Array[String] = []
 
 
 ## Область из уже проверенных схемой данных.
@@ -86,6 +89,13 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 					a.grid.set_blocked(c, true)
 				FENCE, GRAVE:
 					a.grid.set_low_obstacle(c, true)
+	# Рельеф (ADR-0037): цифра — уровень клетки, 5 футов на уровень.
+	a.heights = JsonRead.get_str_array(data, "heights")
+	for z in mini(a.heights.size(), a.rows.size()):
+		var line := a.heights[z]
+		for x in mini(line.length(), width):
+			if line[x].is_valid_int():
+				a.grid.set_level(Vector2i(x, z), line[x].to_int())
 	var spawn_data := JsonRead.get_dict(data, "spawns")
 	var names: Array[String] = []
 	names.assign(spawn_data.keys())

@@ -10,9 +10,11 @@ const CELL := BattleGrid.CELL_SIZE_M
 const EXIT_COLOR := Color(1.0, 0.85, 0.45, 0.8)
 
 var _labels: Dictionary[String, Label3D] = {}
+var _area: AreaMap
 
 
 func build(area: AreaMap) -> void:
+	_area = area
 	for x in area.exits:
 		_add(EXIT + ":" + x.id, x.at, tr(x.name_key), true)
 	for box in area.containers:
@@ -37,7 +39,7 @@ static func id_of(key: String) -> String:
 
 
 func _add(key: String, cell: Vector2i, text: String, exit: bool) -> void:
-	var at := Vector3(cell.x * CELL, 0.0, cell.y * CELL)
+	var at := AreaView.cell_pos(_area, cell)
 	var body := StaticBody3D.new()
 	body.set_meta("point", key)
 	body.position = at + Vector3(0.0, 0.6, 0.0)

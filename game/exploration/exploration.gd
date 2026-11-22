@@ -240,14 +240,19 @@ func _unit_under(screen_pos: Vector2) -> String:
 	return str(collider.get_meta("unit_id", ""))
 
 
-## Клетка земли под курсором (пересечение луча с плоскостью y = 0).
+## Клетка земли под курсором: луч по рельефу (слой земли), мимо — плоскость y = 0.
 func _cell_under(screen_pos: Vector2) -> Vector2i:
 	var origin := _camera.project_ray_origin(screen_pos)
 	var dir := _camera.project_ray_normal(screen_pos)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + dir * 300.0)
+	query.collision_mask = AreaView.TERRAIN_LAYER
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		var at: Vector3 = hit["position"]
+		return _cell_of(at)
 	if absf(dir.y) < 0.001:
 		return Vector2i(-1, -1)
-	var p := origin + dir * (-origin.y / dir.y)
-	return _cell_of(p)
+	return _cell_of(origin + dir * (-origin.y / dir.y))
 
 
 func _set_hovered(id: String) -> void:
@@ -484,7 +489,7 @@ func _cell_of(p: Vector3) -> Vector2i:
 
 
 func _cell_pos(c: Vector2i) -> Vector3:
-	return Vector3(c.x * CELL, 0.0, c.y * CELL)
+	return AreaView.cell_pos(_area, c)
 
 
 # --- Участники ----------------------------------------------------------------

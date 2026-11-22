@@ -57,3 +57,35 @@ func test_npc_fields() -> void:
 	assert_eq(npc.dialog, "ded")
 	assert_eq(npc.look, "x")
 	assert_eq(_area().npc_cells().keys(), [Vector2i(4, 2)])
+
+
+func test_heights_set_levels_and_reach_the_battle_grid() -> void:
+	var a := (
+		AreaMap
+		. from_dict(
+			"t",
+			{
+				"title_key": "T",
+				"map": ["....", ".=..", "...."],
+				"heights": ["0122", "0122", "0000"],
+				"spawns": {"start": [0, 0]},
+				"encounters":
+				[
+					{
+						"id": "e",
+						"zone": [0, 0, 4, 3],
+						"battle": [1, 0, 3, 2],
+						"combatants": [{"id": "w", "creature": "wolf", "at": [3, 0]}]
+					}
+				],
+			}
+		)
+	)
+	assert_eq(a.grid.level_at(Vector2i(2, 0)), 2)
+	assert_eq(a.grid.level_at(Vector2i(1, 1)), 1, "a fence on a slope keeps its level")
+	var heroes: Dictionary[String, Vector2i] = {"h": Vector2i(1, 0)}
+	var grid := ArenaLoader.grid_from(a.get_encounter("e").arena_data(a, heroes))
+	assert_eq(grid.level_at(Vector2i(0, 0)), 1)
+	assert_eq(grid.level_at(Vector2i(2, 0)), 2)
+	assert_true(grid.is_low_obstacle(Vector2i(0, 1)))
+	assert_eq(grid.level_at(Vector2i(0, 1)), 1)

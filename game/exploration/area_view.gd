@@ -9,7 +9,9 @@ const GROUND_SHADER := preload("res://game/world/ground.gdshader")
 const HOUSE_HEIGHT := 2.1
 const FENCE_HEIGHT := 0.6
 const INTERIOR_WALL := 1.1
-const GRID_Y := 0.025
+const GRID_Y := 0.04
+## Слой столкновений земли: по нему ищется клетка под курсором (ADR-0037).
+const TERRAIN_LAYER := 2
 ## Доля пустых клеток с мелочами «scatter» (камешки), процентов.
 const SCATTER_PERCENT := 4
 ## Доля свободных клеток постройки с мелочами «yard», процентов.
@@ -51,13 +53,13 @@ func _build_grid() -> void:
 		for x in area.width():
 			if not area.grid.is_walkable(Vector2i(x, z)):
 				continue
-			var c := _cell_pos(Vector2i(x, z)) + Vector3(0.0, GRID_Y, 0.0)
-			var corners: Array[Vector3] = [
-				c + Vector3(-h, 0.0, -h),
-				c + Vector3(h, 0.0, -h),
-				c + Vector3(h, 0.0, h),
-				c + Vector3(-h, 0.0, h),
-			]
+			# Углы клетки — по рельефу, чуть внутрь клетки: на обрыве линия
+			# остаётся на своём уступе.
+			var corners: Array[Vector3] = []
+			for k: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+				var p := Vector2(x, z) + k * 0.49
+				var y := TerrainMesh.height_at(area.grid, p) + GRID_Y
+				corners.append(Vector3(x * CELL + k.x * h, y, z * CELL + k.y * h))
 			for i in 4:
 				mesh.surface_add_vertex(corners[i])
 				mesh.surface_add_vertex(corners[(i + 1) % 4])
@@ -73,15 +75,25 @@ func _build_grid() -> void:
 
 
 func _cell_pos(c: Vector2i) -> Vector3:
-	return Vector3(c.x * CELL, 0.0, c.y * CELL)
+	return cell_pos(area, c)
+
+
+## Точка центра клетки на её уровне высоты (ADR-0037).
+static func cell_pos(p_area: AreaMap, c: Vector2i) -> Vector3:
+	var level := p_area.grid.level_at(c) if p_area != null else 0
+	return Vector3(c.x * CELL, level * BattleGrid.LEVEL_HEIGHT_M, c.y * CELL)
 
 
 func _build_area() -> void:
 	var ground := MeshInstance3D.new()
-	var plane := PlaneMesh.new()
-	plane.size = Vector2(area.width() * CELL, area.depth() * CELL)
-	ground.mesh = plane
-	ground.position = Vector3((area.width() - 1) * CELL / 2.0, 0.0, (area.depth() - 1) * CELL / 2.0)
+	ground.mesh = TerrainMesh.build(area.grid)
+	var body := StaticBody3D.new()
+	body.collision_layer = TERRAIN_LAYER
+	body.collision_mask = 0
+	var shape := CollisionShape3D.new()
+	shape.shape = ground.mesh.create_trimesh_shape()
+	body.add_child(shape)
+	ground.add_child(body)
 	var floor_color := Color(0.42, 0.33, 0.24) if area.interior else Color(0.42, 0.52, 0.3)
 	var textured := _ground_material()
 	ground.material_override = textured if textured != null else _material(floor_color)
@@ -142,6 +154,14 @@ func _ground_material() -> ShaderMaterial:
 	_set_surface(m, "ground", ground)
 	m.set_shader_parameter("cell_size", CELL)
 	m.set_shader_parameter("map_cells", Vector2(area.width(), area.depth()))
+	var cliff := _surfaces.get_surface(JsonRead.get_str(area.surfaces, AreaMap.SURFACE_CLIFF))
+	if cliff != null:
+		m.set_shader_parameter("cliff_color", cliff.color)
+		if cliff.roughness != null:
+			m.set_shader_parameter("cliff_rough", cliff.roughness)
+		m.set_shader_parameter("cliff_tile", cliff.tile)
+		m.set_shader_parameter("cliff_tint", Color.WHITE)
+		m.set_shader_parameter("has_cliff", true)
 	var road := _surfaces.get_surface(JsonRead.get_str(area.surfaces, AreaMap.SURFACE_ROAD))
 	if road != null:
 		_set_surface(m, "road", road)
@@ -302,7 +322,7 @@ func _place(id: String, rect: Rect2i, rotation: int, seed_value: int) -> Rect2:
 	var basis := Basis(Vector3.UP, deg_to_rad(degrees)).scaled(Vector3.ONE * s)
 	var center := Vector3(
 		(rect.position.x + (rect.size.x - 1) / 2.0) * CELL,
-		0.0,
+		_rect_floor(rect),
 		(rect.position.y + (rect.size.y - 1) / 2.0) * CELL
 	)
 	var local := Vector3(p.aabb.get_center().x, p.aabb.position.y, p.aabb.get_center().z)
@@ -311,6 +331,15 @@ func _place(id: String, rect: Rect2i, rotation: int, seed_value: int) -> Rect2:
 	_instances[id] = list
 	var size := Vector2(ax * s, az * s)
 	return Rect2(Vector2(center.x, center.z) - size / 2.0, size)
+
+
+## Высота основания модели: самый низкий уровень под ней (на склоне не висит).
+func _rect_floor(rect: Rect2i) -> float:
+	var lowest := 99
+	for z in range(rect.position.y, rect.end.y):
+		for x in range(rect.position.x, rect.end.x):
+			lowest = mini(lowest, area.grid.level_at(Vector2i(x, z)))
+	return lowest * BattleGrid.LEVEL_HEIGHT_M
 
 
 func _pick(key: String, c: Vector2i) -> String:

@@ -92,6 +92,8 @@ static func chebyshev(a: Vector2i, b: Vector2i) -> int:
 
 ## Разбирает сетку из данных арены: строки карты, где '.' — уровень 0,
 ## '1'..'9' — уровень, '#' — высокая преграда (стена, столб), '=' — низкая преграда.
+## Необязательный слой "levels" (строки цифр того же размера) задаёт уровни отдельно:
+## так у низкой преграды или стены тоже есть высота (рельеф областей, ADR-0037).
 static func from_dict(data: Dictionary) -> BattleGrid:
 	var rows := JsonRead.get_array(data, "map")
 	if rows.is_empty():
@@ -114,4 +116,10 @@ static func from_dict(data: Dictionary) -> BattleGrid:
 				grid.set_low_obstacle(c, true)
 			elif ch != ".":
 				grid.set_level(c, ch.to_int())
+	var levels := JsonRead.get_array(data, "levels")
+	for z in mini(levels.size(), grid.depth):
+		var row := str(levels[z])
+		for x in mini(row.length(), grid.width):
+			if row[x].is_valid_int():
+				grid.set_level(Vector2i(x, z), row[x].to_int())
 	return grid

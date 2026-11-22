@@ -1,5 +1,5 @@
 {
-  "_comment": "Поверхности земли и пола (ADR-0036): ambientCG, CC0 — см. CREDITS.md. Трава — Grass004, утоптанная земля — Ground103, доски — Planks037A.",
+  "_comment": "Поверхности земли и пола (ADR-0036): ambientCG, CC0 — см. CREDITS.md. Трава — Grass004, утоптанная земля — Ground103, доски — Planks037A, скала — Rock061.",
   "surfaces": {
     "grass": {
       "color": "grass_color.png",
@@ -18,6 +18,12 @@
       "normal": "planks_normal.png",
       "roughness": "planks_roughness.png",
       "tile": 2.4
+    },
+    "cliff": {
+      "color": "cliff_color.png",
+      "normal": "cliff_normal.png",
+      "roughness": "cliff_roughness.png",
+      "tile": 4
     }
   }
 }

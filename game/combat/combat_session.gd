@@ -30,6 +30,7 @@ var _busy := false
 var _active := false
 var _hovered_id := ""
 var _winner_team := ""
+var _win_requested := false
 var _path_preview := PathPreview.new()
 var _ui := Control.new()
 var _preview := Label.new()
@@ -92,6 +93,18 @@ func setup(layer: CanvasLayer, p_board: CombatBoard, world: Node3D) -> void:
 	_preview.visible = false
 	_ui.add_child(_preview)
 	_ui.add_child(_dice)
+	# Только для тестов: в релизной сборке (не debug) кнопки нет.
+	if OS.is_debug_build():
+		var win := Button.new()
+		win.text = tr("UI_DEBUG_WIN")
+		win.anchor_left = 0.5
+		win.anchor_right = 0.5
+		win.offset_left = -90
+		win.offset_right = 90
+		win.offset_top = 140
+		win.focus_mode = Control.FOCUS_NONE
+		win.pressed.connect(debug_win)
+		_ui.add_child(win)
 
 
 ## Начать бой: события начала (инициатива), затем ходы до хода игрока.
@@ -152,6 +165,39 @@ func hide_preview() -> void:
 	_preview.visible = false
 
 
+## Отладка: все противники партии игрока падают замертво, бой заканчивается обычным
+## путём (добыча, флаги, квесты). Только в debug-сборке.
+## Можно нажать в любой момент: вопрос о реакции пропускается, бой кончается после
+## текущего действия.
+func debug_win() -> void:
+	if not _active or state == null or state.ended:
+		return
+	_win_requested = true
+	if _reaction_dialog.visible:
+		_reaction_dialog.visible = false
+		_reaction_dialog.answered.emit(false)
+	if _busy:
+		return
+	_selected = null
+	_busy = true
+	await _finish_debug_win()
+	_busy = false
+	await run()
+
+
+func _finish_debug_win() -> void:
+	_win_requested = false
+	var team := ""
+	for c in state.combatants:
+		if c.player:
+			team = c.team
+	for c in state.combatants:
+		if c.team != team and not c.dead:
+			c.hp = 0
+			c.dead = true
+	await play_events(state.check_end())
+
+
 # --- Ход боя ------------------------------------------------------------------
 
 
@@ -163,6 +209,8 @@ func run() -> void:
 		await get_tree().create_timer(AI_STEP_DELAY).timeout
 		var cmd := CombatAi.next_command(state)
 		await _execute(cmd)
+		if _win_requested:
+			await _finish_debug_win()
 	_busy = false
 	_refresh()
 	if _active and state.ended:

@@ -305,3 +305,4 @@ UI_JOURNAL_EMPTY,Пока ни одного дела.,No quests yet.
 LOG_JOURNAL_UPDATED,"Журнал обновлён: {title}","Journal updated: {title}"
 LOG_CHEST_EMPTY,Пусто.,Empty.
 UI_CHEST_HINT,"Каждую вещь забирает выбранный герой. Не взятое останется в сундуке.","Each item goes to the hero you pick. Whatever is left stays in the chest."
+UI_DEBUG_WIN,Победить (отладка),Win (debug)

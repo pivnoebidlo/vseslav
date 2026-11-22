@@ -16,6 +16,7 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 		errors.append("merchants: " + e)
 	_check_figures(content, errors)
 	_check_props(content, errors)
+	_check_surfaces(content, errors)
 	var area_ids: Array[String] = []
 	area_ids.assign(content.areas.keys())
 	area_ids.sort()
@@ -98,6 +99,10 @@ static func _check_area_props(
 		for id in JsonRead.get_str_array(area.style, key):
 			if not content.props.has(id):
 				errors.append("%s: $.style.%s: unknown prop '%s'" % [where, key, id])
+	for key: String in [AreaMap.SURFACE_GROUND, AreaMap.SURFACE_ROAD, AreaMap.SURFACE_WALL]:
+		var sid := JsonRead.get_str(area.surfaces, key)
+		if sid != "" and not content.surfaces.has(sid):
+			errors.append("%s: $.surfaces.%s: unknown surface '%s'" % [where, key, sid])
 	var map := Rect2i(0, 0, area.width(), area.depth())
 	for i in area.objects.size():
 		var o := area.objects[i]
@@ -264,6 +269,19 @@ static func _check_props(content: ModuleContent, errors: Array[String]) -> void:
 		var file := JsonRead.get_str(content.props[id], "file")
 		if not FileAccess.file_exists(content.prop_dirs[id].path_join(file)):
 			errors.append("props/props.json: $.props.%s: file %s not found" % [id, file])
+
+
+static func _check_surfaces(content: ModuleContent, errors: Array[String]) -> void:
+	var ids: Array[String] = []
+	ids.assign(content.surfaces.keys())
+	ids.sort()
+	for id in ids:
+		for key: String in ["color", "normal", "roughness"]:
+			var file := JsonRead.get_str(content.surfaces[id], key)
+			if file != "" and not FileAccess.file_exists(content.surface_dirs[id].path_join(file)):
+				errors.append(
+					"surfaces/surfaces.json: $.surfaces.%s.%s: file %s not found" % [id, key, file]
+				)
 
 
 static func _check_figures(content: ModuleContent, errors: Array[String]) -> void:

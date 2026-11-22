@@ -98,8 +98,10 @@ func _ready() -> void:
 		return
 	_title.text = tr(_area.title_key)
 	if _area.interior:
-		env.background_color = Color(0.08, 0.07, 0.06)
-	_area_view.build(_area, PropCatalog.from_content(_content))
+		SceneEnv.make_interior(env)
+	_area_view.build(
+		_area, PropCatalog.from_content(_content), SurfaceCatalog.from_content(_content)
+	)
 	_area_view.set_grid_visible(GameSettings.show_grid)
 	_world.add_child(_area_view)
 	_map_points.build(_area)

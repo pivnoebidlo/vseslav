@@ -172,6 +172,10 @@
       ]
     }
   ],
+  "surfaces": {
+    "ground": "grass",
+    "road": "dirt"
+  },
   "style": {
     "tree": [
       "tree_a",

@@ -33,6 +33,10 @@
       }
     }
   ],
+  "surfaces": {
+    "ground": "planks",
+    "wall": "planks"
+  },
   "objects": [
     {
       "prop": "table_long",

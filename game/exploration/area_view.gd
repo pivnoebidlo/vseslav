@@ -5,6 +5,7 @@ extends Node3D
 ## Модели размножаются через MultiMesh. Сетка клеток включается по желанию (ADR-0030).
 
 const CELL := BattleGrid.CELL_SIZE_M
+const GROUND_SHADER := preload("res://game/world/ground.gdshader")
 const HOUSE_HEIGHT := 2.1
 const FENCE_HEIGHT := 0.6
 const INTERIOR_WALL := 1.1
@@ -17,15 +18,17 @@ const YARD_PERCENT := 60
 var area: AreaMap
 var _grid := MeshInstance3D.new()
 var _props: PropCatalog = null
+var _surfaces: SurfaceCatalog = null
 ## Положения моделей: id → преобразования экземпляров.
 var _instances: Dictionary[String, Array] = {}
 ## Клетки под явными объектами: их символы моделями стиля не рисуются.
 var _covered: Dictionary[Vector2i, bool] = {}
 
 
-func build(p_area: AreaMap, props: PropCatalog = null) -> void:
+func build(p_area: AreaMap, props: PropCatalog = null, surfaces: SurfaceCatalog = null) -> void:
 	area = p_area
 	_props = props
+	_surfaces = surfaces
 	_build_area()
 	_flush()
 	_build_grid()
@@ -80,10 +83,12 @@ func _build_area() -> void:
 	ground.mesh = plane
 	ground.position = Vector3((area.width() - 1) * CELL / 2.0, 0.0, (area.depth() - 1) * CELL / 2.0)
 	var floor_color := Color(0.42, 0.33, 0.24) if area.interior else Color(0.42, 0.52, 0.3)
-	ground.material_override = _material(floor_color)
+	var textured := _ground_material()
+	ground.material_override = textured if textured != null else _material(floor_color)
 	add_child(ground)
+	var road_textured: bool = textured != null and textured.get_shader_parameter("has_road") == true
 	var road := _material(Color(0.55, 0.47, 0.34))
-	var wall := _material(Color(0.47, 0.34, 0.22))
+	var wall := _wall_material(Color(0.47, 0.34, 0.22))
 	var roof := _material(Color(0.36, 0.3, 0.2))
 	var trunk := _material(Color(0.35, 0.25, 0.16))
 	var crown := _material(Color(0.2, 0.36, 0.2))
@@ -95,7 +100,7 @@ func _build_area() -> void:
 	for z in area.depth():
 		for x in area.width():
 			var c := Vector2i(x, z)
-			if area.tile(c) == AreaMap.ROAD:
+			if area.tile(c) == AreaMap.ROAD and not road_textured:
 				_box(c, Vector3(CELL, 0.02, CELL), 0.01, road)
 			if _covered.has(c):
 				continue
@@ -122,6 +127,70 @@ func _build_area() -> void:
 				AreaMap.GROUND:
 					if _hash(c) % 100 < SCATTER_PERCENT:
 						_place_styled("scatter", c)
+
+
+## Земля текстурами из модуля (ADR-0036); null — у области нет поверхностей
+## или они не загрузились.
+func _ground_material() -> ShaderMaterial:
+	if _surfaces == null:
+		return null
+	var ground := _surfaces.get_surface(JsonRead.get_str(area.surfaces, AreaMap.SURFACE_GROUND))
+	if ground == null:
+		return null
+	var m := ShaderMaterial.new()
+	m.shader = GROUND_SHADER
+	_set_surface(m, "ground", ground)
+	m.set_shader_parameter("cell_size", CELL)
+	m.set_shader_parameter("map_cells", Vector2(area.width(), area.depth()))
+	var road := _surfaces.get_surface(JsonRead.get_str(area.surfaces, AreaMap.SURFACE_ROAD))
+	if road != null:
+		_set_surface(m, "road", road)
+		m.set_shader_parameter("road_mask", _road_mask())
+		m.set_shader_parameter("has_road", true)
+	for err in _surfaces.errors:
+		push_warning(err)
+	return m
+
+
+## Стены: текстура поверхности «wall» в трёхплоскостной проекции (не нужна развёртка
+## у коробок), иначе — цвет.
+func _wall_material(fallback: Color) -> StandardMaterial3D:
+	var m := _material(fallback)
+	if _surfaces == null:
+		return m
+	var s := _surfaces.get_surface(JsonRead.get_str(area.surfaces, AreaMap.SURFACE_WALL))
+	if s == null:
+		return m
+	m.albedo_color = Color.WHITE
+	m.albedo_texture = s.color
+	if s.normal != null:
+		m.normal_enabled = true
+		m.normal_texture = s.normal
+	if s.roughness != null:
+		m.roughness_texture = s.roughness
+	m.uv1_triplanar = true
+	m.uv1_scale = Vector3.ONE / s.tile
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	return m
+
+
+static func _set_surface(m: ShaderMaterial, prefix: String, s: SurfaceCatalog.Surface) -> void:
+	m.set_shader_parameter(prefix + "_color", s.color)
+	if s.normal != null:
+		m.set_shader_parameter(prefix + "_normal", s.normal)
+	if s.roughness != null:
+		m.set_shader_parameter(prefix + "_rough", s.roughness)
+	m.set_shader_parameter(prefix + "_tile", s.tile)
+
+
+## Маска дороги: пиксель на клетку, 1 — дорога. Линейная фильтрация даёт плавный край.
+func _road_mask() -> ImageTexture:
+	var img := Image.create_empty(area.width(), area.depth(), false, Image.FORMAT_L8)
+	for z in area.depth():
+		for x in area.width():
+			if area.tile(Vector2i(x, z)) == AreaMap.ROAD:
+				img.set_pixel(x, z, Color.WHITE)
+	return ImageTexture.create_from_image(img)
 
 
 # --- Модели (ADR-0033) ------------------------------------------------------------

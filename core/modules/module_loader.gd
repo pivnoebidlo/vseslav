@@ -18,6 +18,7 @@ const FIXED_FILES: Dictionary[String, String] = {
 	"merchants.json": "merchants.schema.json",
 	"models/models.json": "models.schema.json",
 	"props/props.json": "props.schema.json",
+	"surfaces/surfaces.json": "surfaces.schema.json",
 }
 ## Папки, где каждый .json — отдельная запись своего типа.
 const DIR_FILES: Dictionary[String, String] = {
@@ -361,6 +362,16 @@ func _add_entries(
 				if owners.claim("props", pid, errs):
 					content.props[pid] = prop
 					content.prop_dirs[pid] = p.manifest.dir.path_join("props")
+		elif rel == "surfaces/surfaces.json":
+			var surfaces := JsonRead.get_dict(data, "surfaces")
+			var surface_ids: Array[String] = []
+			surface_ids.assign(surfaces.keys())
+			surface_ids.sort()
+			for sid in surface_ids:
+				var surface: Dictionary = surfaces[sid]
+				if owners.claim("surfaces", sid, errs):
+					content.surfaces[sid] = surface
+					content.surface_dirs[sid] = p.manifest.dir.path_join("surfaces")
 		elif rel == "models/models.json":
 			var figures := JsonRead.get_dict(data, "figures")
 			var ids: Array[String] = []

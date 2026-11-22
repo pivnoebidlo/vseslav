@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "surfaces.schema.json",
+  "title": "Поверхности земли и пола (surfaces/surfaces.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "surfaces": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+\\.png$",
+            "description": "Цвет (альбедо)."
+          },
+          "normal": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+\\.png$",
+            "description": "Карта нормалей в соглашении OpenGL (+Y)."
+          },
+          "roughness": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+\\.png$",
+            "description": "Шероховатость, оттенки серого."
+          },
+          "tile": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 16,
+            "description": "Сколько метров занимает один повтор текстуры."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "color"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "surfaces"
+  ]
+}

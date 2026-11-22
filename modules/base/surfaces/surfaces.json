@@ -1,0 +1,23 @@
+{
+  "_comment": "Поверхности земли и пола (ADR-0036): ambientCG, CC0 — см. CREDITS.md. Трава — Grass004, утоптанная земля — Ground103, доски — Planks037A.",
+  "surfaces": {
+    "grass": {
+      "color": "grass_color.png",
+      "normal": "grass_normal.png",
+      "roughness": "grass_roughness.png",
+      "tile": 3
+    },
+    "dirt": {
+      "color": "dirt_color.png",
+      "normal": "dirt_normal.png",
+      "roughness": "dirt_roughness.png",
+      "tile": 3
+    },
+    "planks": {
+      "color": "planks_color.png",
+      "normal": "planks_normal.png",
+      "roughness": "planks_roughness.png",
+      "tile": 2.4
+    }
+  }
+}

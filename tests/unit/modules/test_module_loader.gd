@@ -239,6 +239,30 @@ func test_area_props_are_checked() -> void:
 	assert_true(_has_error(content, "areas/pole.json: $.objects[0]: must be inside the map"))
 
 
+func test_area_surfaces_are_checked() -> void:
+	var area := {
+		"title_key": "t.area",
+		"map": [",..", "..."],
+		"spawns": {"start": [1, 1]},
+		"surfaces": {"ground": "grass", "road": "mud"},
+	}
+	var files := {
+		"areas/pole.json": area,
+		"surfaces/surfaces.json":
+		{"surfaces": {"grass": {"color": "grass.png", "normal": "grass_n.png", "tile": 3}}},
+		"locales/ru.json": _strings(["t.surf.title", "t.area"]),
+	}
+	ModuleFixture.write("t.surf", [], files)
+	var content := ModuleFixture.load_root()
+	assert_true(
+		_has_error(
+			content, "surfaces/surfaces.json: $.surfaces.grass.color: file grass.png not found"
+		)
+	)
+	assert_true(_has_error(content, "areas/pole.json: $.surfaces.road: unknown surface 'mud'"))
+	assert_false(_has_error(content, "areas/pole.json: $.surfaces.ground: unknown surface 'grass'"))
+
+
 func test_exits_chests_and_quest_actions_are_checked() -> void:
 	var area := {
 		"title_key": "t.area",

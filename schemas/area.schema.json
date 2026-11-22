@@ -267,6 +267,25 @@
       "additionalProperties": false,
       "description": "Какими моделями рисовать символы карты (ADR-0033). Без стиля — простая геометрия."
     },
+    "surfaces": {
+      "type": "object",
+      "properties": {
+        "ground": {
+          "$ref": "common.schema.json#/$defs/id",
+          "description": "Земля (или пол в помещении)."
+        },
+        "road": {
+          "$ref": "common.schema.json#/$defs/id",
+          "description": "Дорога , — смешивается с землёй по краям."
+        },
+        "wall": {
+          "$ref": "common.schema.json#/$defs/id",
+          "description": "Стены помещения и постройки без модели."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Текстуры земли из surfaces/surfaces.json (ADR-0036). Без них — сплошной цвет."
+    },
     "objects": {
       "type": "array",
       "items": {

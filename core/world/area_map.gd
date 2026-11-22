@@ -11,6 +11,9 @@ const TREE := "T"
 const FENCE := "="
 const GRAVE := "+"
 const TILES: Array[String] = [GROUND, ROAD, BUILDING, TREE, FENCE, GRAVE]
+const SURFACE_GROUND := "ground"
+const SURFACE_ROAD := "road"
+const SURFACE_WALL := "wall"
 
 
 ## Житель области.
@@ -61,6 +64,8 @@ var containers: Array[Chest] = []
 ## Облик (ADR-0033): какие модели ставить на символы карты и явные объекты.
 var style: Dictionary = {}
 var objects: Array[Dictionary] = []
+## Текстуры земли и дороги (ADR-0036): SURFACE_* → id поверхности.
+var surfaces: Dictionary = {}
 
 
 ## Область из уже проверенных схемой данных.
@@ -97,6 +102,7 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		npc.dialog = JsonRead.get_str(d, "dialog")
 		a.npcs.append(npc)
 	a.style = JsonRead.get_dict(data, "style")
+	a.surfaces = JsonRead.get_dict(data, "surfaces")
 	a.interior = JsonRead.get_bool(data, "interior")
 	for raw: Variant in JsonRead.get_array(data, "exits"):
 		var d: Dictionary = raw

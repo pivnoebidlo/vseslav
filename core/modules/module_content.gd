@@ -26,6 +26,9 @@ var figure_dirs: Dictionary[String, String] = {}
 ## Модели окружения из props/props.json (ADR-0033): id → описание, и папка модуля.
 var props: Dictionary[String, Dictionary] = {}
 var prop_dirs: Dictionary[String, String] = {}
+## Поверхности земли и пола из surfaces/surfaces.json (ADR-0036): id → описание, и папка.
+var surfaces: Dictionary[String, Dictionary] = {}
+var surface_dirs: Dictionary[String, String] = {}
 ## Строки: язык → ключ → текст. Поздний модуль заменяет строку раннего.
 var locales: Dictionary[String, Dictionary] = {}
 

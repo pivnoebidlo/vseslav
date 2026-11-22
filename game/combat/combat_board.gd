@@ -9,6 +9,7 @@ enum Paint { NONE, REACH, RANGE, AREA }
 const CELL := BattleGrid.CELL_SIZE_M
 const LEVEL_HEIGHT := 0.75
 const LIFT := 0.03
+const GLOW_SHADER := preload("res://game/combat/cell_glow.gdshader")
 
 var grid: BattleGrid
 var origin := Vector2i.ZERO
@@ -16,7 +17,7 @@ var origin := Vector2i.ZERO
 var _quads: Dictionary[Vector2i, MeshInstance3D] = {}
 var _paint: Dictionary[Vector2i, Paint] = {}
 var _area: Array[Vector2i] = []
-var _mats: Dictionary[Paint, StandardMaterial3D] = {}
+var _mats: Dictionary[Paint, ShaderMaterial] = {}
 var _quad_mesh := PlaneMesh.new()
 
 
@@ -114,9 +115,8 @@ func _add_cell(column: Vector2i) -> void:
 	add_child(body)
 
 
-func _glow(color: Color) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.albedo_color = color
+func _glow(color: Color) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = GLOW_SHADER
+	m.set_shader_parameter("tint", Color(color, minf(1.0, color.a * 1.6)))
 	return m

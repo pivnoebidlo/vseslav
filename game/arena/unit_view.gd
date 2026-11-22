@@ -18,6 +18,7 @@ const MAX_IMPACT_DELAY := 0.55
 const BAR_WIDTH := 0.9
 const BAR_HEIGHT := 0.09
 const BAR_Y := 1.85
+const SILHOUETTE_SHADER := preload("res://game/world/silhouette.gdshader")
 
 var unit_id: String = ""
 
@@ -59,6 +60,7 @@ func setup(id: String, team: String, entry: FigureCatalog.Entry, model: LoadedMo
 	else:
 		_add_simple_figure(entry.figure if entry != null else FigureCatalog.FIGURE_HUMANOID)
 	_add_collider()
+	_add_silhouette(_figure)
 
 	_add_hp_bar()
 	_setup_label(_name_label, 34, BAR_Y + 0.28)
@@ -334,6 +336,22 @@ func _add_simple_figure(kind: String) -> void:
 			capsule.height = 1.6
 			_add_part(capsule, Vector3(0, 0.8, 0))
 	_body_mat.albedo_color = _base_color
+
+
+## Силуэт сквозь стены цвета стороны: на все меши фигуры (модели или простой).
+func _add_silhouette(node: Node) -> void:
+	var mat := ShaderMaterial.new()
+	mat.shader = SILHOUETTE_SHADER
+	mat.set_shader_parameter("color", Color(_team_color, 0.55))
+	_apply_overlay(node, mat)
+
+
+func _apply_overlay(node: Node, mat: Material) -> void:
+	var mesh := node as MeshInstance3D
+	if mesh != null:
+		mesh.material_overlay = mat
+	for child in node.get_children():
+		_apply_overlay(child, mat)
 
 
 func _add_part(mesh: Mesh, at: Vector3) -> void:

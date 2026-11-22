@@ -9,7 +9,12 @@ const KIND_DIALOG := "dialogs"
 const KIND_QUEST := "quests"
 const KIND_LOCALE := "locales"
 const KIND_AREA := "areas"
-const KINDS: Array[String] = [KIND_DIALOG, KIND_QUEST, KIND_LOCALE, KIND_AREA]
+## Наборы ассетов модуля: props/props.json и surfaces/surfaces.json (id записи = имя файла).
+const KIND_PROPS := "props"
+const KIND_SURFACES := "surfaces"
+const KINDS: Array[String] = [
+	KIND_DIALOG, KIND_QUEST, KIND_LOCALE, KIND_AREA, KIND_PROPS, KIND_SURFACES
+]
 const LANGS: Array[String] = ["ru", "en"]
 const ID_PATTERN := "^[a-z0-9_.]+$"
 const MANIFEST := "module.json"

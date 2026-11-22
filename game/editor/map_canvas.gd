@@ -16,6 +16,8 @@ const KIND_CHEST := "containers"
 const KIND_SPAWN := "spawns"
 const KIND_NPC := "npcs"
 const KIND_ENCOUNTER := "encounters"
+const KIND_EVENT := "events"
+const EVENT_COLOR := Color(0.75, 0.45, 1.0)
 const MIN_ZOOM := 3.0
 const MAX_ZOOM := 40.0
 const GRID_FROM_ZOOM := 10.0
@@ -194,11 +196,12 @@ func _entity_at(cell: Vector2i) -> Array:
 	for i in names.size():
 		if JsonRead.to_vec2i(spawns[names[i]]) == cell:
 			return [KIND_SPAWN, i]
-	var encounters := JsonRead.get_array(_data, KIND_ENCOUNTER)
-	for i in encounters.size():
-		var e: Dictionary = encounters[i]
-		if Encounter.rect_of(JsonRead.get_array(e, "zone")).has_point(cell):
-			return [KIND_ENCOUNTER, i]
+	for kind: String in [KIND_EVENT, KIND_ENCOUNTER]:
+		var list := JsonRead.get_array(_data, kind)
+		for i in list.size():
+			var e: Dictionary = list[i]
+			if Encounter.rect_of(JsonRead.get_array(e, "zone")).has_point(cell):
+				return [kind, i]
 	return []
 
 
@@ -213,7 +216,7 @@ func _entity_cell(kind: String, index: int) -> Vector2i:
 	if index < 0 or index >= list.size():
 		return Vector2i(-1, -1)
 	var e: Dictionary = list[index]
-	if kind == KIND_ENCOUNTER:
+	if kind == KIND_ENCOUNTER or kind == KIND_EVENT:
 		return Encounter.rect_of(JsonRead.get_array(e, "zone")).position
 	return JsonRead.to_vec2i(e.get("at", [0, 0]))
 
@@ -237,6 +240,7 @@ func _draw() -> void:
 	if zoom >= GRID_FROM_ZOOM:
 		_draw_grid()
 	_draw_encounters()
+	_draw_events()
 	_draw_list(KIND_OBJECT, Color(0.85, 0.85, 0.95, 0.9))
 	_draw_list(KIND_EXIT, Color(1.0, 0.8, 0.3))
 	_draw_list(KIND_CHEST, Color(0.95, 0.6, 0.25))
@@ -297,6 +301,30 @@ func _draw_spawns() -> void:
 		var color := SELECT_COLOR if picked else Color(0.4, 1.0, 0.5)
 		draw_line(c + Vector2(-r, -r), c + Vector2(r, r), color, 2.0)
 		draw_line(c + Vector2(-r, r), c + Vector2(r, -r), color, 2.0)
+
+
+func _draw_events() -> void:
+	var list := JsonRead.get_array(_data, KIND_EVENT)
+	for i in list.size():
+		var e: Dictionary = list[i]
+		if not e.has("zone"):
+			continue
+		var zone := Encounter.rect_of(JsonRead.get_array(e, "zone"))
+		var picked := selected_kind == KIND_EVENT and i == selected_index
+		var color := SELECT_COLOR if picked else EVENT_COLOR
+		var rect := _cell_rect(zone.position, zone.size)
+		draw_rect(rect, Color(color, 0.12))
+		draw_rect(rect, color, false, 2.0)
+		if zoom >= GRID_FROM_ZOOM:
+			draw_string(
+				get_theme_default_font(),
+				rect.position + Vector2(2, 12),
+				JsonRead.get_str(e, "id"),
+				0,
+				-1,
+				11,
+				color
+			)
 
 
 func _draw_encounters() -> void:

@@ -325,6 +325,57 @@ func _quest_stages() -> Dictionary:
 	return result
 
 
+## Из чего выбирать в условиях и действиях: все модули и свои правки.
+func _catalog() -> EditorCatalog:
+	var c := EditorCatalog.new()
+	c.quests = _quest_stages()
+	c.items.assign(_content.rules.items.keys())
+	c.items.sort()
+	c.characters.assign(_content.rules.characters.keys())
+	c.characters.sort()
+	c.dialogs = _dialog_ids()
+	var area_ids: Array[String] = []
+	area_ids.assign(_content.areas.keys())
+	for id in _doc.ids(ModuleDoc.KIND_AREA):
+		if not area_ids.has(id):
+			area_ids.append(id)
+	for id in area_ids:
+		var data: Dictionary = (
+			_doc.entry(ModuleDoc.KIND_AREA, id)
+			if _doc.has(ModuleDoc.KIND_AREA, id)
+			else _content.areas[id]
+		)
+		var spawns: Array = JsonRead.get_dict(data, "spawns").keys()
+		spawns.sort()
+		c.areas[id] = spawns
+		for raw: Variant in JsonRead.get_array(data, "encounters"):
+			var e: Dictionary = raw
+			var eid := JsonRead.get_str(e, "id")
+			if not c.encounters.has(eid):
+				c.encounters.append(eid)
+	c.encounters.sort()
+	c.text_of = _text_of
+	c.set_text = func(key: String, lang: String, text: String) -> void:
+		var edit := DocEdit.new("message")
+		edit.set_text(_doc, key, lang, text)
+		_apply(edit)
+	c.new_text_key = _new_message_key
+	return c
+
+
+## Свободный ключ сообщения: MSG_<МОДУЛЬ>_<n>.
+func _new_message_key() -> String:
+	var base := ("MSG_" + _doc.module_id()).replace(".", "_").to_upper()
+	var n := 1
+	while _text_of("%s_%d" % [base, n]) != "":
+		n += 1
+	var key := "%s_%d" % [base, n]
+	var edit := DocEdit.new("message key")
+	edit.set_text(_doc, key, "ru", "…")
+	_apply(edit)
+	return key
+
+
 static func _stage_ids(quest: Dictionary) -> Array:
 	var ids: Array = []
 	for raw: Variant in JsonRead.get_array(quest, "stages"):
@@ -354,11 +405,11 @@ func _refresh() -> void:
 		_assets_panel.show_assets(_doc, _content, _editable)
 	_area_tabs.visible = showing_area
 	if showing_area:
-		_npc_panel.show_area(_doc, _area, _text_of, _looks(), _dialog_ids(), _editable)
-		_map_panel.show_area(_doc, _area, _content, _text_of, _quest_stages(), _editable)
+		_npc_panel.show_area(_doc, _area, _text_of, _looks(), _dialog_ids(), _editable, _catalog())
+		_map_panel.show_area(_doc, _area, _content, _text_of, _catalog(), _editable)
 	if showing_dialog:
 		_graph.build(_doc, _dialog, func(key: String) -> String: return _text_of(key), _node)
-		_inspector.show_node(_doc, _dialog, _node, _text_of, _quest_stages(), _editable)
+		_inspector.show_node(_doc, _dialog, _node, _text_of, _catalog(), _editable)
 	if showing_quest:
 		_quest_panel.show_quest(_doc, _quest, _text_of, _editable)
 	_refresh_buttons()
@@ -439,7 +490,7 @@ func _build() -> void:
 	_graph.node_selected_id.connect(
 		func(id: String) -> void:
 			_node = id
-			_inspector.show_node(_doc, _dialog, _node, _text_of, _quest_stages(), _editable)
+			_inspector.show_node(_doc, _dialog, _node, _text_of, _catalog(), _editable)
 	)
 	_graph.link_requested.connect(
 		func(n: String, o: int, f: String, t: String) -> void:

@@ -15,6 +15,8 @@ const TOOL_EXIT := "exit"
 const TOOL_CHEST := "chest"
 const TOOL_SPAWN := "spawn"
 const TOOL_ENCOUNTER := "encounter"
+const TOOL_EVENT := "event"
+const EVENT_ZONE := 4
 const TOOLS: Array[String] = [
 	TOOL_SELECT,
 	TOOL_TILE,
@@ -24,6 +26,7 @@ const TOOLS: Array[String] = [
 	TOOL_CHEST,
 	TOOL_SPAWN,
 	TOOL_ENCOUNTER,
+	TOOL_EVENT,
 ]
 const TILES: Array[String] = [".", ",", "#", "T", "=", "+"]
 const ROTATIONS: Array[int] = [0, 90, 180, 270]
@@ -37,7 +40,7 @@ var _doc: ModuleDoc
 var _area := ""
 var _content: ModuleContent
 var _text_of: Callable
-var _quests: Dictionary = {}
+var _catalog: EditorCatalog
 var _editable := true
 var _tool := TOOL_SELECT
 var _tool_buttons: Dictionary[String, Button] = {}
@@ -68,6 +71,7 @@ func _init() -> void:
 	_canvas.entity_picked.connect(func(_k: String, _i: int) -> void: _show_inspector())
 	_canvas.entity_dragged.connect(_on_drag)
 	_inspector.edited.connect(func(edit: DocEdit) -> void: edited.emit(edit))
+	_inspector.select_requested.connect(_select_entity)
 
 
 func show_area(
@@ -75,7 +79,7 @@ func show_area(
 	area_id: String,
 	content: ModuleContent,
 	text_of: Callable,
-	quests: Dictionary,
+	catalog: EditorCatalog,
 	editable: bool
 ) -> void:
 	var first := area_id != _area
@@ -83,7 +87,7 @@ func show_area(
 	_area = area_id
 	_content = content
 	_text_of = text_of
-	_quests = quests
+	_catalog = catalog
 	_editable = editable
 	_fill_props()
 	_canvas.set_area(doc.entry(ModuleDoc.KIND_AREA, area_id))
@@ -96,13 +100,20 @@ func show_area(
 		_tool_buttons[t].disabled = not editable and t != TOOL_SELECT
 
 
+func _select_entity(kind: String, index: int) -> void:
+	_canvas.selected_kind = kind
+	_canvas.selected_index = index
+	_canvas.queue_redraw()
+	_show_inspector()
+
+
 func _show_inspector() -> void:
 	_inspector.show_selection(
 		_doc,
 		_area,
 		_content,
 		_text_of,
-		_quests,
+		_catalog,
 		_editable,
 		_canvas.selected_kind,
 		_canvas.selected_index
@@ -228,6 +239,8 @@ func _on_click(cell: Vector2i) -> void:
 			_ask_and_add(MapCanvas.KIND_SPAWN, "UI_MAP_NEW_SPAWN", cell)
 		TOOL_ENCOUNTER:
 			_ask_and_add(MapCanvas.KIND_ENCOUNTER, "UI_MAP_NEW_ENCOUNTER", cell)
+		TOOL_EVENT:
+			_ask_and_add(MapCanvas.KIND_EVENT, "UI_MAP_NEW_EVENT", cell)
 		_:
 			_show_inspector()
 
@@ -253,13 +266,16 @@ func _ask_and_add(kind: String, title_key: String, cell: Vector2i) -> void:
 					cell - Vector2i(b, b), Vector2i(ENCOUNTER_BATTLE, ENCOUNTER_BATTLE)
 				)
 				edited.emit(AreaOps.add_encounter(_doc, _area, id, _clip(zone), _clip(battle)))
+			MapCanvas.KIND_EVENT:
+				var h := EVENT_ZONE / 2
+				var r := Rect2i(cell - Vector2i(h, h), Vector2i(EVENT_ZONE, EVENT_ZONE))
+				edited.emit(AreaOps.add_event(_doc, _area, id, _clip(r)))
 		_select_new(kind)
 	var taken := func(id: String) -> bool: return _id_taken(kind, id)
-	var hint := (
-		""
-		if kind == MapCanvas.KIND_SPAWN or kind == MapCanvas.KIND_ENCOUNTER
-		else tr("UI_ED_NAME_RU")
-	)
+	var nameless: Array[String] = [
+		MapCanvas.KIND_SPAWN, MapCanvas.KIND_ENCOUNTER, MapCanvas.KIND_EVENT
+	]
+	var hint := "" if nameless.has(kind) else tr("UI_ED_NAME_RU")
 	ask_id.call(tr(title_key), hint, add, taken)
 
 
@@ -301,7 +317,10 @@ func _on_drag(kind: String, index: int, to: Vector2i) -> void:
 		return
 	var list := AreaOps.list_of(_doc, _area, kind)
 	var e: Dictionary = list[index]
-	if kind == MapCanvas.KIND_ENCOUNTER:
+	if kind == MapCanvas.KIND_EVENT:
+		var ezone := Encounter.rect_of(JsonRead.get_array(e, "zone"))
+		e["zone"] = _moved_rect(JsonRead.get_array(e, "zone"), to - ezone.position)
+	elif kind == MapCanvas.KIND_ENCOUNTER:
 		var zone := Encounter.rect_of(JsonRead.get_array(e, "zone"))
 		var shift := to - zone.position
 		e["zone"] = _moved_rect(JsonRead.get_array(e, "zone"), shift)

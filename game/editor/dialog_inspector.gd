@@ -17,7 +17,7 @@ var _doc: ModuleDoc
 var _dialog := ""
 var _node := ""
 var _text_of: Callable
-var _quests: Dictionary = {}
+var _catalog: EditorCatalog
 var _editable := true
 var _box := VBoxContainer.new()
 
@@ -35,14 +35,14 @@ func show_node(
 	dialog_id: String,
 	node_id: String,
 	text_of: Callable,
-	quests: Dictionary,
+	catalog: EditorCatalog,
 	editable: bool
 ) -> void:
 	_doc = doc
 	_dialog = dialog_id
 	_node = node_id
 	_text_of = text_of
-	_quests = quests
+	_catalog = catalog
 	_editable = editable
 	for child in _box.get_children():
 		_box.remove_child(child)
@@ -86,7 +86,7 @@ func _start_section() -> void:
 		row.add_child(line)
 		if i < variants.size() - 1 or not JsonRead.get_array(v, "if").is_empty():
 			var cond := RulesRows.new()
-			cond.setup(RulesRows.MODE_CONDITIONS, JsonRead.get_array(v, "if"), _quests, _editable)
+			cond.setup(RulesRows.MODE_CONDITIONS, JsonRead.get_array(v, "if"), _catalog, _editable)
 			cond.changed.connect(
 				func(list: Array) -> void:
 					variants[i]["if"] = list
@@ -151,7 +151,7 @@ func _node_section() -> void:
 		ModuleDoc.KIND_DIALOG, _dialog, ["nodes", _node, "then"]
 	)
 	var then_list: Array = then_value if then_value is Array else []
-	then.setup(RulesRows.MODE_ACTIONS, then_list, _quests, _editable)
+	then.setup(RulesRows.MODE_ACTIONS, then_list, _catalog, _editable)
 	then.changed.connect(
 		func(list: Array) -> void:
 			var edit := DocEdit.new("node actions")
@@ -204,7 +204,7 @@ func _option_panel(index: int, option: Dictionary, count: int) -> PanelContainer
 	box.add_child(_link_row(index, option, "next", tr("UI_ED_LEADS_TO")))
 	box.add_child(_caption(tr("UI_ED_SHOW_IF")))
 	var cond := RulesRows.new()
-	cond.setup(RulesRows.MODE_CONDITIONS, JsonRead.get_array(option, "if"), _quests, _editable)
+	cond.setup(RulesRows.MODE_CONDITIONS, JsonRead.get_array(option, "if"), _catalog, _editable)
 	cond.changed.connect(func(list: Array) -> void: _set_field(index, "if", list))
 	box.add_child(cond)
 	box.add_child(_check_row(index, option))
@@ -212,7 +212,7 @@ func _option_panel(index: int, option: Dictionary, count: int) -> PanelContainer
 		box.add_child(_link_row(index, option, "fail", tr("UI_ED_ON_FAIL")))
 	box.add_child(_caption(tr("UI_ED_OPTION_ACTIONS")))
 	var then := RulesRows.new()
-	then.setup(RulesRows.MODE_ACTIONS, JsonRead.get_array(option, "then"), _quests, _editable)
+	then.setup(RulesRows.MODE_ACTIONS, JsonRead.get_array(option, "then"), _catalog, _editable)
 	then.changed.connect(func(list: Array) -> void: _set_field(index, "then", list))
 	box.add_child(then)
 	return panel

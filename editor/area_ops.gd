@@ -209,6 +209,18 @@ static func add_encounter(
 	return set_field(doc, area_id, "encounters", list)
 
 
+## Событие области (ADR-0042): при входе в зону (или в область — без зоны).
+static func add_event(doc: ModuleDoc, area_id: String, event_id: String, zone: Rect2i) -> DocEdit:
+	var list := list_of(doc, area_id, "events")
+	var ev := {"id": event_id, "on": "enter_zone", "then": []}
+	if zone.size != Vector2i.ZERO:
+		ev["zone"] = [zone.position.x, zone.position.y, zone.size.x, zone.size.y]
+	else:
+		ev["on"] = "enter_area"
+	list.append(ev)
+	return set_field(doc, area_id, "events", list)
+
+
 ## Клетки кисти: квадрат со стороной [param size] с центром в [param center].
 static func brush(center: Vector2i, size: int) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []

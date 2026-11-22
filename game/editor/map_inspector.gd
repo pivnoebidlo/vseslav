@@ -5,6 +5,8 @@ extends ScrollContainer
 ## поверхности, стиль: какие модели ставить на символы карты).
 
 signal edited(edit: DocEdit)
+## Выбрать сущность на карте (из списка событий в настройках).
+signal select_requested(kind: String, index: int)
 
 const STYLE_KEYS: Array[String] = [
 	"tree", "house", "house_large", "well", "fence", "grave", "yard", "scatter"
@@ -16,7 +18,7 @@ var _doc: ModuleDoc
 var _area := ""
 var _content: ModuleContent
 var _text_of: Callable
-var _quests: Dictionary = {}
+var _catalog: EditorCatalog
 var _editable := true
 var _box := VBoxContainer.new()
 
@@ -33,7 +35,7 @@ func show_selection(
 	area_id: String,
 	content: ModuleContent,
 	text_of: Callable,
-	quests: Dictionary,
+	catalog: EditorCatalog,
 	editable: bool,
 	kind: String,
 	index: int
@@ -42,7 +44,7 @@ func show_selection(
 	_area = area_id
 	_content = content
 	_text_of = text_of
-	_quests = quests
+	_catalog = catalog
 	_editable = editable
 	for child in _box.get_children():
 		_box.remove_child(child)
@@ -58,6 +60,8 @@ func show_selection(
 			_spawn(index)
 		MapCanvas.KIND_ENCOUNTER:
 			_encounter(index)
+		MapCanvas.KIND_EVENT:
+			_event(index)
 		MapCanvas.KIND_NPC:
 			_box.add_child(_heading(tr("UI_MAP_NPC_HINT")))
 		_:
@@ -226,7 +230,7 @@ func _chest(index: int) -> void:
 		)
 	_box.add_child(_caption(tr("UI_MAP_CHEST_THEN")))
 	var then := RulesRows.new()
-	then.setup(RulesRows.MODE_ACTIONS, JsonRead.get_array(c, "then"), _quests, _editable)
+	then.setup(RulesRows.MODE_ACTIONS, JsonRead.get_array(c, "then"), _catalog, _editable)
 	then.changed.connect(
 		func(list: Array) -> void: _set_field(MapCanvas.KIND_CHEST, index, "then", list)
 	)
@@ -370,6 +374,59 @@ func _set_foe(encounter: int, slot: int, field: String, value: Variant) -> void:
 # --- Настройки области --------------------------------------------------------------
 
 
+func _event(index: int) -> void:
+	var e := _entry(MapCanvas.KIND_EVENT, index)
+	if e.is_empty():
+		return
+	_header(tr("UI_MAP_EVENT") + " " + JsonRead.get_str(e, "id"), MapCanvas.KIND_EVENT, index)
+	var kinds: Array[String] = ["enter_area", "enter_zone"]
+	var on := JsonRead.get_str(e, "on", "enter_area")
+	var set_on := func(v: String) -> void:
+		var changed := e.duplicate(true)
+		changed["on"] = v
+		if v == "enter_zone" and not changed.has("zone"):
+			changed["zone"] = [0, 0, 4, 4]
+		elif v == "enter_area":
+			changed.erase("zone")
+		_put(MapCanvas.KIND_EVENT, index, changed)
+	_box.add_child(_pick(tr("UI_MAP_EVENT_ON"), kinds, on, set_on))
+	if on == "enter_zone":
+		var r := Encounter.rect_of(JsonRead.get_array(e, "zone"))
+		var move := func(v: Vector2i) -> void:
+			_set_field(MapCanvas.KIND_EVENT, index, "zone", [v.x, v.y, r.size.x, r.size.y])
+		var grow := func(v: Vector2i) -> void:
+			_set_field(MapCanvas.KIND_EVENT, index, "zone", [r.position.x, r.position.y, v.x, v.y])
+		_box.add_child(_cell_row(tr("UI_ED_CELL"), r.position, move))
+		_box.add_child(_cell_row(tr("UI_MAP_SIZE"), r.size, grow, 1, AreaOps.MAX_SIDE))
+	var once := CheckBox.new()
+	once.text = tr("UI_MAP_EVENT_ONCE")
+	once.button_pressed = JsonRead.get_bool(e, "once", true)
+	once.disabled = not _editable
+	once.toggled.connect(
+		func(v: bool) -> void: _set_field(MapCanvas.KIND_EVENT, index, "once", null if v else false)
+	)
+	_box.add_child(once)
+	_box.add_child(_caption(tr("UI_MAP_EVENT_IF")))
+	var cond := RulesRows.new()
+	cond.setup(RulesRows.MODE_CONDITIONS, JsonRead.get_array(e, "if"), _catalog, _editable)
+	cond.changed.connect(
+		func(list: Array) -> void: _set_field(MapCanvas.KIND_EVENT, index, "if", list)
+	)
+	_box.add_child(cond)
+	_box.add_child(_caption(tr("UI_MAP_EVENT_THEN")))
+	var then := RulesRows.new()
+	then.setup(RulesRows.MODE_ACTIONS, JsonRead.get_array(e, "then"), _catalog, _editable)
+	then.changed.connect(func(list: Array) -> void: _put_then(index, list))
+	_box.add_child(then)
+
+
+## «then» у события обязателен: пустой список остаётся в файле.
+func _put_then(index: int, list: Array) -> void:
+	var e := _entry(MapCanvas.KIND_EVENT, index)
+	e["then"] = list
+	_put(MapCanvas.KIND_EVENT, index, e)
+
+
 func _settings() -> void:
 	_box.add_child(_heading(tr("UI_ED_AREA") + " " + _area))
 	_names(str(_doc.get_value(ModuleDoc.KIND_AREA, _area, ["title_key"])))
@@ -421,6 +478,21 @@ func _settings() -> void:
 				on_pick
 			)
 		)
+	_box.add_child(_heading(tr("UI_MAP_EVENTS")))
+	var events := AreaOps.list_of(_doc, _area, MapCanvas.KIND_EVENT)
+	if events.is_empty():
+		_box.add_child(_caption(tr("UI_MAP_EVENTS_HINT")))
+	for i in events.size():
+		var ev: Dictionary = events[i]
+		var on_key := "UI_MAP_EVENT_" + JsonRead.get_str(ev, "on").to_upper()
+		var ev_label := "%s (%s)" % [JsonRead.get_str(ev, "id"), tr(on_key)]
+		var pick_event := func() -> void: select_requested.emit(MapCanvas.KIND_EVENT, i)
+		_box.add_child(_small(ev_label, pick_event))
+	if _editable:
+		var add_area_event := func() -> void:
+			var id := "event_%d" % (events.size() + 1)
+			edited.emit(AreaOps.add_event(_doc, _area, id, Rect2i()))
+		_box.add_child(_small(tr("UI_MAP_ADD_AREA_EVENT"), add_area_event))
 	_box.add_child(_heading(tr("UI_MAP_STYLE")))
 	_box.add_child(_caption(tr("UI_MAP_STYLE_HINT")))
 	var style := AreaOps.dict_of(_doc, _area, "style")

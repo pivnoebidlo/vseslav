@@ -384,7 +384,6 @@ UI_ED_DC,СЛ ,DC
 UI_ED_ON_FAIL,при провале →,on failure →
 UI_ED_OPTION_ACTIONS,Если выбран:,When chosen:
 UI_ED_ADD_CONDITION,+ флаг,+ flag
-UI_ED_ADD_ACTION,+ флаг,+ flag
 UI_ED_ADD_QUEST_RULE,+ квест,+ quest
 UI_ED_FLAG,флаг,flag
 UI_ED_QUEST,квест,quest
@@ -499,3 +498,35 @@ UI_AS_FIGURE_ID,"id облика (например, druzhinnik)",look id (e.g. g
 UI_AS_FIGURE_ADDED,Облик %s добавлен (%d треугольников).,Look %s added (%d triangles).
 UI_AS_NO_RIG,Риг не распознан: модель будет стоять без анимаций. Добавьте профиль рига (docs: asset-pipeline).,Rig not recognised: the model will stand without animations. Add a rig profile (docs: asset-pipeline).
 UI_LOADING,Загрузка…,Loading…
+UI_EV_ACT_SET_FLAG,флаг,flag
+UI_EV_ACT_SET_QUEST,квест,quest
+UI_EV_ACT_GIVE_ITEM,дать вещь,give item
+UI_EV_ACT_TAKE_ITEM,забрать вещь,take item
+UI_EV_ACT_GIVE_MONEY,деньги,money
+UI_EV_ACT_JOIN_PARTY,принять в отряд,join party
+UI_EV_ACT_LEAVE_PARTY,отпустить из отряда,leave party
+UI_EV_ACT_MESSAGE,сообщение,message
+UI_EV_ACT_START_DIALOG,разговор,dialog
+UI_EV_ACT_START_COMBAT,бой,fight
+UI_EV_ACT_TELEPORT,перенести в,teleport to
+LOG_EV_ITEM,Получено: {item} ×{count},Received: {item} ×{count}
+LOG_EV_ITEM_LOST,Отдано: {item} ×{count},Given away: {item} ×{count}
+LOG_EV_MONEY,Получено: {money},Received: {money}
+LOG_EV_MONEY_LOST,Отдано: {money},Paid: {money}
+LOG_EV_JOINED,{name} присоединяется к отряду,{name} joins the party
+LOG_EV_LEFT,{name} покидает отряд,{name} leaves the party
+UI_EV_NEXT,Дальше,Next
+UI_ED_ADD_ACTION,+ действие,+ action
+UI_MAP_TOOL_EVENT,Событие,Event
+UI_MAP_NEW_EVENT,Новое событие,New event
+UI_MAP_EVENT,Событие,Event
+UI_MAP_EVENT_ON,Когда:,When:
+UI_MAP_EVENT_ENTER_AREA,при входе в область,on entering the area
+UI_MAP_EVENT_ENTER_ZONE,при входе в зону,on entering the zone
+UI_MAP_EVENT_ONCE,Один раз,Once
+UI_MAP_EVENT_IF,Если:,If:
+UI_MAP_EVENT_THEN,Тогда:,Then:
+UI_MAP_EVENTS,События области,Area events
+UI_MAP_EVENTS_HINT,Пока нет. «Событие» на панели — зона на карте; кнопка ниже — при входе в область.,None yet. The Event tool places a zone; the button below adds one on entering the area.
+UI_MAP_ADD_AREA_EVENT,+ событие при входе в область,+ event on entering the area
+UI_ED_NPC_IF,Когда на месте:,Present when:

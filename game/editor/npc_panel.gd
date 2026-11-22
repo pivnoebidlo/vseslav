@@ -19,6 +19,7 @@ var _looks: Array[String] = []
 var _dialogs: Array[String] = []
 var _editable := true
 var _selected := 0
+var _catalog: EditorCatalog
 var _map := RichTextLabel.new()
 var _list := VBoxContainer.new()
 
@@ -56,8 +57,10 @@ func show_area(
 	text_of: Callable,
 	looks: Array[String],
 	dialogs: Array[String],
-	editable: bool
+	editable: bool,
+	catalog: EditorCatalog = null
 ) -> void:
+	_catalog = catalog
 	_doc = doc
 	_area = area_id
 	_text_of = text_of
@@ -132,6 +135,22 @@ func _npc_panel(index: int, npc: Dictionary) -> PanelContainer:
 	z.value_changed.connect(commit_cell)
 	box.add_child(_picker(tr("UI_ED_LOOK"), _looks, index, npc, "look"))
 	box.add_child(_picker(tr("UI_ED_DIALOG"), _dialogs, index, npc, "dialog"))
+	var caption := Label.new()
+	caption.text = tr("UI_ED_NPC_IF")
+	caption.add_theme_font_size_override("font_size", 12)
+	box.add_child(caption)
+	var cond := RulesRows.new()
+	cond.setup(RulesRows.MODE_CONDITIONS, JsonRead.get_array(npc, "if"), _catalog, _editable)
+	cond.changed.connect(
+		func(list: Array) -> void:
+			var changed := npc.duplicate(true)
+			if list.is_empty():
+				changed.erase("if")
+			else:
+				changed["if"] = list
+			edited.emit(NpcOps.set_npc(_doc, _area, index, changed))
+	)
+	box.add_child(cond)
 	return panel
 
 

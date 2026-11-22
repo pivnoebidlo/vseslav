@@ -113,7 +113,8 @@ static func setup(x: Exploration) -> void:
 	x._events.notice.connect(x._notify)
 	x._events.finished.connect(x._on_events_finished)
 	x._events.dialog_requested.connect(
-		func(dialog_id: String, speaker: String) -> void: x._talk(dialog_id, x.tr(speaker))
+		func(dialog_id: String, speaker: String) -> void:
+			x._talk(dialog_id, x.tr(speaker) if speaker != "" else speaker_of(x, dialog_id))
 	)
 	x._events.combat_requested.connect(
 		func(id: String) -> void:
@@ -124,3 +125,11 @@ static func setup(x: Exploration) -> void:
 	x._events.teleport_requested.connect(x._teleport)
 	x._events.item_name = func(id: String) -> String: return x._item_name(id)
 	x._events.hero_name = func(id: String) -> String: return x._name_of(id)
+
+
+## Имя говорящего для разговора из события: житель области с этим диалогом.
+static func speaker_of(x: Exploration, dialog_id: String) -> String:
+	for npc in x._area.npcs:
+		if npc.dialog == dialog_id:
+			return x.tr(npc.name_key)
+	return ""

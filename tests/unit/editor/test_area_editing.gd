@@ -131,3 +131,27 @@ func test_own_character_look_for_villagers() -> void:
 			mine.append(err)
 	assert_eq(mine, [] as Array[String])
 	assert_true(content.figures.has("druzhinnik"))
+
+
+func test_area_events_from_the_editor_load_in_the_game() -> void:
+	var doc := _doc()
+	var undo := UndoStack.new()
+	undo.push(doc, AreaOps.new_area(doc, "les", "Лес", Vector2i(12, 8)))
+	undo.push(doc, AreaOps.add_event(doc, "les", "shorokh", Rect2i(4, 2, 3, 3)))
+	undo.push(doc, AreaOps.add_event(doc, "les", "vkhod", Rect2i()))
+	var list := AreaOps.list_of(doc, "les", "events")
+	var zone: Dictionary = list[0]
+	zone["then"] = [{"action": "give_money", "kuny": 5}]
+	undo.push(doc, AreaOps.set_field(doc, "les", "events", list))
+	var errors: Array[String] = []
+	doc.save(errors)
+	var content := ModuleLoader.load_all(["res://modules", ModuleFixture.ROOT] as Array[String])
+	var mine: Array[String] = []
+	for err in content.errors:
+		if err.contains("t.map"):
+			mine.append(err)
+	assert_eq(mine, [] as Array[String])
+	var area := content.area("les")
+	assert_eq(area.events.size(), 2)
+	assert_eq(area.events[0].on, AreaMap.AreaEvent.ON_ENTER_ZONE)
+	assert_eq(area.events[1].on, AreaMap.AreaEvent.ON_ENTER_AREA)

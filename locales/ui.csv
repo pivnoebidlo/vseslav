@@ -490,3 +490,12 @@ UI_AS_SURFACE_ID,"id поверхности (например, moh)",surface id 
 UI_AS_PROP_ADDED,Модель %s добавлена (%d треугольников).,Model %s added (%d triangles).
 UI_AS_BAD_PNG,"%s: не PNG, больше 2048 px или сторона не степень двойки","%s: not a PNG, over 2048 px, or a side is not a power of two"
 UI_AS_NO_COLOR,Нужен файл цвета (без normal и rough в имени).,A colour file is required (no normal or rough in its name).
+UI_AS_FIGURES,Облик персонажей (GLB с ригом),Character looks (rigged GLB)
+UI_AS_ADD_FIGURE,+ облик (GLB)…,+ look (GLB)…
+UI_AS_FIGURE_HINT,"Гуманоид с ригом, который знает игра (game/characters/rigs/*.json): тогда к нему подойдут общие анимации. Облик выбирают жителю во вкладке «Жители» и существам в правилах.",A humanoid with a rig the game knows (game/characters/rigs/*.json) gets the shared animations. Pick the look for a villager in the Villagers tab or for creatures in the rules.
+UI_AS_HOLD,В руках (что видно из снаряжения модели):,Held (visible gear of the model):
+UI_AS_NO_HOLD,У модели нет снаряжения в слотах рига.,The model has no gear in rig slots.
+UI_AS_FIGURE_ID,"id облика (например, druzhinnik)",look id (e.g. guard)
+UI_AS_FIGURE_ADDED,Облик %s добавлен (%d треугольников).,Look %s added (%d triangles).
+UI_AS_NO_RIG,Риг не распознан: модель будет стоять без анимаций. Добавьте профиль рига (docs: asset-pipeline).,Rig not recognised: the model will stand without animations. Add a rig profile (docs: asset-pipeline).
+UI_LOADING,Загрузка…,Loading…

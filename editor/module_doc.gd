@@ -12,8 +12,10 @@ const KIND_AREA := "areas"
 ## Наборы ассетов модуля: props/props.json и surfaces/surfaces.json (id записи = имя файла).
 const KIND_PROPS := "props"
 const KIND_SURFACES := "surfaces"
+## Облик персонажей: models/models.json.
+const KIND_MODELS := "models"
 const KINDS: Array[String] = [
-	KIND_DIALOG, KIND_QUEST, KIND_LOCALE, KIND_AREA, KIND_PROPS, KIND_SURFACES
+	KIND_DIALOG, KIND_QUEST, KIND_LOCALE, KIND_AREA, KIND_PROPS, KIND_SURFACES, KIND_MODELS
 ]
 const LANGS: Array[String] = ["ru", "en"]
 const ID_PATTERN := "^[a-z0-9_.]+$"

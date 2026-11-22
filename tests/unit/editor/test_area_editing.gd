@@ -105,3 +105,29 @@ func test_own_model_and_texture_become_part_of_the_module() -> void:
 	assert_true(content.surfaces.has("glina"))
 	var bad := AssetOps.copy_file(doc, "res://nope.glb", AssetOps.PROPS, "Bad Name", errors)
 	assert_eq(bad, "")
+
+
+func test_own_character_look_for_villagers() -> void:
+	var doc := _doc()
+	var undo := UndoStack.new()
+	var errors: Array[String] = []
+	var file := AssetOps.copy_file(
+		doc, "res://modules/base/models/knight.glb", AssetOps.MODELS, "druzhinnik", errors
+	)
+	assert_eq(errors, [] as Array[String])
+	var hold: Array[String] = ["1H_Sword"]
+	undo.push(doc, AssetOps.register_figure(doc, "druzhinnik", file, hold))
+	assert_eq(AssetOps.figure_ids(doc), ["druzhinnik"] as Array[String])
+	undo.push(doc, AreaOps.new_area(doc, "dvor", "Двор", Vector2i(8, 8)))
+	undo.push(doc, NpcOps.add_npc(doc, "dvor", "strazh", "Стражник", Vector2i(2, 2)))
+	var npc: Dictionary = NpcOps.npcs_of(doc, "dvor")[0]
+	npc["look"] = "druzhinnik"
+	undo.push(doc, NpcOps.set_npc(doc, "dvor", 0, npc))
+	doc.save(errors)
+	var content := ModuleLoader.load_all(["res://modules", ModuleFixture.ROOT] as Array[String])
+	var mine: Array[String] = []
+	for err in content.errors:
+		if err.contains("t.map"):
+			mine.append(err)
+	assert_eq(mine, [] as Array[String])
+	assert_true(content.figures.has("druzhinnik"))

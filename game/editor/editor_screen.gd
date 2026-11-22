@@ -172,7 +172,7 @@ func _play() -> void:
 	_validate()
 	SaveStore.pending = null
 	SaveStore.new_game = true
-	get_tree().change_scene_to_file(MainMenu.EXPLORATION_SCENE)
+	Loading.change_scene(self, MainMenu.EXPLORATION_SCENE)
 
 
 # --- Диалоги и квесты ---------------------------------------------------------------
@@ -254,6 +254,9 @@ func _map_panel_ask(title: String, hint: String, ok: Callable, taken: Callable) 
 func _looks() -> Array[String]:
 	var ids: Array[String] = []
 	ids.assign(_content.figures.keys())
+	for id in AssetOps.figure_ids(_doc):
+		if not ids.has(id):
+			ids.append(id)
 	ids.sort()
 	return ids
 

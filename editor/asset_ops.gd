@@ -7,6 +7,7 @@ extends RefCounted
 
 const PROPS := ModuleDoc.KIND_PROPS
 const SURFACES := ModuleDoc.KIND_SURFACES
+const MODELS := ModuleDoc.KIND_MODELS
 const SPINS: Array[String] = ["none", "quarter", "free"]
 ## Рядом с файлом в res:// — пометка «не импортировать» (файлы модуля читаются как есть).
 const KEEP_IMPORT := '[remap]\n\nimporter="keep"\n'
@@ -69,6 +70,25 @@ static func register_surface(
 		edit.set_value(doc, SURFACES, SURFACES, [], {"surfaces": {}})
 	edit.set_value(doc, SURFACES, SURFACES, ["surfaces", surface_id], entry)
 	return edit
+
+
+## Регистрирует облик персонажа [param figure_id]: модель [param file] (из models/)
+## и что видно в руках ([param hold] — имена узлов оружия и щитов модели).
+static func register_figure(
+	doc: ModuleDoc, figure_id: String, file: String, hold: Array[String]
+) -> DocEdit:
+	var entry := {"file": file}
+	if not hold.is_empty():
+		entry["hold"] = hold.duplicate()
+	var edit := DocEdit.new("register figure")
+	if not doc.has(MODELS, MODELS):
+		edit.set_value(doc, MODELS, MODELS, [], {"figures": {}})
+	edit.set_value(doc, MODELS, MODELS, ["figures", figure_id], entry)
+	return edit
+
+
+static func figure_ids(doc: ModuleDoc) -> Array[String]:
+	return _ids(doc, MODELS, "figures")
 
 
 static func prop_ids(doc: ModuleDoc) -> Array[String]:

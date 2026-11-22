@@ -20,6 +20,9 @@ var _editable := true
 var _box := VBoxContainer.new()
 var _dialog := FileDialog.new()
 var _picking := ""
+## Файл облика → имена узлов, которые можно держать в руках (кэш, чтобы не грузить
+## модель при каждой перерисовке).
+var _holdable: Dictionary[String, PackedStringArray] = {}
 
 
 func _init() -> void:
@@ -64,6 +67,16 @@ func show_assets(doc: ModuleDoc, content: ModuleContent, editable: bool) -> void
 	if editable:
 		_box.add_child(_button("UI_AS_ADD_SURFACE", func() -> void: _pick("surface")))
 	_box.add_child(_caption(tr("UI_AS_SURFACE_HINT")))
+	_box.add_child(HSeparator.new())
+	_box.add_child(_heading(tr("UI_AS_FIGURES")))
+	var figures := AssetOps.figure_ids(doc)
+	if figures.is_empty():
+		_box.add_child(_caption(tr("UI_AS_NONE")))
+	for id in figures:
+		_box.add_child(_figure_row(id))
+	if editable:
+		_box.add_child(_button("UI_AS_ADD_FIGURE", func() -> void: _pick("figure")))
+	_box.add_child(_caption(tr("UI_AS_FIGURE_HINT")))
 
 
 # --- Модели -------------------------------------------------------------------------
@@ -188,15 +201,101 @@ func _import_surface(paths: PackedStringArray) -> void:
 	ask_id.call(tr("UI_AS_SURFACE_ID"), "", add, taken)
 
 
+# --- Облик персонажей ---------------------------------------------------------------
+
+
+func _figure_row(id: String) -> PanelContainer:
+	var entry: Dictionary = _doc.get_value(AssetOps.MODELS, AssetOps.MODELS, ["figures", id])
+	var file := JsonRead.get_str(entry, "file")
+	var panel := _panel()
+	var box := VBoxContainer.new()
+	panel.add_child(box)
+	var title := Label.new()
+	title.text = "%s  (%s)" % [id, file]
+	box.add_child(title)
+	var hold := JsonRead.get_str_array(entry, "hold")
+	var names := _holdable_of(_doc.dir.path_join(AssetOps.MODELS).path_join(file))
+	if names.is_empty():
+		box.add_child(_caption(tr("UI_AS_NO_HOLD")))
+	else:
+		box.add_child(_caption(tr("UI_AS_HOLD")))
+		var flow := HFlowContainer.new()
+		for n in names:
+			var check := CheckBox.new()
+			check.text = n
+			check.button_pressed = hold.has(n)
+			check.disabled = not _editable
+			check.toggled.connect(
+				func(on: bool) -> void:
+					var changed := hold.duplicate()
+					if on and not changed.has(n):
+						changed.append(n)
+					elif not on:
+						changed.erase(n)
+					edited.emit(AssetOps.register_figure(_doc, id, file, changed))
+			)
+			flow.add_child(check)
+		box.add_child(flow)
+	return panel
+
+
+## Узлы снаряжения модели (дети слотов крепления рига): их можно показывать в руках.
+func _holdable_of(path: String) -> PackedStringArray:
+	if _holdable.has(path):
+		return _holdable[path]
+	var names := PackedStringArray()
+	var model := CharacterLoader.load_file(path, RigProfile.load_all())
+	if model.root != null:
+		if model.rig != null:
+			for slot_name in model.rig.attachment_slots:
+				for slot in model.root.find_children(slot_name, "", true, false):
+					for child in slot.get_children():
+						if child is Node3D and not names.has(child.name):
+							names.append(child.name)
+		model.root.free()
+	_holdable[path] = names
+	return names
+
+
+func _import_figure(path: String) -> void:
+	var model := CharacterLoader.load_file(path, RigProfile.load_all())
+	var lines: Array[String] = []
+	for err in model.errors:
+		lines.append(tr(str(err["key"])).format(err.get("args", {})))
+	var ok := model.ok()
+	var rig := model.rig.id if model.rig != null else ""
+	var tris := model.triangles
+	if model.root != null:
+		model.root.free()
+	if not ok:
+		message.emit(lines)
+		return
+	var add := func(id: String, _text: String) -> void:
+		var errors: Array[String] = []
+		var file := AssetOps.copy_file(_doc, path, AssetOps.MODELS, id, errors)
+		if file == "":
+			message.emit(errors)
+			return
+		var done: Array[String] = [tr("UI_AS_FIGURE_ADDED") % [id, tris]]
+		if rig == "":
+			done.append(tr("UI_AS_NO_RIG"))
+		message.emit(done)
+		var none: Array[String] = []
+		edited.emit(AssetOps.register_figure(_doc, id, file, none))
+	var taken := func(id: String) -> bool:
+		return id.contains(".") or _content.figures.has(id) or AssetOps.figure_ids(_doc).has(id)
+	ask_id.call(tr("UI_AS_FIGURE_ID"), "", add, taken)
+
+
 # --- Выбор файлов -------------------------------------------------------------------
 
 
 func _pick(kind: String) -> void:
 	_picking = kind
-	if kind == "prop":
+	if kind == "prop" or kind == "figure":
 		_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 		_dialog.filters = PackedStringArray(["*.glb ; GLB"])
-		_dialog.title = tr("UI_AS_ADD_PROP")
+		_dialog.title = tr("UI_AS_ADD_PROP" if kind == "prop" else "UI_AS_ADD_FIGURE")
 	else:
 		_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
 		_dialog.filters = PackedStringArray(["*.png ; PNG"])
@@ -209,6 +308,8 @@ func _on_files(paths: PackedStringArray) -> void:
 		return
 	if _picking == "prop":
 		_import_prop(paths[0])
+	elif _picking == "figure":
+		_import_figure(paths[0])
 	else:
 		_import_surface(paths)
 

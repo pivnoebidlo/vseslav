@@ -320,3 +320,4 @@ UI_GAME_MENU_LOAD,Загрузить (F9),Load (F9)
 UI_GAME_MENU_QUIT,В главное меню,Main menu
 UI_OPTIONS,Опции,Options
 UI_OPTION_COMBAT_LOG,Журнал боя,Combat log
+UI_EQ_PICK,"Выбери вещь — здесь появятся действия с ней.","Pick an item to see what you can do with it."

@@ -1,12 +1,22 @@
 class_name EquipmentScreen
 extends PanelContainer
-## Экран снаряжения партии (ADR-0024): вкладки героев, что надето, пояс, мешок,
-## характеристики, нагрузка и кошелёк. Все изменения — через Inventory; итоги
-## (КД, атаки, скорость) пересчитывает сборщик бойца.
+## Окно «Вещи» (ADR-0024, ADR-0035): вкладки героев; сверху — портрет, итоги и что
+## надето (ячейки рук и доспеха, пояс), снизу — мешок сеткой. Клик по ячейке
+## выбирает вещь, под мешком — её описание и действия. Все изменения — через
+## Inventory; итоги (КД, атаки, скорость) пересчитывает сборщик бойца.
 
 signal closed(changed: bool)
 
-const COLUMN_GAP := 18
+const BAG_COLUMNS := 10
+const BAG_MIN_CELLS := 30
+const BAG_CELL := Vector2(66, 56)
+const SLOT_CELL := Vector2(112, 60)
+const BELT_CELL := Vector2(82, 52)
+const WHERE_SLOT := "slot"
+const WHERE_BELT := "belt"
+const WHERE_BAG := "bag"
+const CELL_BG := Color(0.16, 0.15, 0.13)
+const CELL_BORDER := Color(0.36, 0.33, 0.27)
 
 var _db: RulesDb
 var _party: Party
@@ -14,16 +24,19 @@ var _heroes: Array[String] = []
 var _current := ""
 var _changed := false
 var _note := ""
+## Выбранная ячейка: где (WHERE_*) и что — слот или id вещи.
+var _sel_where := ""
+var _sel_key := ""
 
 var _tabs := HBoxContainer.new()
-var _body := HBoxContainer.new()
+var _body := VBoxContainer.new()
 var _status := Label.new()
 var _note_label := Label.new()
 
 
 func _init() -> void:
 	add_theme_stylebox_override(
-		"panel", UiStyle.box(Color(0.12, 0.13, 0.15), Color(0.45, 0.5, 0.6), 1, 8)
+		"panel", UiStyle.box(Color(0.12, 0.12, 0.13), Color(0.45, 0.42, 0.35), 1, 8)
 	)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var box := VBoxContainer.new()
@@ -33,7 +46,7 @@ func _init() -> void:
 	header.add_theme_constant_override("separation", 8)
 	box.add_child(header)
 	var title := Label.new()
-	title.text = TranslationServer.translate("UI_EQUIPMENT")
+	title.text = TranslationServer.translate("UI_SIDE_ITEMS")
 	title.add_theme_font_size_override("font_size", 18)
 	header.add_child(title)
 	header.add_child(_tabs)
@@ -45,7 +58,7 @@ func _init() -> void:
 	_note_label.add_theme_font_size_override("font_size", 12)
 	_note_label.add_theme_color_override("font_color", UiStyle.HP_HURT)
 	box.add_child(_note_label)
-	_body.add_theme_constant_override("separation", COLUMN_GAP)
+	_body.add_theme_constant_override("separation", 10)
 	box.add_child(_body)
 	_status.add_theme_font_size_override("font_size", 12)
 	_status.add_theme_color_override("font_color", UiStyle.HP_LOW)
@@ -63,6 +76,7 @@ func open(db: RulesDb, party: Party, heroes: Array[String], note: String) -> voi
 	_changed = false
 	_note = note
 	_status.text = ""
+	_select("", "")
 	visible = true
 	_rebuild()
 
@@ -70,6 +84,7 @@ func open(db: RulesDb, party: Party, heroes: Array[String], note: String) -> voi
 func _rebuild() -> void:
 	_note_label.text = _note
 	_note_label.visible = _note != ""
+	_status.visible = _status.text != ""
 	for child in _tabs.get_children():
 		_tabs.remove_child(child)
 		child.queue_free()
@@ -87,61 +102,206 @@ func _rebuild() -> void:
 	if _current == "":
 		return
 	var inv := _party.inventories[_current]
-	_body.add_child(_worn_column(inv))
-	_body.add_child(_bag_column(inv))
-	_body.add_child(_stats_column(inv))
+	_drop_stale_selection(inv)
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 18)
+	top.add_child(_hero_column(inv))
+	top.add_child(_worn_column(inv))
+	_body.add_child(top)
+	_body.add_child(HSeparator.new())
+	_body.add_child(_bag_grid(inv))
+	_body.add_child(_details(inv))
+	_body.add_child(_footer(inv))
+	_recenter.call_deferred()
 
 
-# --- Колонки ---------------------------------------------------------------------
+## Размер меняется с содержимым: подогнать под него и снова поставить по центру.
+func _recenter() -> void:
+	reset_size()
+	set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 
 
-func _worn_column(inv: Inventory) -> VBoxContainer:
-	var col := _column(260)
-	col.add_child(_heading("UI_EQ_WORN"))
-	for slot in Inventory.SLOTS:
-		var row := HBoxContainer.new()
-		var label := Label.new()
-		var item_id := inv.slot_item(slot)
-		label.text = (
-			"%s: %s"
-			% [
-				TranslationServer.translate("UI_SLOT_" + slot.to_upper()),
-				_item_name(item_id) if item_id != "" else "—"
-			]
+# --- Верх: герой и что надето ----------------------------------------------------
+
+
+## Портрет (пока буква имени), итоги и атаки.
+func _hero_column(inv: Inventory) -> VBoxContainer:
+	var col := _column(220)
+	var hero := _party.build_hero(_db, _current)
+	var face := Label.new()
+	face.text = TranslationServer.translate(_hero_name_key(_current)).left(1)
+	face.custom_minimum_size = Vector2(0, 70)
+	face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	face.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	face.add_theme_font_size_override("font_size", 34)
+	face.add_theme_color_override("font_color", Color(0.75, 0.68, 0.52))
+	face.add_theme_stylebox_override("normal", UiStyle.box(Color(0.2, 0.18, 0.15), CELL_BORDER, 1))
+	col.add_child(face)
+	var stats := Label.new()
+	stats.text = CombatLogFormat.tr_fmt(
+		"UI_EQ_STATS",
+		{"ac": hero.armor_class, "hp": "%d/%d" % [hero.hp, hero.max_hp], "speed": hero.speed}
+	)
+	stats.add_theme_font_size_override("font_size", 13)
+	col.add_child(stats)
+	col.add_child(_heading("UI_EQ_ATTACKS"))
+	for a in hero.actions:
+		if a.kind != ActionDef.KIND_ATTACK or not hero.item_ready(a):
+			continue
+		var bonus := a.attack_bonus.value_range(hero.formula_vars(a)).x
+		var dmg := Vector2i.ZERO
+		for part in a.damage:
+			dmg += part.formula.value_range(hero.formula_vars(a))
+		var line := Label.new()
+		line.text = (
+			"%s  %s · %d–%d"
+			% [TranslationServer.translate(a.name_key), CombatLogFormat.signed(bonus), dmg.x, dmg.y]
 		)
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.add_theme_font_size_override("font_size", 13)
-		row.add_child(label)
-		if item_id != "":
-			row.add_child(_small("UI_EQ_UNEQUIP", func() -> void: _apply(inv.unequip(slot))))
-		col.add_child(row)
-	col.add_child(HSeparator.new())
+		if a.item != "" and inv.in_hands(a.item):
+			line.text = "✋ " + line.text
+		line.add_theme_font_size_override("font_size", 12)
+		col.add_child(line)
+	return col
+
+
+## Ячейки доспеха и рук, под ними — пояс.
+func _worn_column(inv: Inventory) -> VBoxContainer:
+	var col := _column(0)
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.add_child(_heading("UI_EQ_WORN"))
+	var slots := HBoxContainer.new()
+	slots.add_theme_constant_override("separation", 6)
+	for slot in Inventory.SLOTS:
+		var cell := VBoxContainer.new()
+		cell.add_theme_constant_override("separation", 2)
+		var caption := Label.new()
+		caption.text = TranslationServer.translate("UI_SLOT_" + slot.to_upper())
+		caption.add_theme_font_size_override("font_size", 11)
+		caption.add_theme_color_override("font_color", Color(0.7, 0.66, 0.58))
+		cell.add_child(caption)
+		var item_id := inv.slot_item(slot)
+		cell.add_child(
+			_cell(
+				_item_name(item_id) if item_id != "" else "",
+				SLOT_CELL,
+				_is_selected(WHERE_SLOT, slot),
+				_select.bind(WHERE_SLOT, slot)
+			)
+		)
+		slots.add_child(cell)
+	col.add_child(slots)
 	col.add_child(
 		_heading_text(
 			CombatLogFormat.tr_fmt("UI_EQ_BELT", {"n": inv.belt.size(), "max": Inventory.BELT_SIZE})
 		)
 	)
-	for s in inv.belt:
-		var row := HBoxContainer.new()
-		var label := Label.new()
-		label.text = _stack_text(s)
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.add_theme_font_size_override("font_size", 13)
-		row.add_child(label)
-		var item_id := s.item
-		row.add_child(_small("UI_EQ_TO_BAG", func() -> void: _apply(inv.from_belt(item_id))))
-		col.add_child(row)
-	col.add_child(HSeparator.new())
-	var purse_row := HBoxContainer.new()
+	var belt := HBoxContainer.new()
+	belt.add_theme_constant_override("separation", 6)
+	for i in Inventory.BELT_SIZE:
+		if i < inv.belt.size():
+			var s := inv.belt[i]
+			belt.add_child(
+				_cell(
+					_stack_text(s),
+					BELT_CELL,
+					_is_selected(WHERE_BELT, s.item),
+					_select.bind(WHERE_BELT, s.item)
+				)
+			)
+		else:
+			belt.add_child(_cell("", BELT_CELL, false, Callable()))
+	col.add_child(belt)
+	return col
+
+
+# --- Низ: мешок, выбранная вещь, кошелёк и нагрузка ------------------------------
+
+
+func _bag_grid(inv: Inventory) -> VBoxContainer:
+	var col := _column(0)
+	col.add_child(_heading("UI_EQ_BAG"))
+	var grid := GridContainer.new()
+	grid.columns = BAG_COLUMNS
+	grid.add_theme_constant_override("h_separation", 4)
+	grid.add_theme_constant_override("v_separation", 4)
+	var cells := maxi(BAG_MIN_CELLS, ceili(inv.bag.size() / float(BAG_COLUMNS)) * BAG_COLUMNS)
+	for i in cells:
+		if i < inv.bag.size():
+			var s := inv.bag[i]
+			var b := _cell(
+				_stack_text(s),
+				BAG_CELL,
+				_is_selected(WHERE_BAG, s.item),
+				_select.bind(WHERE_BAG, s.item)
+			)
+			b.tooltip_text = _row_text(s)
+			grid.add_child(b)
+		else:
+			grid.add_child(_cell("", BAG_CELL, false, Callable()))
+	col.add_child(grid)
+	return col
+
+
+## Описание выбранной вещи и что с ней можно сделать.
+func _details(inv: Inventory) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0.09, 0.09, 0.1), CELL_BORDER, 1))
+	panel.custom_minimum_size = Vector2(0, 70)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	panel.add_child(box)
+	var label := Label.new()
+	label.add_theme_font_size_override("font_size", 13)
+	box.add_child(label)
+	match _sel_where:
+		WHERE_BAG:
+			label.text = _row_text(_stack_in(inv.bag, _sel_key))
+			box.add_child(_bag_buttons(inv, _sel_key))
+		WHERE_BELT:
+			label.text = _row_text(_stack_in(inv.belt, _sel_key))
+			var to_bag := _small("UI_EQ_TO_BAG", func() -> void: _apply(inv.from_belt(_sel_key)))
+			box.add_child(_row_of([to_bag]))
+		WHERE_SLOT:
+			var item_id := inv.slot_item(_sel_key)
+			label.text = _row_text(ItemStack.new(item_id, 1))
+			var slot := _sel_key
+			var off := _small("UI_EQ_UNEQUIP", func() -> void: _apply(inv.unequip(slot)))
+			box.add_child(_row_of([off]))
+		_:
+			label.text = TranslationServer.translate("UI_EQ_PICK")
+			label.modulate = Color(1, 1, 1, 0.55)
+	return panel
+
+
+func _footer(inv: Inventory) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
 	var purse := Label.new()
 	purse.text = CombatLogFormat.tr_fmt("UI_EQ_PURSE", {"money": money_text(inv.purse)})
 	purse.add_theme_font_size_override("font_size", 13)
-	purse.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	purse_row.add_child(purse)
+	row.add_child(purse)
 	if _heroes.size() > 1 and inv.purse > 0:
-		purse_row.add_child(_money_menu(inv))
-	col.add_child(purse_row)
-	return col
+		row.add_child(_money_menu(inv))
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	var hero := _party.build_hero(_db, _current)
+	var weight := inv.weight(_db)
+	var cap := ItemInfo.carry_limit(hero.abilities.score(Abilities.STR))
+	var load_box := VBoxContainer.new()
+	load_box.custom_minimum_size = Vector2(240, 0)
+	var load_label := Label.new()
+	load_label.text = CombatLogFormat.tr_fmt(
+		"UI_EQ_LOAD", {"weight": weight_text(weight), "cap": weight_text(cap)}
+	)
+	if weight > cap:
+		load_label.text += " " + TranslationServer.translate("UI_EQ_OVERLOAD")
+		load_label.add_theme_color_override("font_color", UiStyle.HP_LOW)
+	load_label.add_theme_font_size_override("font_size", 12)
+	load_box.add_child(load_label)
+	load_box.add_child(_load_bar(weight, cap))
+	row.add_child(load_box)
+	return row
 
 
 ## «Передать деньги»: каждому из остальных героев — 1 куна, 1 гривна или всё.
@@ -176,36 +336,6 @@ func _money_menu(inv: Inventory) -> MenuButton:
 			_apply(inv.give_money(amount, _party.inventories[to]))
 	)
 	return menu
-
-
-func _bag_column(inv: Inventory) -> VBoxContainer:
-	var col := _column(360)
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col.add_child(_heading("UI_EQ_BAG"))
-	if inv.bag.is_empty():
-		var empty := Label.new()
-		empty.text = "—"
-		col.add_child(empty)
-	for s in inv.bag:
-		var line := VBoxContainer.new()
-		line.add_theme_constant_override("separation", 2)
-		var label := Label.new()
-		label.text = (
-			CombatLogFormat
-			. tr_fmt(
-				"UI_EQ_ROW",
-				{
-					"name": _stack_text(s),
-					"weight": weight_text(ItemInfo.weight(_db, s.item)),
-					"price": money_text(ItemInfo.price(_db, s.item)),
-				}
-			)
-		)
-		label.add_theme_font_size_override("font_size", 13)
-		line.add_child(label)
-		line.add_child(_bag_buttons(inv, s.item))
-		col.add_child(line)
-	return col
 
 
 func _bag_buttons(inv: Inventory, item_id: String) -> HFlowContainer:
@@ -267,54 +397,6 @@ func _give_menu(inv: Inventory, item_id: String) -> MenuButton:
 	return menu
 
 
-func _stats_column(inv: Inventory) -> VBoxContainer:
-	var col := _column(240)
-	col.add_child(_heading("UI_EQ_STATS_TITLE"))
-	var hero := _party.build_hero(_db, _current)
-	var stats := Label.new()
-	stats.text = CombatLogFormat.tr_fmt(
-		"UI_EQ_STATS",
-		{"ac": hero.armor_class, "hp": "%d/%d" % [hero.hp, hero.max_hp], "speed": hero.speed}
-	)
-	stats.add_theme_font_size_override("font_size", 14)
-	col.add_child(stats)
-	col.add_child(_heading("UI_EQ_ATTACKS"))
-	for a in hero.actions:
-		if a.kind != ActionDef.KIND_ATTACK or not hero.item_ready(a):
-			continue
-		var bonus := a.attack_bonus.value_range(hero.formula_vars(a)).x
-		var dmg := Vector2i.ZERO
-		for part in a.damage:
-			var r := part.formula.value_range(hero.formula_vars(a))
-			dmg += r
-		var line := Label.new()
-		line.text = (
-			"%s  %s · %d–%d"
-			% [TranslationServer.translate(a.name_key), CombatLogFormat.signed(bonus), dmg.x, dmg.y]
-		)
-		if a.item != "" and inv.in_hands(a.item):
-			line.text = "✋ " + line.text
-		line.add_theme_font_size_override("font_size", 13)
-		col.add_child(line)
-	col.add_child(HSeparator.new())
-	var weight := inv.weight(_db)
-	var cap := ItemInfo.carry_limit(hero.abilities.score(Abilities.STR))
-	var load_label := Label.new()
-	load_label.text = CombatLogFormat.tr_fmt(
-		"UI_EQ_LOAD", {"weight": weight_text(weight), "cap": weight_text(cap)}
-	)
-	load_label.add_theme_font_size_override("font_size", 13)
-	col.add_child(load_label)
-	col.add_child(_load_bar(weight, cap))
-	if weight > cap:
-		var over := Label.new()
-		over.text = TranslationServer.translate("UI_EQ_OVERLOAD")
-		over.add_theme_color_override("font_color", UiStyle.HP_LOW)
-		over.add_theme_font_size_override("font_size", 12)
-		col.add_child(over)
-	return col
-
-
 ## Полоска нагрузки: доля от грузоподъёмности; жёлтая с половины, красная при перегрузе.
 func _load_bar(weight: int, cap: int) -> ProgressBar:
 	var bar := ProgressBar.new()
@@ -337,6 +419,42 @@ func _load_bar(weight: int, cap: int) -> ProgressBar:
 	return bar
 
 
+# --- Выбор ячейки ----------------------------------------------------------------
+
+
+func _select(where: String, key: String) -> void:
+	_sel_where = where
+	_sel_key = key
+	if visible and _current != "":
+		_rebuild()
+
+
+func _is_selected(where: String, key: String) -> bool:
+	return _sel_where == where and _sel_key == key
+
+
+## Вещь переложили, отдали или сняли — выбор снимается.
+func _drop_stale_selection(inv: Inventory) -> void:
+	var gone := false
+	match _sel_where:
+		WHERE_BAG:
+			gone = inv.bag_count(_sel_key) == 0
+		WHERE_BELT:
+			gone = inv.belt_count(_sel_key) == 0
+		WHERE_SLOT:
+			gone = inv.slot_item(_sel_key) == ""
+	if gone:
+		_sel_where = ""
+		_sel_key = ""
+
+
+static func _stack_in(stacks: Array[ItemStack], item_id: String) -> ItemStack:
+	for s in stacks:
+		if s.item == item_id:
+			return s
+	return ItemStack.new(item_id, 0)
+
+
 # --- Действия --------------------------------------------------------------------
 
 
@@ -352,6 +470,8 @@ func _apply(err: String) -> void:
 func _on_tab(id: String) -> void:
 	_current = id
 	_status.text = ""
+	_sel_where = ""
+	_sel_key = ""
 	_rebuild()
 
 
@@ -427,6 +547,55 @@ func _strength(id: String) -> int:
 	var errors: Array[String] = []
 	var hero := CombatantBuilder.from_character(_db, _db.characters[id], errors)
 	return hero.abilities.score(Abilities.STR)
+
+
+## Ячейка с вещью; пустая ([param text] == "") не нажимается.
+func _cell(text: String, size: Vector2, selected: bool, on_click: Callable) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = size
+	b.focus_mode = Control.FOCUS_NONE
+	b.text = text
+	b.clip_text = true
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.add_theme_font_size_override("font_size", 11)
+	var border := UiStyle.ACTIVE if selected else CELL_BORDER
+	var normal := UiStyle.box(CELL_BG, border, 2 if selected else 1, 4)
+	normal.set_content_margin_all(3)
+	var hover := UiStyle.box(CELL_BG.lightened(0.08), UiStyle.ACTIVE.darkened(0.25), 1, 4)
+	hover.set_content_margin_all(3)
+	var empty := UiStyle.box(Color(0.1, 0.1, 0.1, 0.8), Color(0.22, 0.21, 0.19), 1, 4)
+	b.add_theme_stylebox_override("normal", normal)
+	b.add_theme_stylebox_override("hover", hover)
+	b.add_theme_stylebox_override("pressed", normal)
+	b.add_theme_stylebox_override("disabled", empty)
+	if text == "" or not on_click.is_valid():
+		b.disabled = true
+	else:
+		b.pressed.connect(on_click)
+	return b
+
+
+## «Кольчуга · 55 фунт. · 5 гривен».
+func _row_text(s: ItemStack) -> String:
+	return (
+		CombatLogFormat
+		. tr_fmt(
+			"UI_EQ_ROW",
+			{
+				"name": _stack_text(s),
+				"weight": weight_text(ItemInfo.weight(_db, s.item)),
+				"price": money_text(ItemInfo.price(_db, s.item)),
+			}
+		)
+	)
+
+
+static func _row_of(controls: Array[Control]) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	for c in controls:
+		row.add_child(c)
+	return row
 
 
 func _column(width: int) -> VBoxContainer:

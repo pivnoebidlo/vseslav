@@ -32,6 +32,8 @@ var _npc_panel := NpcPanel.new()
 var _map_panel := MapPanel.new()
 var _area_tabs := TabContainer.new()
 var _preview := MapPreview.new()
+var _assets_panel := AssetsPanel.new()
+var _assets := false
 var _graph := DialogGraph.new()
 var _inspector := DialogInspector.new()
 var _quest_panel := QuestPanel.new()
@@ -238,10 +240,15 @@ func _add_npc() -> void:
 
 ## Выбирает область (остальное сбрасывается).
 func _select(area_id: String) -> void:
+	_assets = false
 	_area = area_id
 	_dialog = ""
 	_quest = ""
 	_node = ""
+
+
+func _map_panel_ask(title: String, hint: String, ok: Callable, taken: Callable) -> void:
+	_prompt.ask(title, hint, ok, taken)
 
 
 func _looks() -> Array[String]:
@@ -338,6 +345,10 @@ func _refresh() -> void:
 	_inspector.visible = showing_dialog
 	_quest_panel.visible = showing_quest
 	var showing_area := _area != "" and _doc != null and _doc.has(ModuleDoc.KIND_AREA, _area)
+	var showing_assets := _assets and _doc != null
+	_assets_panel.visible = showing_assets
+	if showing_assets:
+		_assets_panel.show_assets(_doc, _content, _editable)
 	_area_tabs.visible = showing_area
 	if showing_area:
 		_npc_panel.show_area(_doc, _area, _text_of, _looks(), _dialog_ids(), _editable)
@@ -401,6 +412,12 @@ func _build() -> void:
 	center.add_child(_quest_panel)
 	_area_tabs.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.add_child(_area_tabs)
+	_assets_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_assets_panel.visible = false
+	center.add_child(_assets_panel)
+	_assets_panel.edited.connect(_apply)
+	_assets_panel.message.connect(_show_errors)
+	_assets_panel.ask_id = _map_panel_ask
 	_area_tabs.visible = false
 	_map_panel.name = tr("UI_MAP_TAB")
 	_npc_panel.name = tr("UI_MAP_NPCS_TAB")
@@ -410,8 +427,7 @@ func _build() -> void:
 	_npc_panel.add_requested.connect(_add_npc)
 	_map_panel.edited.connect(_apply)
 	_map_panel.preview_requested.connect(_preview_area)
-	_map_panel.ask_id = func(title: String, hint: String, ok: Callable, taken: Callable) -> void:
-		_prompt.ask(title, hint, ok, taken)
+	_map_panel.ask_id = _map_panel_ask
 	_inspector.custom_minimum_size = Vector2(INSPECTOR_WIDTH, 0)
 	split.add_child(_inspector)
 	_errors.custom_minimum_size = Vector2(0, 90)
@@ -464,6 +480,11 @@ func _top_bar() -> HBoxContainer:
 	bar.add_child(_undo_button)
 	_redo_button = _button("UI_ED_REDO", _redo)
 	bar.add_child(_redo_button)
+	var show_assets := func() -> void:
+		_select("")
+		_assets = true
+		_refresh()
+	bar.add_child(_button("UI_AS_TAB", show_assets))
 	bar.add_child(_button("UI_ED_VALIDATE", _validate))
 	bar.add_child(_button("UI_ED_PLAY", _play))
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL

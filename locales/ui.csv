@@ -469,3 +469,24 @@ UI_MAP_STYLE_GRAVE,Могилы,Graves
 UI_MAP_STYLE_YARD,Двор,Yard
 UI_MAP_STYLE_SCATTER,Мелочи,Scatter
 UI_MAP_PREVIEW_TITLE,"Предпросмотр: колесо — масштаб, WASD — сдвиг, Q/E — поворот, G — сетка","Preview: wheel zooms, WASD pans, Q/E rotate, G grid"
+UI_AS_TAB,Ассеты,Assets
+UI_AS_TITLE,Свои ассеты модуля,Module's own assets
+UI_AS_LICENSE,"Кладите только то, что можно распространять (CC0, CC BY, своё), и запишите автора и лицензию в CREDITS.md (docs/LICENSING.md).","Add only what may be distributed (CC0, CC BY, your own) and record the author and licence in CREDITS.md (docs/LICENSING.md)."
+UI_AS_PROPS,Модели окружения (GLB),Environment models (GLB)
+UI_AS_NONE,Пока нет.,None yet.
+UI_AS_ADD_PROP,+ модель (GLB)…,+ model (GLB)…
+UI_AS_ALL_PROPS,Всего моделей во всех модулях: %d — их можно ставить на карту и в стиль области.,Models in all modules: %d — use them on the map and in area styles.
+UI_AS_SURFACES,Поверхности (PNG),Surfaces (PNG)
+UI_AS_ADD_SURFACE,+ поверхность (PNG)…,+ surface (PNG)…
+UI_AS_SURFACE_HINT,"Выберите 1–3 файла: цвет, нормали (normal в имени), шероховатость (rough в имени). PNG до 2048 px, сторона — степень двойки.","Pick 1–3 files: colour, normals (normal in the name), roughness (rough in the name). PNG up to 2048 px, sides a power of two."
+UI_AS_FIT,больше клеток ×,fit ×
+UI_AS_JITTER,разброс ,jitter 
+UI_AS_TILE,метров на повтор ,metres per tile 
+UI_AS_SPIN_NONE,без поворота,no rotation
+UI_AS_SPIN_QUARTER,поворот на 90°,90° steps
+UI_AS_SPIN_FREE,любой поворот,any rotation
+UI_AS_PROP_ID,"id модели (латиница, например izba_moya)","model id (latin, e.g. my_hut)"
+UI_AS_SURFACE_ID,"id поверхности (например, moh)",surface id (e.g. moss)
+UI_AS_PROP_ADDED,Модель %s добавлена (%d треугольников).,Model %s added (%d triangles).
+UI_AS_BAD_PNG,"%s: не PNG, больше 2048 px или сторона не степень двойки","%s: not a PNG, over 2048 px, or a side is not a power of two"
+UI_AS_NO_COLOR,Нужен файл цвета (без normal и rough в имени).,A colour file is required (no normal or rough in its name).

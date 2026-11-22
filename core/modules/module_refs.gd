@@ -77,6 +77,39 @@ static func _check_area(content: ModuleContent, id: String, errors: Array[String
 			errors.append("%s: unknown dialog '%s'" % [at, npc.dialog])
 		if npc.look != "" and not content.figures.has(npc.look):
 			errors.append("%s: unknown look '%s'" % [at, npc.look])
+	for i in area.encounters.size():
+		_check_encounter(
+			content, area, area.encounters[i], "%s: $.encounters[%d]" % [where, i], errors
+		)
+
+
+static func _check_encounter(
+	content: ModuleContent, area: AreaMap, e: Encounter, at: String, errors: Array[String]
+) -> void:
+	var map := Rect2i(0, 0, area.width(), area.depth())
+	if not map.encloses(e.battle) or e.battle.size.x < 4 or e.battle.size.y < 4:
+		errors.append("%s.battle: must be inside the map, at least 4×4" % at)
+	if (
+		e.trigger == Encounter.TRIGGER_ZONE
+		and (e.zone.has_area() == false or not map.encloses(e.zone))
+	):
+		errors.append("%s.zone: zone trigger needs a zone inside the map" % at)
+	if e.trigger == Encounter.TRIGGER_SIGHT and e.sight <= 0:
+		errors.append("%s.sight: sight trigger needs a radius" % at)
+	var ids: Array[String] = []
+	for i in e.combatants.size():
+		var c := e.combatants[i]
+		var where := "%s.combatants[%d]" % [at, i]
+		var id := JsonRead.get_str(c, "id")
+		if ids.has(id) or content.rules.characters.has(id):
+			errors.append("%s: id '%s' is already used" % [where, id])
+		ids.append(id)
+		var creature := JsonRead.get_str(c, "creature")
+		if not content.rules.creatures.has(creature):
+			errors.append("%s: unknown creature '%s'" % [where, creature])
+		var cell := e.cell_of(c)
+		if not e.battle.has_point(cell) or not area.grid.is_walkable(cell):
+			errors.append("%s: must stand on a walkable cell inside the battle area" % where)
 
 
 ## Начальные узлы и переходы ведут к существующим узлам.

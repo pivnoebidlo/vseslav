@@ -290,3 +290,7 @@ UI_DICE_FAIL,провал,failure
 UI_DICE_HIT,попадание,hit
 UI_DICE_MISS,промах,miss
 UI_DICE_CRIT,критическое попадание!,critical hit!
+LOG_ENCOUNTER,"Засада! Бой начинается.","Ambush! The fight begins."
+UI_GAME_OVER,Поражение,Defeat
+UI_GAME_OVER_TEXT,"Партия пала. Загрузить сохранение или выйти в меню?","The party has fallen. Load a save or return to the menu?"
+UI_LOAD_GAME,Загрузить сохранение,Load save

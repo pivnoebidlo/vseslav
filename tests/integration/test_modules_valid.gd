@@ -23,6 +23,7 @@ func test_all_builtin_modules_load_cleanly() -> void:
 	assert_eq(_content.rules.errors, [] as Array[String])
 	assert_eq(_content.start(), {"area": "derevnya", "spawn": "start"})
 	assert_eq(_content.area("derevnya").npcs.size(), 3)
+	assert_eq(_content.area("derevnya").encounters.size(), 2)
 
 
 func test_schemas_use_only_supported_keywords() -> void:

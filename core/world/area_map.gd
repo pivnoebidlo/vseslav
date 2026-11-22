@@ -1,15 +1,16 @@
 class_name AreaMap
 extends RefCounted
 ## Область для исследования (areas/<id>.json, ADR-0029): символьная карта, точки
-## появления и жители. Проходимость — та же BattleGrid, что и в бою, поэтому путь
-## ищет тот же Pathfinder, а бой в области позже построится по этой же сетке.
+## появления, жители и энкаунтеры (ADR-0032). Проходимость — та же BattleGrid,
+## что и в бою: путь ищет тот же Pathfinder, а бой идёт по этой же сетке.
 
 const GROUND := "."
 const ROAD := ","
 const BUILDING := "#"
 const TREE := "T"
 const FENCE := "="
-const TILES: Array[String] = [GROUND, ROAD, BUILDING, TREE, FENCE]
+const GRAVE := "+"
+const TILES: Array[String] = [GROUND, ROAD, BUILDING, TREE, FENCE, GRAVE]
 
 
 ## Житель области.
@@ -29,6 +30,7 @@ var rows: Array[String] = []
 var grid: BattleGrid = BattleGrid.new()
 var spawns: Dictionary[String, Vector2i] = {}
 var npcs: Array[Npc] = []
+var encounters: Array[Encounter] = []
 
 
 ## Область из уже проверенных схемой данных.
@@ -47,7 +49,7 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 			match a.tile(c):
 				BUILDING, TREE:
 					a.grid.set_blocked(c, true)
-				FENCE:
+				FENCE, GRAVE:
 					a.grid.set_low_obstacle(c, true)
 	var spawn_data := JsonRead.get_dict(data, "spawns")
 	var names: Array[String] = []
@@ -64,6 +66,9 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		npc.look = JsonRead.get_str(d, "look")
 		npc.dialog = JsonRead.get_str(d, "dialog")
 		a.npcs.append(npc)
+	for raw: Variant in JsonRead.get_array(data, "encounters"):
+		var e: Dictionary = raw
+		a.encounters.append(Encounter.from_dict(e))
 	return a
 
 
@@ -82,6 +87,13 @@ func tile(c: Vector2i) -> String:
 	return rows[c.y][c.x]
 
 
+func get_encounter(encounter_id: String) -> Encounter:
+	for e in encounters:
+		if e.id == encounter_id:
+			return e
+	return null
+
+
 func get_npc(npc_id: String) -> Npc:
 	for npc in npcs:
 		if npc.id == npc_id:
@@ -97,20 +109,25 @@ func npc_cells() -> Dictionary[Vector2i, bool]:
 	return cells
 
 
-## Путь до клетки [param to] в обход построек и жителей.
-func path(from: Vector2i, to: Vector2i) -> PathResult:
-	return Pathfinder.find_path(grid, from, to, npc_cells())
+## Путь до клетки [param to] в обход построек, жителей и клеток [param blocked]
+## (например, противников на карте).
+func path(from: Vector2i, to: Vector2i, blocked: Dictionary[Vector2i, bool] = {}) -> PathResult:
+	var occupied := npc_cells()
+	occupied.merge(blocked)
+	return Pathfinder.find_path(grid, from, to, occupied)
 
 
 ## Кратчайший путь к соседней с жителем клетке; пустой — подойти нельзя или уже рядом
 ## (тогда [method is_next_to] вернёт true).
-func approach(from: Vector2i, npc_id: String) -> PathResult:
+func approach(
+	from: Vector2i, npc_id: String, blocked: Dictionary[Vector2i, bool] = {}
+) -> PathResult:
 	var npc := get_npc(npc_id)
 	var best := PathResult.new()
 	if npc == null or is_next_to(from, npc.at):
 		return best
 	for step in Pathfinder.NEIGHBORS:
-		var p := path(from, npc.at + step)
+		var p := path(from, npc.at + step, blocked)
 		if p.found() and (not best.found() or p.total_cost() < best.total_cost()):
 			best = p
 	return best

@@ -15,12 +15,12 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^[.,#T=]+$",
+        "pattern": "^[.,#T=+]+$",
         "maxLength": 128
       },
       "minItems": 1,
       "maxItems": 128,
-      "description": ". земля, , дорога, # постройка, T дерево, = плетень"
+      "description": ". земля, , дорога, # постройка, T дерево, = плетень, + могила"
     },
     "spawns": {
       "type": "object",
@@ -58,6 +58,85 @@
           "name_key",
           "at"
         ]
+      }
+    },
+    "encounters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "trigger": {
+            "enum": [
+              "zone",
+              "sight"
+            ]
+          },
+          "zone": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "[x, z, ширина, глубина] в клетках области."
+          },
+          "sight": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "description": "Радиус взгляда противников, клеток."
+          },
+          "battle": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "Участок карты, где идёт бой."
+          },
+          "combatants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "common.schema.json#/$defs/id"
+                },
+                "creature": {
+                  "$ref": "common.schema.json#/$defs/id"
+                },
+                "team": {
+                  "$ref": "common.schema.json#/$defs/id"
+                },
+                "at": {
+                  "$ref": "common.schema.json#/$defs/cell"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "creature",
+                "team",
+                "at"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "trigger",
+          "battle",
+          "combatants"
+        ],
+        "description": "Энкаунтер (ADR-0032): кто ждёт на карте и что запускает бой."
       }
     }
   },

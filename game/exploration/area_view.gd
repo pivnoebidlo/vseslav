@@ -1,6 +1,6 @@
 class_name AreaView
 extends Node3D
-## Облик области для исследования: земля, дороги, избы, деревья, плетни — простая
+## Облик области для исследования: земля, дороги, избы, деревья, плетни, могилы — простая
 ## геометрия по символьной карте (ADR-0029) — и сетка клеток, которую можно включить
 ## (ADR-0030): по ней видно, где пройдёт бой.
 
@@ -75,6 +75,8 @@ func _build_area() -> void:
 	var trunk := _material(Color(0.35, 0.25, 0.16))
 	var crown := _material(Color(0.2, 0.36, 0.2))
 	var fence := _material(Color(0.5, 0.4, 0.27))
+	var stone := _material(Color(0.55, 0.55, 0.52))
+	var grave_mound := _material(Color(0.36, 0.32, 0.24))
 	for z in area.depth():
 		for x in area.width():
 			var c := Vector2i(x, z)
@@ -88,6 +90,9 @@ func _build_area() -> void:
 					_tree(c, trunk, crown)
 				AreaMap.FENCE:
 					_fence(c, fence)
+				AreaMap.GRAVE:
+					_box(c, Vector3(0.55, 0.7, 0.16), 0.35, stone)
+					_box(c, Vector3(0.7, 0.08, 1.1), 0.04, grave_mound)
 
 
 func _box(c: Vector2i, size: Vector3, y: float, mat: Material) -> void:

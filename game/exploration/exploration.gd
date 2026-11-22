@@ -3,7 +3,8 @@ extends Node3D
 ## идёт туда, сцепленные спутники следом; клик по жителю — подойти и поговорить.
 ## Героя выбирают по портрету, по фигуре или Tab; путь под курсором виден всегда,
 ## сетка клеток включается кнопкой или G. Мир здесь не детерминирован (SPEC §3.1);
-## путь ищет Pathfinder ядра по сетке области.
+## путь ищет Pathfinder ядра по сетке области. Когда срабатывает энкаунтер, мир
+## замирает и на участке карты идёт пошаговый бой (CombatSession, ADR-0032).
 
 const CELL := BattleGrid.CELL_SIZE_M
 const WALK_SPEED := 3.6
@@ -33,6 +34,16 @@ static var grid_on := false
 static var rng := Rng.new(randi())
 
 var _content: ModuleContent
+var _screens := PartyScreens.new()
+var _session := CombatSession.new()
+var _board := CombatBoard.new()
+## Противники на карте: id участника → фигура (у живых — до победы над энкаунтером).
+var _foes: Dictionary[String, UnitView] = {}
+var _encounter: Encounter = null
+var _hero_cells: Array[Vector2i] = []
+## Куда смотрит камера в бою (чей ход).
+var _combat_focus := ""
+var _game_over := GameOverPanel.new()
 var _area: AreaMap
 var _figures: FigureCatalog
 var _camera := ArenaCamera.new()
@@ -65,6 +76,8 @@ func _ready() -> void:
 	_world.add_child(_camera)
 	_camera.current = true
 	_world.add_child(_path_preview)
+	_world.add_child(_board)
+	add_child(_session)
 	_setup_ui()
 	var start := _content.start()
 	_area = _content.area(JsonRead.get_str(start, "area"))
@@ -78,6 +91,7 @@ func _ready() -> void:
 	_area_view.set_grid_visible(grid_on)
 	_world.add_child(_area_view)
 	_spawn_npcs()
+	_spawn_foes()
 	var spawn: Vector2i = _area.spawns.get(JsonRead.get_str(start, "spawn"), Vector2i.ZERO)
 	_spawn_party(spawn)
 	_look = _look_target()
@@ -87,6 +101,10 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _heroes.is_empty():
 		return
+	if _in_combat():
+		_look = _look.lerp(_combat_look(), minf(1.0, delta * CAMERA_LAG))
+		_camera.focus(_look)
+		return
 	var followers := _group.followers()
 	for id in _group.ids:
 		if not followers.has(id):
@@ -95,6 +113,7 @@ func _process(delta: float) -> void:
 		_follow_trail(_heroes[followers[i]], FOLLOW_GAP * (i + 1), delta)
 	_look = _look.lerp(_look_target(), minf(1.0, delta * CAMERA_LAG))
 	_camera.focus(_look)
+	_check_encounters()
 
 
 # --- Ввод ---------------------------------------------------------------------
@@ -103,13 +122,15 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _dialog.is_open() or _heroes.is_empty():
 		return
-	var key := event as InputEventKey
-	if key != null and key.pressed and not key.echo:
-		_on_key(key.keycode)
-		return
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_camera.handle_input(event)
+		return
+	if _in_combat():
+		return
+	var key := event as InputEventKey
+	if key != null and key.pressed and not key.echo:
+		_on_key(key.keycode)
 		return
 	var motion := event as InputEventMouseMotion
 	if motion != null:
@@ -130,11 +151,11 @@ func _on_hover(screen_pos: Vector2) -> void:
 	var id := _unit_under(screen_pos)
 	_set_hovered(id)
 	if _npcs.has(id):
-		_preview(_area.approach(_leader_cell(), id))
+		_preview(_area.approach(_leader_cell(), id, _foe_cells()))
 	elif id != "":
 		_path_preview.clear()
 	else:
-		_preview(_area.path(_leader_cell(), _cell_under(screen_pos)))
+		_preview(_area.path(_leader_cell(), _cell_under(screen_pos), _foe_cells()))
 
 
 func _on_click(screen_pos: Vector2) -> void:
@@ -145,7 +166,7 @@ func _on_click(screen_pos: Vector2) -> void:
 		_go_talk(id)
 	else:
 		_talk_to = ""
-		_walk_leader(_area.path(_leader_cell(), _cell_under(screen_pos)))
+		_walk_leader(_area.path(_leader_cell(), _cell_under(screen_pos), _foe_cells()))
 	_path_preview.clear()
 
 
@@ -241,7 +262,7 @@ func _go_talk(npc_id: String) -> void:
 		_leader().path.clear()
 		_arrived()
 		return
-	var p := _area.approach(_leader_cell(), npc_id)
+	var p := _area.approach(_leader_cell(), npc_id, _foe_cells())
 	if p.found():
 		_walk_leader(p)
 	else:
@@ -301,7 +322,7 @@ func _follow_trail(w: Walker, gap: float, delta: float) -> void:
 	w.path.clear()
 	var d := w.view.position.distance_to(to)
 	if d > CATCH_UP:
-		var p := _area.path(_cell_of(w.view.position), _cell_of(to))
+		var p := _area.path(_cell_of(w.view.position), _cell_of(to), _foe_cells())
 		if p.found():
 			w.path = _points(p)
 			_advance(w, delta, false)
@@ -393,9 +414,8 @@ func _cell_pos(c: Vector2i) -> Vector3:
 
 
 func _spawn_party(at: Vector2i) -> void:
-	var party := PartyStore.load_party(_content.rules)
 	var ids: Array[String] = []
-	ids.assign(party.inventories.keys())
+	ids.assign(_screens.party.inventories.keys())
 	ids.sort()
 	_group = PartyGroup.new(ids)
 	for i in ids.size():
@@ -419,6 +439,38 @@ func _spawn_npcs() -> void:
 		_npcs[npc.id] = view
 
 
+## Противники энкаунтеров, над которыми ещё не победили, стоят на своих местах.
+func _spawn_foes() -> void:
+	for e in _area.encounters:
+		if e.is_done(flags):
+			continue
+		for c in e.combatants:
+			var creature := JsonRead.get_str(c, "creature")
+			var name := _creature_name(creature)
+			var view := _add_person(
+				JsonRead.get_str(c, "id"), JsonRead.get_str(c, "team"), creature, name
+			)
+			view.place(_cell_pos(e.cell_of(c)))
+			view.face(view.position + Vector3.BACK)
+			_foes[JsonRead.get_str(c, "id")] = view
+
+
+func _creature_name(creature: String) -> String:
+	if not _content.rules.creatures.has(creature):
+		return creature
+	return tr(JsonRead.get_str(_content.rules.creatures[creature], "name_key"))
+
+
+## Клетки живых противников на карте — их обходят.
+func _foe_cells() -> Dictionary[Vector2i, bool]:
+	var cells: Dictionary[Vector2i, bool] = {}
+	for e in _area.encounters:
+		if not e.is_done(flags):
+			for c in e.combatants:
+				cells[e.cell_of(c)] = true
+	return cells
+
+
 func _add_person(id: String, team: String, look: String, display_name: String) -> UnitView:
 	var view := UnitView.new()
 	_world.add_child(view)
@@ -432,6 +484,113 @@ func _name_of(character_id: String) -> String:
 	if not _content.rules.characters.has(character_id):
 		return character_id
 	return tr(JsonRead.get_str(_content.rules.characters[character_id], "name_key"))
+
+
+# --- Бой на карте (ADR-0032) ---------------------------------------------------
+
+
+func _in_combat() -> bool:
+	return _encounter != null
+
+
+## Срабатывает ли энкаунтер — проверяется, только когда кто-то из героев сменил клетку.
+func _check_encounters() -> void:
+	var cells: Array[Vector2i] = []
+	for id in _group.ids:
+		cells.append(_cell_of(_heroes[id].view.position))
+	if cells == _hero_cells:
+		return
+	_hero_cells = cells
+	for e in _area.encounters:
+		if not e.is_done(flags) and e.triggered(_area, cells):
+			_start_combat(e)
+			return
+
+
+func _start_combat(e: Encounter) -> void:
+	_encounter = e
+	_talk_to = ""
+	_path_preview.clear()
+	_set_hovered("")
+	_party_bar.visible = false
+	for id in _group.ids:
+		var w := _heroes[id]
+		w.path.clear()
+		_set_walking(w, false)
+	var heroes: Dictionary[String, Vector2i] = {}
+	for id in _group.ids:
+		heroes[id] = _cell_of(_heroes[id].view.position)
+	var errors: Array[String] = []
+	var state := ArenaLoader.new_combat(
+		e.arena_data(_area, heroes), randi(), _content.rules, errors, _screens.party
+	)
+	for err in errors:
+		push_error(err)
+	_board.build(state.grid, e.battle.position)
+	_session.units.clear()
+	for id in _group.ids:
+		_session.units[id] = _heroes[id].view
+	for c in e.combatants:
+		var foe_id := JsonRead.get_str(c, "id")
+		_session.units[foe_id] = _foes[foe_id]
+	_area_view.set_grid_visible(true)
+	_session.show_ui(true)
+	_session.clear_log()
+	_session.write(tr("LOG_ENCOUNTER"), CombatLogFormat.COLOR_INFO)
+	# Герои встают в клетки поля боя (SPEC §3.2).
+	var tween := create_tween().set_parallel(true)
+	for c in state.combatants:
+		if _session.units.has(c.id):
+			tween.tween_property(
+				_session.units[c.id], "position", _board.position_of(c.column), 0.35
+			)
+	await tween.finished
+	for c in state.combatants:
+		if _session.units.has(c.id):
+			_session.units[c.id].place(_board.position_of(c.column))
+	_session.state = state
+	_session.face_enemies()
+	_combat_focus = ""
+	await _session.start(state)
+
+
+func _on_combat_status(turn: String, hint: String) -> void:
+	_title.text = turn
+	_hint.text = hint
+
+
+func _on_combat_ended(winner: String) -> void:
+	var state := _session.state
+	_session.stop()
+	if winner != Encounter.TEAM_PARTY:
+		_game_over.open()
+		return
+	flags.set_flag(_encounter.won_flag(), true)
+	# Добыча, траты и раны — в партию (ADR-0026, ADR-0027).
+	_screens.after_combat(state)
+	for c in _encounter.combatants:
+		_foes.erase(JsonRead.get_str(c, "id"))
+	for id in _group.ids:
+		var hero := _screens.party.build_hero(_content.rules, id)
+		_heroes[id].view.refresh(_names[id], hero)
+		_heroes[id].view.show_as_person(_names[id])
+		_heroes[id].view.set_active(id == _group.selected)
+	_encounter = null
+	_session.show_ui(false)
+	_area_view.set_grid_visible(grid_on)
+	_party_bar.visible = true
+	_title.text = tr(_area.title_key)
+	_hint.text = tr("UI_EXPLORE_HINT")
+	_trail = [_leader().view.position]
+	_hero_cells.clear()
+
+
+## В бою камера следит за тем, чей ход.
+func _combat_look() -> Vector3:
+	var view: UnitView = _session.units.get(_combat_focus, null)
+	if view == null:
+		return _look
+	return view.position + LOOK_SHIFT
 
 
 # --- Интерфейс ----------------------------------------------------------------
@@ -470,6 +629,15 @@ func _setup_ui() -> void:
 	column.add_child(_party_bar)
 	_party_bar.hero_selected.connect(_select)
 	_party_bar.chain_toggled.connect(_toggle_chain)
+	_session.setup(layer, _board, _world)
+	_session.show_ui(false)
+	_session.status_changed.connect(_on_combat_status)
+	_session.turn_started.connect(func(id: String) -> void: _combat_focus = id)
+	_session.ended.connect(_on_combat_ended)
+	_screens.setup(_content.rules, _content.merchants_data())
+	layer.add_child(_screens)
 	layer.add_child(_dialog)
+	layer.add_child(_game_over)
+	_game_over.menu_pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
 	layer.add_child(_dice)
 	_dialog.setup(_dice, rng)

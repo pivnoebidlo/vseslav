@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "creatures.schema.json",
+  "title": "Существа (rules/creatures.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "creatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "tags": {
+            "$ref": "common.schema.json#/$defs/ids"
+          },
+          "proficiency": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "abilities": {
+            "$ref": "common.schema.json#/$defs/abilities"
+          },
+          "armor_class": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "hp": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "speed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "saves": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/ability"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/action",
+              "required": [
+                "id",
+                "name_key"
+              ]
+            }
+          },
+          "traits": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/trait"
+            }
+          },
+          "defenses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "immune",
+                    "resist",
+                    "vulnerable"
+                  ]
+                },
+                "types": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "$ref": "common.schema.json#/$defs/damage_type"
+                      },
+                      {
+                        "const": "physical"
+                      }
+                    ]
+                  }
+                },
+                "unless": {
+                  "$ref": "common.schema.json#/$defs/ids"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "types"
+              ]
+            }
+          },
+          "carries": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/stack"
+            }
+          },
+          "loot": {
+            "type": "object",
+            "properties": {
+              "money": {
+                "$ref": "common.schema.json#/$defs/formula"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "item": {
+                      "$ref": "common.schema.json#/$defs/id"
+                    },
+                    "chance": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "item"
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "abilities",
+          "armor_class",
+          "hp"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "creatures"
+  ]
+}

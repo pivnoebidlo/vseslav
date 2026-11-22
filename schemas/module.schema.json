@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "module.schema.json",
+  "title": "Манифест модуля (module.json)",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Версия структуры пакета."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)*$",
+      "maxLength": 64
+    },
+    "title": {
+      "type": "string",
+      "pattern": "^locale:[A-Za-z0-9_.]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([-+][0-9A-Za-z.-]+)?$",
+      "description": "Semver модуля."
+    },
+    "api_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Версия API событий."
+    },
+    "ruleset": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+@[0-9]+$"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)*$"
+      }
+    },
+    "start": {
+      "type": "object",
+      "properties": {
+        "area": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "spawn": {
+          "$ref": "common.schema.json#/$defs/id"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "area",
+        "spawn"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "id",
+    "title",
+    "version",
+    "api_version",
+    "ruleset"
+  ]
+}

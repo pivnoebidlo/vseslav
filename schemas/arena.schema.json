@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "arena.schema.json",
+  "title": "Тестовая арена (arenas/<id>.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "title_key": {
+      "$ref": "common.schema.json#/$defs/locale_key"
+    },
+    "grid": {
+      "type": "object",
+      "properties": {
+        "diagonal": {
+          "enum": [
+            "chebyshev",
+            "alternating"
+          ]
+        },
+        "map": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[.#=0-9]+$",
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "maxItems": 64
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "map"
+      ]
+    },
+    "combatants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "character": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "creature": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "sheet": {
+            "type": "object",
+            "description": "Готовый лист участника (для тестов)."
+          },
+          "team": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "player": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "team",
+          "at"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title_key",
+    "grid",
+    "combatants"
+  ]
+}

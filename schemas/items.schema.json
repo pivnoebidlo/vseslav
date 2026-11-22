@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "items.schema.json",
+  "title": "Предметы (rules/items.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "type": {
+            "enum": [
+              "weapon",
+              "armor",
+              "shield",
+              "gear",
+              "consumable",
+              "treasure"
+            ]
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Вес в фунтах (кратно 0.1)."
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Цена в кунах."
+          },
+          "category": {
+            "enum": [
+              "simple",
+              "martial"
+            ]
+          },
+          "attack_type": {
+            "$ref": "common.schema.json#/$defs/attack_type"
+          },
+          "damage": {
+            "$ref": "common.schema.json#/$defs/formula"
+          },
+          "damage_type": {
+            "$ref": "common.schema.json#/$defs/damage_type"
+          },
+          "mastery": {
+            "enum": [
+              "cleave",
+              "graze",
+              "nick",
+              "push",
+              "sap",
+              "slow",
+              "topple",
+              "vex"
+            ]
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "finesse",
+                "light",
+                "heavy",
+                "two_handed",
+                "versatile",
+                "reach",
+                "thrown",
+                "loading",
+                "ammunition"
+              ]
+            }
+          },
+          "range": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "long_range": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "thrown": {
+            "type": "boolean"
+          },
+          "tags": {
+            "$ref": "common.schema.json#/$defs/ids"
+          },
+          "armor": {
+            "enum": [
+              "light",
+              "medium",
+              "heavy"
+            ]
+          },
+          "base": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "dex_cap": {
+            "type": "integer",
+            "minimum": -1,
+            "description": "Предел бонуса Ловкости к КД; -1 — без предела."
+          },
+          "str_req": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ac": {
+            "type": "integer"
+          },
+          "action": {
+            "$ref": "common.schema.json#/$defs/action"
+          },
+          "food": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "type"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ]
+}

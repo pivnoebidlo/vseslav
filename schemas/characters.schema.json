@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "characters.schema.json",
+  "title": "Готовые персонажи (rules/characters.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "class": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "path": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "origin": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "abilities": {
+            "$ref": "common.schema.json#/$defs/abilities"
+          },
+          "origin_bonus": {
+            "$ref": "common.schema.json#/$defs/ability_bonus"
+          },
+          "spells": {
+            "$ref": "common.schema.json#/$defs/ids"
+          },
+          "inventory": {
+            "$ref": "common.schema.json#/$defs/inventory"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "class",
+          "origin",
+          "level",
+          "abilities"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "characters"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "actions.schema.json",
+  "title": "Действия (rules/actions.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/action",
+        "required": [
+          "id",
+          "name_key"
+        ]
+      }
+    },
+    "common": {
+      "$ref": "common.schema.json#/$defs/ids",
+      "description": "Действия, которые есть у всех."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "actions"
+  ]
+}

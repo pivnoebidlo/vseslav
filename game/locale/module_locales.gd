@@ -6,6 +6,15 @@ extends RefCounted
 const LANGS: Array[String] = ["ru", "en"]
 
 
+## Строки всех загруженных модулей (ModuleContent.locales: язык → ключ → текст).
+static func apply(locales: Dictionary[String, Dictionary]) -> void:
+	var langs: Array[String] = []
+	langs.assign(locales.keys())
+	langs.sort()
+	for lang in langs:
+		_add(lang, locales[lang])
+
+
 ## Добавляет строки модуля из папки [param module_dir] для всех языков.
 static func load_module(module_dir: String) -> void:
 	for lang in LANGS:
@@ -18,8 +27,12 @@ static func load_module(module_dir: String) -> void:
 			push_error("Bad locale file: %s" % path)
 			continue
 		var data: Dictionary = parsed
-		var translation := Translation.new()
-		translation.locale = lang
-		for key: Variant in data:
-			translation.add_message(StringName(str(key)), str(data[key]))
-		TranslationServer.add_translation(translation)
+		_add(lang, data)
+
+
+static func _add(lang: String, data: Dictionary) -> void:
+	var translation := Translation.new()
+	translation.locale = lang
+	for key: Variant in data:
+		translation.add_message(StringName(str(key)), str(data[key]))
+	TranslationServer.add_translation(translation)

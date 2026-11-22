@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "merchants.schema.json",
+  "title": "Купцы (merchants.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "merchants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "markup": {
+            "type": "integer",
+            "minimum": 100,
+            "description": "Цена продажи, % от цены предмета."
+          },
+          "buyback": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Цена скупки, % от цены предмета."
+          },
+          "buys": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "weapon",
+                "armor",
+                "shield",
+                "gear",
+                "consumable",
+                "treasure"
+              ]
+            }
+          },
+          "goods": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/stack"
+            }
+          },
+          "purse": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "markup",
+          "buyback"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "merchants"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "models.schema.json",
+  "title": "Облик участников (models/models.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "figures": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+\\.glb$"
+          },
+          "figure": {
+            "enum": [
+              "humanoid",
+              "beast",
+              "spirit"
+            ]
+          },
+          "hold": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 128,
+              "description": "Имя узла модели, который виден (оружие, щит)."
+            }
+          },
+          "animations": {
+            "type": "object",
+            "propertyNames": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 128
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "figures"
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "classes.schema.json",
+  "title": "Классы (rules/classes.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "hit_die": {
+            "enum": [
+              6,
+              8,
+              10,
+              12
+            ]
+          },
+          "saves": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/ability"
+            }
+          },
+          "armor": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "light",
+                "medium",
+                "heavy",
+                "shield"
+              ]
+            }
+          },
+          "weapons": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "simple",
+                "martial"
+              ]
+            }
+          },
+          "weapon_mastery": {
+            "type": "boolean"
+          },
+          "spell_ability": {
+            "$ref": "common.schema.json#/$defs/ability"
+          },
+          "spell_list": {
+            "$ref": "common.schema.json#/$defs/ids"
+          },
+          "recharge": {
+            "type": "object",
+            "propertyNames": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "additionalProperties": {
+              "enum": [
+                "short",
+                "short_one",
+                "long"
+              ]
+            }
+          },
+          "levels": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^([1-9]|1[0-9]|20)$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "actions": {
+                  "$ref": "common.schema.json#/$defs/ids"
+                },
+                "resources": {
+                  "type": "object",
+                  "propertyNames": {
+                    "$ref": "common.schema.json#/$defs/id"
+                  },
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "traits": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "common.schema.json#/$defs/trait"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "common.schema.json#/$defs/id"
+                },
+                "name_key": {
+                  "$ref": "common.schema.json#/$defs/locale_key"
+                },
+                "level": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "actions": {
+                  "$ref": "common.schema.json#/$defs/ids"
+                },
+                "traits": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "common.schema.json#/$defs/trait"
+                  }
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "name_key",
+                "level"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "hit_die",
+          "levels"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "classes"
+  ]
+}

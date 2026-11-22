@@ -2,7 +2,7 @@ class_name FigureCatalog
 extends RefCounted
 ## Облик участников боя из modules/<модуль>/models/models.json: какая модель, что в руках,
 ## какие анимации на какие роли. Модели грузятся только через CharacterLoader.
-## Временный формат до формата модуля v1 (ROADMAP, этап 2) — ADR-0022.
+## Формат — ADR-0022, схема schemas/models.schema.json (ADR-0028).
 
 const FIGURE_HUMANOID := "humanoid"
 const FIGURE_BEAST := "beast"
@@ -36,26 +36,41 @@ static func load_dir(models_dir: String, profiles: Array[RigProfile]) -> FigureC
 	var data: Dictionary = parsed
 	var figures := JsonRead.get_dict(data, "figures")
 	for key: Variant in figures:
-		var id := str(key)
 		var raw: Variant = figures[key]
 		if typeof(raw) != TYPE_DICTIONARY:
-			catalog.errors.append("%s: %s is not an object" % [path, id])
+			catalog.errors.append("%s: %s is not an object" % [path, key])
 			continue
 		var d: Dictionary = raw
-		var e := Entry.new()
-		var file := JsonRead.get_str(d, "file")
-		if file != "":
-			if file.contains("..") or file.contains("/") or file.get_extension() != "glb":
-				catalog.errors.append("%s: %s: bad file name %s" % [path, id, file])
-				continue
-			e.path = models_dir.path_join(file)
-		e.figure = JsonRead.get_str(d, "figure", FIGURE_HUMANOID)
-		e.hold = JsonRead.get_str_array(d, "hold")
-		var anims := JsonRead.get_dict(d, "animations")
-		for role: Variant in anims:
-			e.animations[str(role)] = PackedStringArray(JsonRead.get_str_array(anims, str(role)))
-		catalog.entries[id] = e
+		catalog._add(str(key), d, models_dir)
 	return catalog
+
+
+## Облик из загруженных модулей (уже проверен схемой и ссылками).
+static func from_content(content: ModuleContent, profiles: Array[RigProfile]) -> FigureCatalog:
+	var catalog := FigureCatalog.new()
+	catalog._profiles = profiles
+	var ids: Array[String] = []
+	ids.assign(content.figures.keys())
+	ids.sort()
+	for id in ids:
+		catalog._add(id, content.figures[id], content.figure_dirs[id])
+	return catalog
+
+
+func _add(id: String, d: Dictionary, models_dir: String) -> void:
+	var e := Entry.new()
+	var file := JsonRead.get_str(d, "file")
+	if file != "":
+		if file.contains("..") or file.contains("/") or file.get_extension() != "glb":
+			errors.append("%s: bad file name %s" % [id, file])
+			return
+		e.path = models_dir.path_join(file)
+	e.figure = JsonRead.get_str(d, "figure", FIGURE_HUMANOID)
+	e.hold = JsonRead.get_str_array(d, "hold")
+	var anims := JsonRead.get_dict(d, "animations")
+	for role: Variant in anims:
+		e.animations[str(role)] = PackedStringArray(JsonRead.get_str_array(anims, str(role)))
+	entries[id] = e
 
 
 func entry(template_id: String) -> Entry:

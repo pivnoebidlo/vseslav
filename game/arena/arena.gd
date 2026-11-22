@@ -3,17 +3,12 @@ extends Node3D
 ## команды ядру (SPEC §6.2): ход, перемещение, выбор действия и цели, предпросмотр.
 ##
 ## Аргументы командной строки (после `--`):
-##   --arena=NAME      doroga | polyana | pogost (по умолчанию doroga)
+##   --arena=NAME      арена из загруженных модулей: doroga | polyana | pogost (по умолчанию doroga)
 ##   --seed=N          фиксированный seed боя
 ##   --autoplay        за партию тоже играет ИИ (дымовая проверка)
 ##   --screenshot=PATH сохранить снимок экрана по окончании боя (или через 25 с) и выйти
 ##   --lang=ru|en      язык интерфейса (по умолчанию русский; меню настроек — позже)
 
-const ARENAS: Array[String] = ["doroga", "polyana", "pogost"]
-const ARENA_DIR := "res://modules/spike/arenas"
-const MODULE_DIRS: Array[String] = ["res://modules/base", "res://modules/spike"]
-const RULES_DIR := "res://modules/base/rules"
-const MODELS_DIR := "res://modules/base/models"
 const SAVE_DIR := "user://saves"
 const SAVE_PATH := "user://saves/arena_combat.json"
 const CELL := BattleGrid.CELL_SIZE_M
@@ -28,7 +23,9 @@ const NO_CELL := ActionResolver.NO_CELL
 
 var _arena := "doroga"
 var _arena_data: Dictionary = {}
+var _content: ModuleContent
 var _db: RulesDb
+var _arenas: Array[String] = []
 var _figures: FigureCatalog
 var _screens := PartyScreens.new()
 var _state: CombatState
@@ -67,22 +64,27 @@ var _hovered_id := ""
 func _ready() -> void:
 	_parse_args()
 	TranslationServer.set_locale(_lang)
-	for dir in MODULE_DIRS:
-		ModuleLocales.load_module(dir)
-	_db = RulesDb.load_dir(RULES_DIR)
-	_figures = FigureCatalog.load_dir(MODELS_DIR, RigProfile.load_all())
-	_screens.setup(_db)
+	_content = ModuleLoader.load_all()
+	ModuleLocales.apply(_content.locales)
+	_db = _content.rules
+	_arenas = _content.arena_ids()
+	if not _arenas.has(_arena) and not _arenas.is_empty():
+		_arena = _arenas[0]
+	_figures = FigureCatalog.from_content(_content, RigProfile.load_all())
+	_screens.setup(_db, _content.merchants_data())
 	_screens.dry_run = _autoplay
 	_setup_materials()
 	_setup_environment()
 	_setup_ui()
 	_world = Node3D.new()
 	add_child(_world)
-	for err in _db.errors:
+	for err in _content.errors:
 		push_error(err)
 		_write(CombatLogFormat.tr_fmt("LOG_DATA_ERROR", {"error": err}), CombatLogFormat.COLOR_BAD)
 	if _screenshot_path != "":
 		get_tree().create_timer(SCREENSHOT_TIMEOUT).timeout.connect(_take_screenshot_and_quit)
+	if _arenas.is_empty():
+		return
 	_load_arena(_arena)
 	_new_combat()
 
@@ -93,8 +95,7 @@ func _parse_args() -> void:
 			_autoplay = true
 		elif arg.begins_with("--arena="):
 			var name := arg.trim_prefix("--arena=")
-			if ARENAS.has(name):
-				_arena = name
+			_arena = name
 		elif arg.begins_with("--seed="):
 			_seed_override = arg.trim_prefix("--seed=").to_int()
 		elif arg.begins_with("--lang="):
@@ -105,9 +106,9 @@ func _parse_args() -> void:
 
 func _load_arena(name: String) -> void:
 	_arena = name
-	_arena_data = ArenaLoader.read_file(ARENA_DIR.path_join(name + ".json"))
+	_arena_data = _content.arenas.get(name, {})
 	_title.text = tr(JsonRead.get_str(_arena_data, "title_key"))
-	_arena_select.select(ARENAS.find(name))
+	_arena_select.select(_arenas.find(name))
 
 
 # --- Построение сцены ---------------------------------------------------------
@@ -185,8 +186,8 @@ func _setup_ui() -> void:
 	var arena_label := Label.new()
 	arena_label.text = tr("UI_ARENA")
 	arena_row.add_child(arena_label)
-	for name in ARENAS:
-		var data := ArenaLoader.read_file(ARENA_DIR.path_join(name + ".json"))
+	for name in _arenas:
+		var data := _content.arenas[name]
 		_arena_select.add_item(tr(JsonRead.get_str(data, "title_key")))
 	_arena_select.item_selected.connect(_on_arena_selected)
 	arena_row.add_child(_arena_select)
@@ -932,7 +933,7 @@ func _on_load() -> void:
 		return
 	var data: Dictionary = parsed
 	var arena := JsonRead.get_str(data, "arena")
-	if not ARENAS.has(arena):
+	if not _arenas.has(arena):
 		_write(tr("LOG_NO_SAVE"), Color(1.0, 0.75, 0.4))
 		return
 	_load_arena(arena)
@@ -982,9 +983,9 @@ func _on_restart() -> void:
 
 func _on_arena_selected(index: int) -> void:
 	if _busy:
-		_arena_select.select(ARENAS.find(_arena))
+		_arena_select.select(_arenas.find(_arena))
 		return
-	_load_arena(ARENAS[index])
+	_load_arena(_arenas[index])
 	_new_combat()
 
 

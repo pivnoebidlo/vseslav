@@ -1,0 +1,468 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Общие определения",
+  "description": "Общие определения для схем файлов модуля (ADR-0028).",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_.]+$",
+      "maxLength": 64,
+      "description": "Идентификатор: строчные латинские буквы, цифры, _ и ."
+    },
+    "ids": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "locale_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.]+$",
+      "maxLength": 128,
+      "description": "Ключ строки в locales/<язык>.json."
+    },
+    "formula": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Формула кубиков: 1d8 + STR, 8 + PROF + SPELL (docs/rules)."
+    },
+    "ability": {
+      "enum": [
+        "str",
+        "dex",
+        "con",
+        "int",
+        "wis",
+        "cha"
+      ]
+    },
+    "abilities": {
+      "type": "object",
+      "properties": {
+        "str": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "dex": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "con": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "int": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "wis": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "cha": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        }
+      },
+      "additionalProperties": false
+    },
+    "ability_bonus": {
+      "type": "object",
+      "properties": {
+        "str": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5
+        },
+        "dex": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5
+        },
+        "con": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5
+        },
+        "int": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5
+        },
+        "wis": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5
+        },
+        "cha": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5
+        }
+      },
+      "additionalProperties": false
+    },
+    "damage_type": {
+      "enum": [
+        "acid",
+        "bludgeoning",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "piercing",
+        "poison",
+        "psychic",
+        "radiant",
+        "slashing",
+        "thunder"
+      ]
+    },
+    "condition": {
+      "enum": [
+        "blinded",
+        "frightened",
+        "incapacitated",
+        "poisoned",
+        "prone",
+        "restrained",
+        "stunned",
+        "unconscious",
+        "dodging",
+        "marked",
+        "sapped",
+        "vexed"
+      ]
+    },
+    "attack_type": {
+      "enum": [
+        "melee",
+        "ranged"
+      ]
+    },
+    "stack": {
+      "anyOf": [
+        {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "item": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "item"
+          ]
+        }
+      ],
+      "description": "Предмет: id или {item, count}."
+    },
+    "damage_part": {
+      "type": "object",
+      "properties": {
+        "formula": {
+          "$ref": "common.schema.json#/$defs/formula"
+        },
+        "type": {
+          "$ref": "common.schema.json#/$defs/damage_type"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "formula",
+        "type"
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "on": {
+          "enum": [
+            "hit",
+            "failed_save",
+            "always"
+          ]
+        },
+        "condition": {
+          "$ref": "common.schema.json#/$defs/condition"
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "save_ends": {
+          "$ref": "common.schema.json#/$defs/ability"
+        },
+        "save_ability": {
+          "$ref": "common.schema.json#/$defs/ability"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "condition"
+      ]
+    },
+    "trait": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "pack_tactics",
+            "bonus_damage",
+            "attack_bonus",
+            "ac_bonus",
+            "improved_critical",
+            "protection",
+            "revive",
+            "aura",
+            "initiative",
+            "hp_per_level"
+          ]
+        },
+        "name_key": {
+          "$ref": "common.schema.json#/$defs/locale_key"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "formula": {
+          "$ref": "common.schema.json#/$defs/formula"
+        },
+        "damage_type": {
+          "$ref": "common.schema.json#/$defs/damage_type"
+        },
+        "when": {
+          "enum": [
+            "",
+            "target_wounded",
+            "target_marked",
+            "armored",
+            "adjacent_ally"
+          ]
+        },
+        "attack_type": {
+          "$ref": "common.schema.json#/$defs/attack_type"
+        },
+        "once_per_turn": {
+          "type": "boolean"
+        },
+        "ability": {
+          "$ref": "common.schema.json#/$defs/ability"
+        },
+        "dc": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "condition": {
+          "$ref": "common.schema.json#/$defs/condition"
+        },
+        "radius": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tags": {
+          "$ref": "common.schema.json#/$defs/ids"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "name_key": {
+          "$ref": "common.schema.json#/$defs/locale_key"
+        },
+        "kind": {
+          "enum": [
+            "attack",
+            "save",
+            "heal",
+            "effect",
+            "multiattack"
+          ]
+        },
+        "cost": {
+          "enum": [
+            "action",
+            "bonus",
+            "reaction",
+            "free"
+          ]
+        },
+        "attack_type": {
+          "$ref": "common.schema.json#/$defs/attack_type"
+        },
+        "attack_bonus": {
+          "$ref": "common.schema.json#/$defs/formula"
+        },
+        "range": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "long_range": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "damage": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/damage_part"
+          }
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/effect"
+          }
+        },
+        "tags": {
+          "$ref": "common.schema.json#/$defs/ids"
+        },
+        "target": {
+          "enum": [
+            "enemy",
+            "ally",
+            "self",
+            "point"
+          ]
+        },
+        "area": {
+          "enum": [
+            "burst",
+            "cone"
+          ]
+        },
+        "area_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "save_ability": {
+          "$ref": "common.schema.json#/$defs/ability"
+        },
+        "save_dc": {
+          "$ref": "common.schema.json#/$defs/formula"
+        },
+        "save_half": {
+          "type": "boolean"
+        },
+        "heal": {
+          "$ref": "common.schema.json#/$defs/formula"
+        },
+        "concentration": {
+          "type": "boolean"
+        },
+        "resource": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "resource_cost": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "special": {
+          "enum": [
+            "dash",
+            "disengage",
+            "dodge",
+            "extra_action",
+            "stand"
+          ]
+        },
+        "sub_actions": {
+          "$ref": "common.schema.json#/$defs/ids"
+        },
+        "mastery": {
+          "enum": [
+            "cleave",
+            "graze",
+            "nick",
+            "push",
+            "sap",
+            "slow",
+            "topple",
+            "vex"
+          ]
+        },
+        "ability": {
+          "enum": [
+            "str",
+            "dex",
+            "con",
+            "int",
+            "wis",
+            "cha",
+            "spell"
+          ],
+          "description": "Характеристика атаки; spell — заклинательная характеристика класса."
+        },
+        "item": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "consumes": {
+          "type": "boolean"
+        },
+        "two_handed": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "inventory": {
+      "type": "object",
+      "properties": {
+        "armor": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "main_hand": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "off_hand": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "belt": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/stack"
+          },
+          "maxItems": 4
+        },
+        "bag": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/stack"
+          }
+        },
+        "purse": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

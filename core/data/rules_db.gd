@@ -2,7 +2,7 @@ class_name RulesDb
 extends RefCounted
 ## Данные правил модуля (папка rules/): действия, предметы, классы, происхождения,
 ## готовые персонажи и существа. Хранит исходные словари по id; собирает из них
-## участников боя CombatantBuilder. Полный загрузчик модулей — этап 2.
+## участников боя CombatantBuilder. Модули собирает ModuleLoader (ADR-0028).
 
 const FILES: Array[String] = ["actions", "items", "classes", "origins", "characters", "creatures"]
 
@@ -15,6 +15,8 @@ var origins: Dictionary[String, Dictionary] = {}
 var characters: Dictionary[String, Dictionary] = {}
 var creatures: Dictionary[String, Dictionary] = {}
 var errors: Array[String] = []
+## Если задано — записи из разных модулей заменяют друг друга по правилам ADR-0028.
+var owners: ContentOwners = null
 
 
 ## Загружает все файлы из папки rules/ модуля. Ошибки — в [member errors].
@@ -41,7 +43,9 @@ func add(file: String, data: Dictionary) -> void:
 	match file:
 		"actions":
 			_index(data, "actions", actions)
-			common_actions.append_array(JsonRead.get_str_array(data, "common"))
+			for id in JsonRead.get_str_array(data, "common"):
+				if not common_actions.has(id):
+					common_actions.append(id)
 		"items":
 			_index(data, "items", items)
 		"classes":
@@ -87,6 +91,9 @@ func _index(data: Dictionary, key: String, into: Dictionary[String, Dictionary])
 		var id := JsonRead.get_str(entry, "id")
 		if id == "":
 			errors.append("%s: entry without id" % key)
+		elif owners != null:
+			if owners.claim(key, id, errors):
+				into[id] = entry
 		elif into.has(id):
 			errors.append("%s: duplicate id '%s'" % [key, id])
 		else:

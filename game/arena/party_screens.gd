@@ -19,13 +19,14 @@ var _loot: LootScreen
 var _rest: RestScreen
 
 
-func setup(db: RulesDb) -> void:
+## [param merchants] — купцы из модулей (ModuleContent.merchants_data).
+func setup(db: RulesDb, merchants: Dictionary) -> void:
 	_db = db
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	party = PartyStore.load_party(db)
 	var errors: Array[String] = []
-	market = MarketStore.load_market(db, errors)
+	market = MarketStore.load_market(db, merchants, errors)
 	for err in errors:
 		push_warning("Merchants: %s" % err)
 	# Экраны создаются здесь, а не при объявлении: к этому моменту язык уже выбран.

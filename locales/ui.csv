@@ -75,6 +75,7 @@ LOG_LOSS,Поражение…,Defeat…
 LOG_SAVED,Бой сохранён.,Combat saved.
 LOG_LOADED,Бой загружен.,Combat loaded.
 LOG_NO_SAVE,Нет сохранения.,No save found.
+LOG_COMBAT_SEED,"Бой: --arena={arena} --seed={seed}","Combat: --arena={arena} --seed={seed}"
 LOG_DATA_ERROR,Ошибка данных: {error},Data error: {error}
 ABIL_STR,Силы,Strength
 ABIL_DEX,Ловкости,Dexterity

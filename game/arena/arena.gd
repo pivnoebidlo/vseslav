@@ -348,6 +348,10 @@ func _new_combat() -> void:
 	var errors: Array[String] = []
 	_state = ArenaLoader.new_combat(_arena_data, seed_value, _db, errors, _screens.party)
 	_log.clear()
+	_write(
+		CombatLogFormat.tr_fmt("LOG_COMBAT_SEED", {"arena": _arena, "seed": str(seed_value)}),
+		CombatLogFormat.COLOR_INFO
+	)
 	for err in errors:
 		_write(CombatLogFormat.tr_fmt("LOG_DATA_ERROR", {"error": err}), CombatLogFormat.COLOR_BAD)
 	_selected = null

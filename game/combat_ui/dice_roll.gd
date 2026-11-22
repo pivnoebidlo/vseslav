@@ -66,10 +66,11 @@ func _init() -> void:
 		"panel", UiStyle.box(Color(0.08, 0.08, 0.1, 0.94), UiStyle.ACTIVE.darkened(0.3), 1, 10)
 	)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	anchor_left = 0.5
-	anchor_right = 0.5
-	anchor_top = 0.3
-	anchor_bottom = 0.3
+	# Чуть правее и ниже центра: не заслоняет панели сверху слева и справа.
+	anchor_left = 0.58
+	anchor_right = 0.58
+	anchor_top = 0.42
+	anchor_bottom = 0.42
 	grow_horizontal = Control.GROW_DIRECTION_BOTH
 	grow_vertical = Control.GROW_DIRECTION_BOTH
 	var box := VBoxContainer.new()

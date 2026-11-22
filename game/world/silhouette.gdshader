@@ -4,8 +4,10 @@ shader_type spatial;
 render_mode unshaded, depth_draw_never, depth_test_disabled, cull_back, blend_mix;
 
 uniform vec4 color : source_color = vec4(0.3, 0.55, 1.0, 0.55);
-// Насколько ближе должна быть преграда, чтобы считать фигуру заслонённой (м).
-uniform float bias = 0.15;
+// Насколько ближе должна быть преграда, чтобы считать фигуру заслонённой (м). Камера
+// смотрит круто сверху, и голова или шляпа закрывают туловище почти на метр по лучу;
+// стена перед фигурой всегда дальше. Низкий плетень силуэта не даёт — и не нужно.
+uniform float bias = 1.5;
 uniform sampler2D depth_texture : hint_depth_texture, filter_nearest, repeat_disable;
 
 void fragment() {

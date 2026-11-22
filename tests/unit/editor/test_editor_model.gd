@@ -147,3 +147,38 @@ func test_workspace_lists_modules_with_write_access() -> void:
 		if id == "t.story":
 			assert_true(JsonRead.get_bool(m, "writable"))
 	assert_true(ids.has("vseslav.base") and ids.has("t.story"))
+
+
+func test_npcs_in_a_copied_area() -> void:
+	var doc := _new_doc()
+	var undo := UndoStack.new()
+	var area := {"title_key": "T", "map": ["...", ".#.", "..."], "spawns": {"start": [0, 0]}}
+	undo.push(doc, NpcOps.copy_area(doc, "pole", area))
+	var cell := NpcOps.free_cell(doc, "pole", Vector2i(1, 1))
+	assert_ne(cell, Vector2i(1, 1), "not on the house")
+	undo.push(doc, NpcOps.add_npc(doc, "pole", "ded", "Дед Пахом", cell))
+	var npc: Dictionary = NpcOps.npcs_of(doc, "pole")[0]
+	npc["dialog"] = "ded"
+	npc["look"] = ""
+	undo.push(doc, NpcOps.set_npc(doc, "pole", 0, npc))
+	var saved: Dictionary = NpcOps.npcs_of(doc, "pole")[0]
+	assert_eq(JsonRead.get_str(saved, "dialog"), "ded")
+	assert_false(saved.has("look"), "empty look is dropped")
+	assert_eq(doc.text("NPC_DED", "ru"), "Дед Пахом")
+	undo.push(doc, NpcOps.remove_npc(doc, "pole", 0))
+	assert_eq(doc.text("NPC_DED", "ru"), "")
+	assert_true(NpcOps.npcs_of(doc, "pole").is_empty())
+
+
+func test_area_file_survives_a_round_trip_unchanged() -> void:
+	var errors: Array[String] = []
+	var spike := ModuleDoc.open("res://modules/spike", errors)
+	assert_eq(errors, [] as Array[String])
+	var original := FileAccess.get_file_as_string("res://modules/spike/areas/izba.json")
+	var copy := _new_doc()
+	var edit := DocEdit.new()
+	edit.set_value(copy, ModuleDoc.KIND_AREA, "izba", [], spike.entry(ModuleDoc.KIND_AREA, "izba"))
+	edit.apply(copy)
+	copy.save(errors)
+	var written := FileAccess.get_file_as_string(copy.dir.path_join("areas/izba.json"))
+	assert_eq(written, original, "the editor keeps the file format")

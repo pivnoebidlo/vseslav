@@ -8,7 +8,8 @@ extends RefCounted
 const KIND_DIALOG := "dialogs"
 const KIND_QUEST := "quests"
 const KIND_LOCALE := "locales"
-const KINDS: Array[String] = [KIND_DIALOG, KIND_QUEST, KIND_LOCALE]
+const KIND_AREA := "areas"
+const KINDS: Array[String] = [KIND_DIALOG, KIND_QUEST, KIND_LOCALE, KIND_AREA]
 const LANGS: Array[String] = ["ru", "en"]
 const ID_PATTERN := "^[a-z0-9_.]+$"
 const MANIFEST := "module.json"

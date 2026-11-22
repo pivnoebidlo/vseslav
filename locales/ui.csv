@@ -394,3 +394,13 @@ UI_ED_QUEST_HINT,Стадию выставляет действие «квест
 UI_ED_ADD_STAGE,+ стадия,+ stage
 UI_ED_STAGE,Стадия,Stage
 UI_ED_FINAL,последняя,final
+UI_ED_AREAS,Жители (области),Villagers (areas)
+UI_ED_TAKE_AREA,"Взять область в модуль: id (например, derevnya)",Take an area into the module: id (e.g. derevnya)
+UI_ED_AREA,Область,Area
+UI_ED_ADD_NPC,+ житель,+ villager
+UI_ED_NEW_NPC,Новый житель,New villager
+UI_ED_NAME_RU,Имя по-русски,Russian name
+UI_ED_NAME_EN,Имя по-английски,English name
+UI_ED_CELL,"Клетка (x, y):","Cell (x, y):"
+UI_ED_LOOK,Облик:,Look:
+UI_ED_DIALOG,Диалог:,Dialog:

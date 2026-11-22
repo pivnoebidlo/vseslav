@@ -20,11 +20,14 @@ var _editable := false
 var _dialog := ""
 var _node := ""
 var _quest := ""
+var _area := ""
 
 var _module_pick := OptionButton.new()
 var _status := Label.new()
 var _dialogs := ItemList.new()
 var _quests := ItemList.new()
+var _areas := ItemList.new()
+var _npc_panel := NpcPanel.new()
 var _graph := DialogGraph.new()
 var _inspector := DialogInspector.new()
 var _quest_panel := QuestPanel.new()
@@ -89,6 +92,7 @@ func _open_module(index: int) -> void:
 	_dialog = ""
 	_node = ""
 	_quest = ""
+	_area = ""
 	_show_errors(errors)
 	_refresh()
 
@@ -187,6 +191,59 @@ func _new_quest() -> void:
 	_prompt.ask(tr("UI_ED_NEW_QUEST"), tr("UI_ED_QUEST_NAME"), create, taken)
 
 
+## Берёт область в свой модуль, чтобы расставлять жителей (запись заменит исходную).
+func _take_area() -> void:
+	var take := func(id: String, _text: String) -> void:
+		_select(id)
+		_apply(NpcOps.copy_area(_doc, id, _content.areas[id]))
+	var missing := func(id: String) -> bool:
+		return not _content.areas.has(id) or _doc.has(ModuleDoc.KIND_AREA, id)
+	_prompt.ask(tr("UI_ED_TAKE_AREA"), "", take, missing)
+
+
+func _add_npc() -> void:
+	var add := func(id: String, text: String) -> void:
+		var spawn := Vector2i.ZERO
+		var spawns := JsonRead.get_dict(_doc.entry(ModuleDoc.KIND_AREA, _area), "spawns")
+		if not spawns.is_empty():
+			var first: String = spawns.keys()[0]
+			spawn = JsonRead.to_vec2i(spawns[first])
+		var cell := NpcOps.free_cell(_doc, _area, spawn)
+		_apply(NpcOps.add_npc(_doc, _area, id, text if text != "" else id, cell))
+	var taken := func(id: String) -> bool:
+		for raw: Variant in NpcOps.npcs_of(_doc, _area):
+			var npc: Dictionary = raw
+			if JsonRead.get_str(npc, "id") == id:
+				return true
+		return false
+	_prompt.ask(tr("UI_ED_NEW_NPC"), tr("UI_ED_NAME_RU"), add, taken)
+
+
+## Выбирает область (остальное сбрасывается).
+func _select(area_id: String) -> void:
+	_area = area_id
+	_dialog = ""
+	_quest = ""
+	_node = ""
+
+
+func _looks() -> Array[String]:
+	var ids: Array[String] = []
+	ids.assign(_content.figures.keys())
+	ids.sort()
+	return ids
+
+
+func _dialog_ids() -> Array[String]:
+	var ids: Array[String] = []
+	ids.assign(_content.dialogs.keys())
+	for id in _doc.ids(ModuleDoc.KIND_DIALOG):
+		if not ids.has(id):
+			ids.append(id)
+	ids.sort()
+	return ids
+
+
 func _delete_selected() -> void:
 	if _dialog != "":
 		var id := _dialog
@@ -255,6 +312,7 @@ static func _stage_ids(quest: Dictionary) -> Array:
 func _refresh() -> void:
 	_fill_list(_dialogs, ModuleDoc.KIND_DIALOG, _dialog)
 	_fill_list(_quests, ModuleDoc.KIND_QUEST, _quest)
+	_fill_list(_areas, ModuleDoc.KIND_AREA, _area)
 	var showing_dialog := (
 		_dialog != "" and _doc != null and _doc.has(ModuleDoc.KIND_DIALOG, _dialog)
 	)
@@ -262,6 +320,10 @@ func _refresh() -> void:
 	_graph.visible = showing_dialog
 	_inspector.visible = showing_dialog
 	_quest_panel.visible = showing_quest
+	var showing_area := _area != "" and _doc != null and _doc.has(ModuleDoc.KIND_AREA, _area)
+	_npc_panel.visible = showing_area
+	if showing_area:
+		_npc_panel.show_area(_doc, _area, _text_of, _looks(), _dialog_ids(), _editable)
 	if showing_dialog:
 		_graph.build(_doc, _dialog, func(key: String) -> String: return _text_of(key), _node)
 		_inspector.show_node(_doc, _dialog, _node, _text_of, _quest_stages(), _editable)
@@ -319,6 +381,11 @@ func _build() -> void:
 	center.add_child(_graph)
 	_quest_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.add_child(_quest_panel)
+	_npc_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.add_child(_npc_panel)
+	_npc_panel.visible = false
+	_npc_panel.edited.connect(_apply)
+	_npc_panel.add_requested.connect(_add_npc)
 	_inspector.custom_minimum_size = Vector2(INSPECTOR_WIDTH, 0)
 	split.add_child(_inspector)
 	_errors.custom_minimum_size = Vector2(0, 90)
@@ -386,9 +453,8 @@ func _lists() -> VBoxContainer:
 	_dialogs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_dialogs.item_selected.connect(
 		func(i: int) -> void:
+			_select("")
 			_dialog = _dialogs.get_item_text(i)
-			_quest = ""
-			_node = ""
 			_refresh()
 	)
 	box.add_child(_dialogs)
@@ -396,11 +462,19 @@ func _lists() -> VBoxContainer:
 	_quests.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_quests.item_selected.connect(
 		func(i: int) -> void:
+			_select("")
 			_quest = _quests.get_item_text(i)
-			_dialog = ""
 			_refresh()
 	)
 	box.add_child(_quests)
+	box.add_child(_list_head("UI_ED_AREAS", _take_area))
+	_areas.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_areas.item_selected.connect(
+		func(i: int) -> void:
+			_select(_areas.get_item_text(i))
+			_refresh()
+	)
+	box.add_child(_areas)
 	box.add_child(_button("UI_ED_DELETE_SELECTED", _delete_selected))
 	return box
 

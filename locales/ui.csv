@@ -272,6 +272,10 @@ UI_MENU_EXPLORE,Деревня — исследование,Village — explorat
 UI_MENU_ARENA,Арена — пошаговый бой,Arena — turn-based combat
 UI_MENU_QUIT,Выход,Quit
 UI_MENU,В меню,Menu
-UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — подойти и поговорить. Колесо — масштаб.","LMB on the ground to walk, on a villager to go and talk. Wheel to zoom."
+UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms."
 UI_EXPLORE_NO_START,"В загруженных модулях нет начальной области (module.json → start).","No starting area in the loaded modules (module.json → start)."
 UI_DIALOG_LEAVE,Уйти,Leave
+UI_GRID,Сетка (G),Grid (G)
+UI_PARTY_CHAINED,в группе,in group
+UI_PARTY_ALONE,отдельно,alone
+UI_PARTY_CHAIN_HINT,"Отцепить от группы или прицепить обратно: сцепленные идут за выбранным героем","Unchain from the group or chain back: chained heroes follow the selected one"

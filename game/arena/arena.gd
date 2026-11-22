@@ -60,6 +60,7 @@ var _preview := Label.new()
 var _log: CombatLogPanel
 var _reaction_dialog: ReactionDialog
 var _hovered_id := ""
+var _path_preview := PathPreview.new()
 
 
 func _ready() -> void:
@@ -76,6 +77,7 @@ func _ready() -> void:
 	_screens.dry_run = _autoplay
 	_setup_materials()
 	SceneEnv.add_to(self)
+	add_child(_path_preview)
 	_setup_ui()
 	_world = Node3D.new()
 	add_child(_world)
@@ -568,6 +570,7 @@ func _cancel_selection() -> void:
 func _on_hover(screen_pos: Vector2) -> void:
 	if _state == null or _busy:
 		_preview.visible = false
+		_path_preview.clear()
 		return
 	var hit := _raycast(screen_pos)
 	var unit := _hit_unit(hit)
@@ -576,6 +579,11 @@ func _on_hover(screen_pos: Vector2) -> void:
 	var lines: PackedStringArray = []
 	var actor := _state.current()
 	_paint_area([])
+	var walk_to := cell if _selected == null and unit == null else NO_CELL
+	if _is_player_turn() and actor != null and not _state.ended:
+		_path_preview.show_combat(_state, actor, walk_to, _column_position)
+	else:
+		_path_preview.clear()
 	if _is_player_turn() and actor != null and not _state.ended:
 		if _selected != null:
 			lines.append_array(_selected_preview(actor, unit, cell))

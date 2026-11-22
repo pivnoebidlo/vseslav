@@ -33,6 +33,26 @@
           "next": "news"
         },
         {
+          "text": "DLG_STAROSTA_ASK_WORK",
+          "next": "work",
+          "if": [
+            {
+              "flag": "quest.krysy",
+              "eq": false
+            }
+          ]
+        },
+        {
+          "text": "DLG_STAROSTA_REPORT",
+          "next": "thanks",
+          "if": [
+            {
+              "flag": "quest.krysy",
+              "eq": "cleared"
+            }
+          ]
+        },
+        {
           "text": "DLG_BYE"
         }
       ]
@@ -47,6 +67,26 @@
         {
           "text": "DLG_STAROSTA_ASK_NEWS",
           "next": "news"
+        },
+        {
+          "text": "DLG_STAROSTA_ASK_WORK",
+          "next": "work",
+          "if": [
+            {
+              "flag": "quest.krysy",
+              "eq": false
+            }
+          ]
+        },
+        {
+          "text": "DLG_STAROSTA_REPORT",
+          "next": "thanks",
+          "if": [
+            {
+              "flag": "quest.krysy",
+              "eq": "cleared"
+            }
+          ]
         },
         {
           "text": "DLG_BYE"
@@ -94,6 +134,29 @@
         },
         {
           "text": "DLG_STAROSTA_WILL_ASK"
+        }
+      ]
+    },
+    "work": {
+      "text": "DLG_STAROSTA_WORK",
+      "then": [
+        {
+          "action": "set_quest",
+          "quest": "krysy",
+          "stage": "started"
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_STAROSTA_TAKE_WORK"
+        }
+      ]
+    },
+    "thanks": {
+      "text": "DLG_STAROSTA_THANKS",
+      "options": [
+        {
+          "text": "DLG_BYE"
         }
       ]
     }

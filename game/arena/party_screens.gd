@@ -6,6 +6,8 @@ extends Control
 
 signal changed
 signal message(text: String)
+## Окно добычи закрыто (сундук на карте: что не взяли — остаётся в нём).
+signal loot_finished
 
 var party: Party
 var market: Market
@@ -81,6 +83,15 @@ func open_rest_for(heroes: Array[String]) -> void:
 	_rest.open(_db, party, heroes, Rng.new(randi()))
 
 
+## Содержимое сундука [param title]: делят герои [param heroes]; [param pile] меняется
+## по мере взятия.
+func open_chest(title: String, pile: Inventory, heroes: Array[String]) -> void:
+	_equipment.visible = false
+	_trade.visible = false
+	_rest.visible = false
+	_loot.open(_db, party, pile, heroes, title, "UI_CHEST_HINT")
+
+
 func is_open() -> bool:
 	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible
 
@@ -132,6 +143,7 @@ func _on_loot_closed(was_changed: bool) -> void:
 	if was_changed:
 		save()
 		message.emit(TranslationServer.translate("LOG_LOOT_TAKEN"))
+	loot_finished.emit()
 
 
 func _on_closed(was_changed: bool) -> void:

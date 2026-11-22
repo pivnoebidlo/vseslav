@@ -119,6 +119,64 @@
     },
     "crypt": {
       "file": "crypt.glb"
+    },
+    "chest": {
+      "file": "chest.glb",
+      "fit": 0.8
+    },
+    "table_long": {
+      "file": "table_long.glb",
+      "fit": 0.95
+    },
+    "table": {
+      "file": "table.glb",
+      "fit": 0.9
+    },
+    "bed": {
+      "file": "bed.glb",
+      "fit": 0.95
+    },
+    "shelves": {
+      "file": "shelves.glb",
+      "fit": 0.95
+    },
+    "shelf": {
+      "file": "shelf.glb",
+      "fit": 0.9
+    },
+    "barrel_small": {
+      "file": "barrel_small.glb",
+      "fit": 0.6,
+      "jitter": 0.1,
+      "spin": "free"
+    },
+    "keg": {
+      "file": "keg.glb",
+      "fit": 0.7,
+      "spin": "quarter"
+    },
+    "stool": {
+      "file": "stool.glb",
+      "fit": 0.4,
+      "spin": "free"
+    },
+    "chair": {
+      "file": "chair.glb",
+      "fit": 0.5
+    },
+    "candle": {
+      "file": "candle.glb",
+      "fit": 0.2
+    },
+    "trunk": {
+      "file": "trunk.glb",
+      "fit": 0.8
+    },
+    "box": {
+      "file": "box.glb",
+      "fit": 0.5,
+      "jitter": 0.2,
+      "spin": "quarter"
     }
   }
 }

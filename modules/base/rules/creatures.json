@@ -1,63 +1,398 @@
 {
   "creatures": [
-    { "id": "razboynik", "name_key": "UNIT_RAZBOYNIK", "tags": ["humanoid"], "proficiency": 2,
-      "abilities": { "str": 11, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 10 },
-      "armor_class": 12, "hp": 11, "speed": 6,
-      "carries": [ "stegach", "topor", "luk" ],
-      "loot": { "money": "2d6", "items": [ { "item": "suhari", "chance": 30 }, { "item": "otvar", "chance": 10 } ] },
-      "actions": [
-        { "id": "topor", "name_key": "ITEM_TOPOR", "attack_type": "melee", "attack_bonus": "3",
-          "damage": [ { "formula": "1d6 + 1", "type": "slashing" } ], "tags": ["weapon", "iron"] },
-        { "id": "luk", "name_key": "ITEM_LUK", "attack_type": "ranged", "attack_bonus": "3", "range": 16,
-          "long_range": 64, "damage": [ { "formula": "1d6 + 1", "type": "piercing" } ], "tags": ["weapon", "iron"] }
-      ] },
-    { "id": "ataman", "name_key": "UNIT_ATAMAN", "tags": ["humanoid"], "proficiency": 2,
-      "abilities": { "str": 15, "dex": 16, "con": 14, "int": 14, "wis": 11, "cha": 14 },
-      "saves": ["str", "dex", "wis"], "armor_class": 15, "hp": 45, "speed": 6,
-      "carries": [ "kozhukh", "mech" ],
-      "loot": { "money": "5d6 + 10", "items": [ { "item": "otvar", "chance": 50 }, { "item": "sheynaya_grivna", "chance": 25 } ] },
-      "actions": [
-        { "id": "mnogo_udarov", "name_key": "ACT_MULTIATTACK", "kind": "multiattack", "range": 1,
-          "sub_actions": ["mech", "mech"] },
-        { "id": "mech", "name_key": "ITEM_MECH", "attack_type": "melee", "attack_bonus": "5",
-          "damage": [ { "formula": "1d8 + 3", "type": "slashing" } ], "tags": ["weapon", "iron"] }
-      ] },
-    { "id": "volk", "name_key": "UNIT_VOLK", "tags": ["beast"], "proficiency": 2,
-      "abilities": { "str": 14, "dex": 15, "con": 12, "int": 3, "wis": 12, "cha": 6 },
-      "armor_class": 12, "hp": 11, "speed": 8,
-      "traits": [ { "type": "pack_tactics", "name_key": "TRAIT_PACK_TACTICS" } ],
-      "loot": { "items": [ { "item": "volchya_shkura", "chance": 100 } ] },
-      "actions": [
-        { "id": "ukus", "name_key": "ACT_BITE", "attack_type": "melee", "attack_bonus": "4", "save_dc": "11",
-          "damage": [ { "formula": "1d6 + 2", "type": "piercing" } ],
-          "effects": [ { "condition": "prone", "on": "hit", "save_ability": "str" } ] }
-      ] },
-    { "id": "upyr", "name_key": "UNIT_UPYR", "tags": ["undead", "nechist"], "proficiency": 2,
-      "abilities": { "str": 16, "dex": 12, "con": 16, "int": 8, "wis": 10, "cha": 6 },
-      "armor_class": 14, "hp": 45, "speed": 6,
-      "defenses": [
-        { "kind": "resist", "types": ["physical"], "unless": ["aspen", "silver"] },
-        { "kind": "vulnerable", "types": ["fire"] },
-        { "kind": "immune", "types": ["poison"] }
+    {
+      "id": "razboynik",
+      "name_key": "UNIT_RAZBOYNIK",
+      "tags": [
+        "humanoid"
       ],
-      "traits": [ { "type": "revive", "formula": "10", "tags": ["fire", "aspen", "silver"], "name_key": "TRAIT_UPYR_REVIVE" } ],
-      "loot": { "money": "3d6 + 5", "items": [ { "item": "sheynaya_grivna", "chance": 50 } ] },
+      "proficiency": 2,
+      "abilities": {
+        "str": 11,
+        "dex": 12,
+        "con": 12,
+        "int": 10,
+        "wis": 10,
+        "cha": 10
+      },
+      "armor_class": 12,
+      "hp": 11,
+      "speed": 6,
+      "carries": [
+        "stegach",
+        "topor",
+        "luk"
+      ],
+      "loot": {
+        "money": "2d6",
+        "items": [
+          {
+            "item": "suhari",
+            "chance": 30
+          },
+          {
+            "item": "otvar",
+            "chance": 10
+          }
+        ]
+      },
       "actions": [
-        { "id": "kogti", "name_key": "ACT_CLAWS", "kind": "multiattack", "range": 1, "sub_actions": ["kogot", "kogot"] },
-        { "id": "kogot", "name_key": "ACT_CLAW", "attack_type": "melee", "attack_bonus": "5",
-          "damage": [ { "formula": "1d6 + 3", "type": "slashing" } ] }
-      ] },
-    { "id": "poludnitsa", "name_key": "UNIT_POLUDNITSA", "tags": ["fey", "nechist"], "proficiency": 2,
-      "abilities": { "str": 12, "dex": 16, "con": 12, "int": 10, "wis": 14, "cha": 14 },
-      "armor_class": 13, "hp": 40, "speed": 8,
-      "defenses": [ { "kind": "resist", "types": ["physical"], "unless": ["iron"] } ],
-      "traits": [ { "type": "aura", "radius": 2, "ability": "con", "dc": 12, "condition": "poisoned", "rounds": 1,
-                    "name_key": "TRAIT_NOON_HEAT" } ],
-      "carries": [ "serp" ],
+        {
+          "id": "topor",
+          "name_key": "ITEM_TOPOR",
+          "attack_type": "melee",
+          "attack_bonus": "3",
+          "damage": [
+            {
+              "formula": "1d6 + 1",
+              "type": "slashing"
+            }
+          ],
+          "tags": [
+            "weapon",
+            "iron"
+          ]
+        },
+        {
+          "id": "luk",
+          "name_key": "ITEM_LUK",
+          "attack_type": "ranged",
+          "attack_bonus": "3",
+          "range": 16,
+          "long_range": 64,
+          "damage": [
+            {
+              "formula": "1d6 + 1",
+              "type": "piercing"
+            }
+          ],
+          "tags": [
+            "weapon",
+            "iron"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ataman",
+      "name_key": "UNIT_ATAMAN",
+      "tags": [
+        "humanoid"
+      ],
+      "proficiency": 2,
+      "abilities": {
+        "str": 15,
+        "dex": 16,
+        "con": 14,
+        "int": 14,
+        "wis": 11,
+        "cha": 14
+      },
+      "saves": [
+        "str",
+        "dex",
+        "wis"
+      ],
+      "armor_class": 15,
+      "hp": 45,
+      "speed": 6,
+      "carries": [
+        "kozhukh",
+        "mech"
+      ],
+      "loot": {
+        "money": "5d6 + 10",
+        "items": [
+          {
+            "item": "otvar",
+            "chance": 50
+          },
+          {
+            "item": "sheynaya_grivna",
+            "chance": 25
+          }
+        ]
+      },
       "actions": [
-        { "id": "zhatva", "name_key": "ACT_HARVEST", "kind": "multiattack", "range": 1, "sub_actions": ["serp", "serp"] },
-        { "id": "serp", "name_key": "ACT_SICKLE", "attack_type": "melee", "attack_bonus": "5",
-          "damage": [ { "formula": "1d8 + 3", "type": "slashing" } ] }
-      ] }
+        {
+          "id": "mnogo_udarov",
+          "name_key": "ACT_MULTIATTACK",
+          "kind": "multiattack",
+          "range": 1,
+          "sub_actions": [
+            "mech",
+            "mech"
+          ]
+        },
+        {
+          "id": "mech",
+          "name_key": "ITEM_MECH",
+          "attack_type": "melee",
+          "attack_bonus": "5",
+          "damage": [
+            {
+              "formula": "1d8 + 3",
+              "type": "slashing"
+            }
+          ],
+          "tags": [
+            "weapon",
+            "iron"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volk",
+      "name_key": "UNIT_VOLK",
+      "tags": [
+        "beast"
+      ],
+      "proficiency": 2,
+      "abilities": {
+        "str": 14,
+        "dex": 15,
+        "con": 12,
+        "int": 3,
+        "wis": 12,
+        "cha": 6
+      },
+      "armor_class": 12,
+      "hp": 11,
+      "speed": 8,
+      "traits": [
+        {
+          "type": "pack_tactics",
+          "name_key": "TRAIT_PACK_TACTICS"
+        }
+      ],
+      "loot": {
+        "items": [
+          {
+            "item": "volchya_shkura",
+            "chance": 100
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "ukus",
+          "name_key": "ACT_BITE",
+          "attack_type": "melee",
+          "attack_bonus": "4",
+          "save_dc": "11",
+          "damage": [
+            {
+              "formula": "1d6 + 2",
+              "type": "piercing"
+            }
+          ],
+          "effects": [
+            {
+              "condition": "prone",
+              "on": "hit",
+              "save_ability": "str"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upyr",
+      "name_key": "UNIT_UPYR",
+      "tags": [
+        "undead",
+        "nechist"
+      ],
+      "proficiency": 2,
+      "abilities": {
+        "str": 16,
+        "dex": 12,
+        "con": 16,
+        "int": 8,
+        "wis": 10,
+        "cha": 6
+      },
+      "armor_class": 14,
+      "hp": 45,
+      "speed": 6,
+      "defenses": [
+        {
+          "kind": "resist",
+          "types": [
+            "physical"
+          ],
+          "unless": [
+            "aspen",
+            "silver"
+          ]
+        },
+        {
+          "kind": "vulnerable",
+          "types": [
+            "fire"
+          ]
+        },
+        {
+          "kind": "immune",
+          "types": [
+            "poison"
+          ]
+        }
+      ],
+      "traits": [
+        {
+          "type": "revive",
+          "formula": "10",
+          "tags": [
+            "fire",
+            "aspen",
+            "silver"
+          ],
+          "name_key": "TRAIT_UPYR_REVIVE"
+        }
+      ],
+      "loot": {
+        "money": "3d6 + 5",
+        "items": [
+          {
+            "item": "sheynaya_grivna",
+            "chance": 50
+          }
+        ]
+      },
+      "actions": [
+        {
+          "id": "kogti",
+          "name_key": "ACT_CLAWS",
+          "kind": "multiattack",
+          "range": 1,
+          "sub_actions": [
+            "kogot",
+            "kogot"
+          ]
+        },
+        {
+          "id": "kogot",
+          "name_key": "ACT_CLAW",
+          "attack_type": "melee",
+          "attack_bonus": "5",
+          "damage": [
+            {
+              "formula": "1d6 + 3",
+              "type": "slashing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poludnitsa",
+      "name_key": "UNIT_POLUDNITSA",
+      "tags": [
+        "fey",
+        "nechist"
+      ],
+      "proficiency": 2,
+      "abilities": {
+        "str": 12,
+        "dex": 16,
+        "con": 12,
+        "int": 10,
+        "wis": 14,
+        "cha": 14
+      },
+      "armor_class": 13,
+      "hp": 40,
+      "speed": 8,
+      "defenses": [
+        {
+          "kind": "resist",
+          "types": [
+            "physical"
+          ],
+          "unless": [
+            "iron"
+          ]
+        }
+      ],
+      "traits": [
+        {
+          "type": "aura",
+          "radius": 2,
+          "ability": "con",
+          "dc": 12,
+          "condition": "poisoned",
+          "rounds": 1,
+          "name_key": "TRAIT_NOON_HEAT"
+        }
+      ],
+      "carries": [
+        "serp"
+      ],
+      "actions": [
+        {
+          "id": "zhatva",
+          "name_key": "ACT_HARVEST",
+          "kind": "multiattack",
+          "range": 1,
+          "sub_actions": [
+            "serp",
+            "serp"
+          ]
+        },
+        {
+          "id": "serp",
+          "name_key": "ACT_SICKLE",
+          "attack_type": "melee",
+          "attack_bonus": "5",
+          "damage": [
+            {
+              "formula": "1d8 + 3",
+              "type": "slashing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "krysa",
+      "name_key": "UNIT_KRYSA",
+      "tags": [
+        "beast"
+      ],
+      "proficiency": 2,
+      "abilities": {
+        "str": 7,
+        "dex": 15,
+        "con": 11,
+        "int": 2,
+        "wis": 10,
+        "cha": 4
+      },
+      "armor_class": 13,
+      "hp": 7,
+      "speed": 6,
+      "traits": [
+        {
+          "type": "pack_tactics",
+          "name_key": "TRAIT_PACK_TACTICS"
+        }
+      ],
+      "actions": [
+        {
+          "id": "ukus_krysy",
+          "name_key": "ACT_BITE",
+          "attack_type": "melee",
+          "attack_bonus": "4",
+          "damage": [
+            {
+              "formula": "1d4 + 2",
+              "type": "piercing"
+            }
+          ]
+        }
+      ]
+    }
   ]
 }

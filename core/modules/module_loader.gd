@@ -24,6 +24,7 @@ const DIR_FILES: Dictionary[String, String] = {
 	"arenas": "arena.schema.json",
 	"areas": "area.schema.json",
 	"dialogs": "dialog.schema.json",
+	"quests": "quest.schema.json",
 	"locales": "locale.schema.json",
 }
 
@@ -336,6 +337,9 @@ func _add_entries(
 		elif dir == "dialogs":
 			if owners.claim("dialogs", entry_id, errs):
 				content.dialogs[entry_id] = data
+		elif dir == "quests":
+			if owners.claim("quests", entry_id, errs):
+				content.quests[entry_id] = data
 		elif dir == "locales":
 			var lang := rel.get_file().get_basename()
 			var strings: Dictionary = content.locales.get(lang, {})

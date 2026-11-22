@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quest.schema.json",
+  "title": "Квест (quests/<id>.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "title_key": {
+      "$ref": "common.schema.json#/$defs/locale_key"
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "text_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "final": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "text_key"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "title_key",
+    "stages"
+  ]
+}

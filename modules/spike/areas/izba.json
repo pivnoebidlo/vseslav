@@ -1,0 +1,195 @@
+{
+  "_comment": "Изба старосты изнутри: горница и подклеть с крысами (ADR-0034).",
+  "title_key": "AREA_IZBA",
+  "interior": true,
+  "map": [
+    "##############",
+    "#.##..#......#",
+    "#.....#......#",
+    "#.....#......#",
+    "#............#",
+    "##....#......#",
+    "##....#......#",
+    "#.....#......#",
+    "###.##########"
+  ],
+  "spawns": {
+    "door": [
+      3,
+      7
+    ]
+  },
+  "exits": [
+    {
+      "id": "vyhod",
+      "name_key": "EXIT_TO_VILLAGE",
+      "at": [
+        3,
+        8
+      ],
+      "to": {
+        "area": "derevnya",
+        "spawn": "from_izba"
+      }
+    }
+  ],
+  "objects": [
+    {
+      "prop": "table_long",
+      "at": [
+        2,
+        1
+      ],
+      "size": [
+        2,
+        1
+      ]
+    },
+    {
+      "prop": "bed",
+      "at": [
+        0,
+        5
+      ],
+      "size": [
+        2,
+        2
+      ],
+      "rotation": 90
+    },
+    {
+      "prop": "shelves",
+      "at": [
+        6,
+        1
+      ]
+    },
+    {
+      "prop": "keg",
+      "at": [
+        6,
+        2
+      ]
+    },
+    {
+      "prop": "barrel_small",
+      "at": [
+        6,
+        3
+      ]
+    },
+    {
+      "prop": "box",
+      "at": [
+        6,
+        5
+      ]
+    },
+    {
+      "prop": "box",
+      "at": [
+        6,
+        6
+      ]
+    },
+    {
+      "prop": "barrel_small",
+      "at": [
+        6,
+        7
+      ]
+    }
+  ],
+  "containers": [
+    {
+      "id": "sunduk",
+      "name_key": "CHEST_STAROSTA",
+      "prop": "chest",
+      "at": [
+        12,
+        1
+      ],
+      "items": [
+        {
+          "item": "otvar",
+          "count": 1
+        },
+        {
+          "item": "sheynaya_grivna",
+          "count": 1
+        }
+      ],
+      "purse": 75,
+      "then": [
+        {
+          "action": "set_quest",
+          "quest": "krysy",
+          "stage": "done"
+        }
+      ]
+    }
+  ],
+  "encounters": [
+    {
+      "id": "krysy",
+      "trigger": "zone",
+      "zone": [
+        7,
+        1,
+        6,
+        7
+      ],
+      "battle": [
+        0,
+        0,
+        14,
+        9
+      ],
+      "combatants": [
+        {
+          "id": "krysa_1",
+          "creature": "krysa",
+          "team": "beasts",
+          "at": [
+            9,
+            2
+          ]
+        },
+        {
+          "id": "krysa_2",
+          "creature": "krysa",
+          "team": "beasts",
+          "at": [
+            11,
+            3
+          ]
+        },
+        {
+          "id": "krysa_3",
+          "creature": "krysa",
+          "team": "beasts",
+          "at": [
+            10,
+            5
+          ]
+        },
+        {
+          "id": "krysa_4",
+          "creature": "krysa",
+          "team": "beasts",
+          "at": [
+            12,
+            6
+          ]
+        }
+      ],
+      "then": [
+        {
+          "action": "set_quest",
+          "quest": "krysy",
+          "stage": "cleared"
+        }
+      ]
+    }
+  ]
+}

@@ -24,13 +24,40 @@ class Npc:
 	var dialog: String = ""
 
 
+## Выход в другую область.
+class Exit:
+	extends RefCounted
+	var id: String = ""
+	var name_key: String = ""
+	var at: Vector2i = Vector2i.ZERO
+	var to_area: String = ""
+	var to_spawn: String = ""
+
+
+## Сундук: содержимое (как мешок: items, purse) и действия при первом открытии.
+class Chest:
+	extends RefCounted
+	var id: String = ""
+	var name_key: String = ""
+	var at: Vector2i = Vector2i.ZERO
+	var prop: String = ""
+	var contents: Dictionary = {}
+	var on_open: Array = []
+
+
 var id: String = ""
 var title_key: String = ""
+## Внутри помещения: стены ниже, чтобы камера видела комнату (ADR-0034).
+var interior := false
 var rows: Array[String] = []
 var grid: BattleGrid = BattleGrid.new()
 var spawns: Dictionary[String, Vector2i] = {}
 var npcs: Array[Npc] = []
 var encounters: Array[Encounter] = []
+## Выходы в другие области (ADR-0034): клетка → область и точка появления.
+var exits: Array[Exit] = []
+## Сундуки и другие вместилища: стоят в клетке, как жители, — к ним подходят.
+var containers: Array[Chest] = []
 ## Облик (ADR-0033): какие модели ставить на символы карты и явные объекты.
 var style: Dictionary = {}
 var objects: Array[Dictionary] = []
@@ -70,6 +97,29 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		npc.dialog = JsonRead.get_str(d, "dialog")
 		a.npcs.append(npc)
 	a.style = JsonRead.get_dict(data, "style")
+	a.interior = JsonRead.get_bool(data, "interior")
+	for raw: Variant in JsonRead.get_array(data, "exits"):
+		var d: Dictionary = raw
+		var x := Exit.new()
+		x.id = JsonRead.get_str(d, "id")
+		x.name_key = JsonRead.get_str(d, "name_key")
+		x.at = JsonRead.to_vec2i(d.get("at", []))
+		var to := JsonRead.get_dict(d, "to")
+		x.to_area = JsonRead.get_str(to, "area")
+		x.to_spawn = JsonRead.get_str(to, "spawn")
+		a.exits.append(x)
+	for raw: Variant in JsonRead.get_array(data, "containers"):
+		var d: Dictionary = raw
+		var box := Chest.new()
+		box.id = JsonRead.get_str(d, "id")
+		box.name_key = JsonRead.get_str(d, "name_key")
+		box.at = JsonRead.to_vec2i(d.get("at", []))
+		box.prop = JsonRead.get_str(d, "prop")
+		box.contents = {
+			"bag": JsonRead.get_array(d, "items"), "purse": JsonRead.get_int(d, "purse")
+		}
+		box.on_open = JsonRead.get_array(d, "then")
+		a.containers.append(box)
 	for raw: Variant in JsonRead.get_array(data, "objects"):
 		var o: Dictionary = raw
 		a.objects.append(o)
@@ -108,12 +158,40 @@ func get_npc(npc_id: String) -> Npc:
 	return null
 
 
-## Клетки, занятые жителями: сквозь них не ходят.
+## Клетки, занятые жителями и сундуками: сквозь них не ходят.
 func npc_cells() -> Dictionary[Vector2i, bool]:
 	var cells: Dictionary[Vector2i, bool] = {}
 	for npc in npcs:
 		cells[npc.at] = true
+	for box in containers:
+		cells[box.at] = true
 	return cells
+
+
+func get_exit(exit_id: String) -> Exit:
+	for x in exits:
+		if x.id == exit_id:
+			return x
+	return null
+
+
+func get_container(container_id: String) -> Chest:
+	for box in containers:
+		if box.id == container_id:
+			return box
+	return null
+
+
+## Ближайшие к точке появления свободные клетки для [param count] героев.
+func spawn_cells(spawn: String, count: int) -> Array[Vector2i]:
+	var taken := npc_cells()
+	var out: Array[Vector2i] = []
+	var at: Vector2i = spawns.get(spawn, Vector2i.ZERO)
+	for i in count:
+		var c := Encounter.nearest_free(grid, at, taken)
+		taken[c] = true
+		out.append(c)
+	return out
 
 
 ## Путь до клетки [param to] в обход построек, жителей и клеток [param blocked]
@@ -130,11 +208,20 @@ func approach(
 	from: Vector2i, npc_id: String, blocked: Dictionary[Vector2i, bool] = {}
 ) -> PathResult:
 	var npc := get_npc(npc_id)
+	if npc == null:
+		return PathResult.new()
+	return approach_cell(from, npc.at, blocked)
+
+
+## Кратчайший путь к соседней с [param target] клетке (житель, сундук).
+func approach_cell(
+	from: Vector2i, target: Vector2i, blocked: Dictionary[Vector2i, bool] = {}
+) -> PathResult:
 	var best := PathResult.new()
-	if npc == null or is_next_to(from, npc.at):
+	if is_next_to(from, target):
 		return best
 	for step in Pathfinder.NEIGHBORS:
-		var p := path(from, npc.at + step, blocked)
+		var p := path(from, target + step, blocked)
 		if p.found() and (not best.found() or p.total_cost() < best.total_cost()):
 			best = p
 	return best

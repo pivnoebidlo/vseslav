@@ -237,3 +237,44 @@ func test_area_props_are_checked() -> void:
 	assert_true(_has_error(content, "props/props.json: $.props.oak: file oak.glb not found"))
 	assert_true(_has_error(content, "areas/pole.json: $.style.grave: unknown prop 'ghost_stone'"))
 	assert_true(_has_error(content, "areas/pole.json: $.objects[0]: must be inside the map"))
+
+
+func test_exits_chests_and_quest_actions_are_checked() -> void:
+	var area := {
+		"title_key": "t.area",
+		"map": ["...", ".#."],
+		"spawns": {"start": [0, 0]},
+		"exits":
+		[
+			{"id": "a", "name_key": "t.area", "at": [1, 1], "to": {"area": "t", "spawn": "x"}},
+			{
+				"id": "b",
+				"name_key": "t.area",
+				"at": [0, 1],
+				"to": {"area": "nowhere", "spawn": "x"}
+			},
+		],
+		"containers":
+		[
+			{
+				"id": "box",
+				"name_key": "t.area",
+				"at": [2, 0],
+				"items": ["golden_fleece"],
+				"then": [{"action": "set_quest", "quest": "q", "stage": "nope"}],
+			},
+		],
+	}
+	var quest := {"title_key": "t.area", "stages": [{"id": "go", "text_key": "t.area"}]}
+	var files := {
+		"areas/t.json": area,
+		"quests/q.json": quest,
+		"locales/ru.json": _strings(["t.chests.title", "t.area"]),
+	}
+	ModuleFixture.write("t.chests", [], files)
+	var content := ModuleFixture.load_root()
+	assert_true(_has_error(content, "areas/t.json: $.exits[0]: must stand on a walkable cell"))
+	assert_true(_has_error(content, "areas/t.json: $.exits[0].to: no spawn 'x' in t"))
+	assert_true(_has_error(content, "areas/t.json: $.exits[1].to: unknown area 'nowhere'"))
+	assert_true(_has_error(content, "areas/t.json: $.containers[0]: unknown item 'golden_fleece'"))
+	assert_true(_has_error(content, "$.containers[0].then: quest 'q' has no stage 'nope'"))

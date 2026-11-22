@@ -6,12 +6,11 @@ extends RefCounted
 ## Ответ может требовать проверки характеристики (ADR-0031): {"check": {"ability", "dc"}},
 ## успех ведёт в "next", провал — в "fail" (без "fail" провал заканчивает разговор).
 
-const ACTION_SET_FLAG := "set_flag"
-const ACTIONS: Array[String] = [ACTION_SET_FLAG]
-
 var dialog_id: String = ""
 ## Последняя проверка (для анимации броска); null — ответ был без проверки.
 var last_check: CheckResult = null
+## Квесты, чья стадия изменилась при последнем выборе (для подсказки «Журнал обновлён»).
+var quests_changed: Array[String] = []
 ## Текущий узел; пусто — разговор окончен.
 var node_id: String = ""
 
@@ -44,15 +43,6 @@ static func start_node(data: Dictionary, flags: WorldFlags) -> String:
 	return ""
 
 
-## Применяет действия списка "then".
-static func apply(actions: Array, flags: WorldFlags) -> void:
-	for raw: Variant in actions:
-		var a: Dictionary = raw
-		match JsonRead.get_str(a, "action"):
-			ACTION_SET_FLAG:
-				flags.set_flag(JsonRead.get_str(a, "flag"), a.get("value", true))
-
-
 func ended() -> bool:
 	return node_id == ""
 
@@ -78,6 +68,7 @@ func options() -> Array[Dictionary]:
 ## [param speaker] — того, кто говорит.
 func choose(index: int, rng: Rng = null, speaker: Abilities = null) -> void:
 	last_check = null
+	quests_changed.clear()
 	var visible := options()
 	if visible.is_empty():
 		node_id = ""
@@ -95,14 +86,14 @@ func choose(index: int, rng: Rng = null, speaker: Abilities = null) -> void:
 		)
 		if not last_check.success:
 			next = JsonRead.get_str(option, "fail")
-	apply(JsonRead.get_array(option, "then"), _flags)
+	quests_changed.append_array(EventActions.apply(JsonRead.get_array(option, "then"), _flags))
 	_enter(next)
 
 
 func _enter(id: String) -> void:
 	node_id = id if _nodes.has(id) else ""
 	if node_id != "":
-		apply(JsonRead.get_array(_node(), "then"), _flags)
+		quests_changed.append_array(EventActions.apply(JsonRead.get_array(_node(), "then"), _flags))
 
 
 func _node() -> Dictionary:

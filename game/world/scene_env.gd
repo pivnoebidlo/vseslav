@@ -3,7 +3,8 @@ extends RefCounted
 ## Общее окружение 3D-сцен (арена, исследование): небо-фон, рассеянный свет, солнце с тенями.
 
 
-static func add_to(parent: Node) -> void:
+## Возвращает окружение, чтобы сцена могла его подстроить (фон в помещении).
+static func add_to(parent: Node) -> Environment:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.62, 0.7, 0.78)
@@ -18,3 +19,4 @@ static func add_to(parent: Node) -> void:
 	sun.rotation_degrees = Vector3(-55.0, 35.0, 0.0)
 	sun.shadow_enabled = true
 	parent.add_child(sun)
+	return env

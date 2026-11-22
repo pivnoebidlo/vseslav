@@ -12,9 +12,13 @@ const AUTO := "user://saves/game_auto.json"
 static var pending: GameSave = null
 ## Начать новую игру: флаги и партия — с нуля.
 static var new_game := false
+## Не писать на диск (дымовые проверки и прогоны без следов в папке игрока).
+static var disabled := false
 
 
 static func write(save: GameSave, path: String) -> void:
+	if disabled:
+		return
 	DirAccess.make_dir_recursive_absolute(DIR)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(save.to_dict(), "  ", true))

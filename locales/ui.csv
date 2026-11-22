@@ -300,3 +300,8 @@ LOG_SAVE_NOT_NOW,"Сохраниться можно в свой ход, когд
 err_save_format,"Сохранение от более новой версии игры.","The save is from a newer version of the game."
 err_save_module,"Для сохранения нет нужного модуля.","The module this save needs is not loaded."
 err_save_data,"Сохранение повреждено.","The save is damaged."
+UI_JOURNAL,Журнал (J),Journal (J)
+UI_JOURNAL_EMPTY,Пока ни одного дела.,No quests yet.
+LOG_JOURNAL_UPDATED,"Журнал обновлён: {title}","Journal updated: {title}"
+LOG_CHEST_EMPTY,Пусто.,Empty.
+UI_CHEST_HINT,"Каждую вещь забирает выбранный герой. Не взятое останется в сундуке.","Each item goes to the hero you pick. Whatever is left stays in the chest."

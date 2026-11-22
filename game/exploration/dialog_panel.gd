@@ -4,6 +4,8 @@ extends PanelContainer
 ## Ответ с проверкой помечен «[Проверка Харизмы, СЛ 15]»; бросок показывает DiceRoll.
 
 signal finished
+## После ответа сменилась стадия квестов [param quests].
+signal quests_changed(quests: Array[String])
 
 var _runner: DialogRunner
 var _dice: DiceRoll
@@ -127,6 +129,8 @@ func _choose(index: int) -> void:
 	var options := _runner.options()
 	var check := JsonRead.get_dict(options[index], "check") if index < options.size() else {}
 	_runner.choose(index, _rng, _speaker)
+	if not _runner.quests_changed.is_empty():
+		quests_changed.emit(_runner.quests_changed.duplicate())
 	var result := _runner.last_check
 	if result != null and _dice != null:
 		_busy = true

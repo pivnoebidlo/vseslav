@@ -14,6 +14,8 @@ var _changed := false
 var _list := VBoxContainer.new()
 var _loads := Label.new()
 var _status := Label.new()
+var _hint := Label.new()
+var _title := Label.new()
 
 
 func _init() -> void:
@@ -27,21 +29,17 @@ func _init() -> void:
 	add_child(box)
 	var header := HBoxContainer.new()
 	box.add_child(header)
-	var title := Label.new()
-	title.text = TranslationServer.translate("UI_LOOT")
-	title.add_theme_font_size_override("font_size", 18)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
+	_title.add_theme_font_size_override("font_size", 18)
+	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(_title)
 	var done := Button.new()
 	done.text = TranslationServer.translate("UI_EQ_CLOSE")
 	UiStyle.style_cost_button(done, ActionDef.COST_REACTION, false)
 	done.pressed.connect(_on_close)
 	header.add_child(done)
-	var hint := Label.new()
-	hint.text = TranslationServer.translate("UI_LOOT_HINT")
-	hint.add_theme_font_size_override("font_size", 12)
-	hint.add_theme_color_override("font_color", Color(0.75, 0.78, 0.85))
-	box.add_child(hint)
+	_hint.add_theme_font_size_override("font_size", 12)
+	_hint.add_theme_color_override("font_color", Color(0.75, 0.78, 0.85))
+	box.add_child(_hint)
 	_list.add_theme_constant_override("separation", 6)
 	box.add_child(_list)
 	box.add_child(HSeparator.new())
@@ -53,7 +51,17 @@ func _init() -> void:
 	visible = false
 
 
-func open(db: RulesDb, party: Party, pile: Inventory, heroes: Array[String]) -> void:
+## [param title] и [param hint] — ключи строк: добыча после боя или сундук.
+func open(
+	db: RulesDb,
+	party: Party,
+	pile: Inventory,
+	heroes: Array[String],
+	title: String = "UI_LOOT",
+	hint: String = "UI_LOOT_HINT"
+) -> void:
+	_title.text = TranslationServer.translate(title)
+	_hint.text = TranslationServer.translate(hint)
 	_db = db
 	_party = party
 	_pile = pile

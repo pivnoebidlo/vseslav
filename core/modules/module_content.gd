@@ -16,6 +16,8 @@ var arenas: Dictionary[String, Dictionary] = {}
 ## Области для исследования и диалоги по id (имя файла без .json).
 var areas: Dictionary[String, Dictionary] = {}
 var dialogs: Dictionary[String, Dictionary] = {}
+## Квесты по id (ADR-0034).
+var quests: Dictionary[String, Dictionary] = {}
 var merchants: Dictionary[String, Dictionary] = {}
 ## Облик участников из models/models.json: id → описание.
 var figures: Dictionary[String, Dictionary] = {}

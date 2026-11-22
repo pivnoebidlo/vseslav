@@ -7,6 +7,7 @@ extends Node3D
 const CELL := BattleGrid.CELL_SIZE_M
 const HOUSE_HEIGHT := 2.1
 const FENCE_HEIGHT := 0.6
+const INTERIOR_WALL := 1.1
 const GRID_Y := 0.025
 ## Доля пустых клеток с мелочами «scatter» (камешки), процентов.
 const SCATTER_PERCENT := 4
@@ -78,7 +79,8 @@ func _build_area() -> void:
 	plane.size = Vector2(area.width() * CELL, area.depth() * CELL)
 	ground.mesh = plane
 	ground.position = Vector3((area.width() - 1) * CELL / 2.0, 0.0, (area.depth() - 1) * CELL / 2.0)
-	ground.material_override = _material(Color(0.42, 0.52, 0.3))
+	var floor_color := Color(0.42, 0.33, 0.24) if area.interior else Color(0.42, 0.52, 0.3)
+	ground.material_override = _material(floor_color)
 	add_child(ground)
 	var road := _material(Color(0.55, 0.47, 0.34))
 	var wall := _material(Color(0.47, 0.34, 0.22))
@@ -99,9 +101,12 @@ func _build_area() -> void:
 				continue
 			match area.tile(c):
 				AreaMap.BUILDING:
-					if not built.has(c) and _place_building(c, built):
+					if not area.interior and not built.has(c) and _place_building(c, built):
 						continue
-					if not built.has(c):
+					if area.interior:
+						# Внутри — невысокие стены без крыши: камера видит комнату.
+						_box(c, Vector3(CELL, INTERIOR_WALL, CELL), INTERIOR_WALL / 2.0, wall)
+					elif not built.has(c):
 						_box(c, Vector3(CELL, HOUSE_HEIGHT, CELL), HOUSE_HEIGHT / 2.0, wall)
 						_box(c, Vector3(CELL * 1.08, 0.35, CELL * 1.08), HOUSE_HEIGHT + 0.17, roof)
 				AreaMap.TREE:
@@ -133,6 +138,8 @@ func _place_objects() -> void:
 			for x in range(rect.position.x, rect.end.x):
 				_covered[Vector2i(x, z)] = true
 		_place(JsonRead.get_str(o, "prop"), rect, JsonRead.get_int(o, "rotation"), _hash(at))
+	for box in area.containers:
+		_place(box.prop, Rect2i(box.at, Vector2i.ONE), 0, 0)
 
 
 ## Постройка # — связная группа клеток: одна модель на её габарит (колодец, дом,

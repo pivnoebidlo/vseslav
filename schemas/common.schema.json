@@ -494,26 +494,48 @@
       }
     },
     "event_action": {
-      "type": "object",
-      "properties": {
-        "action": {
-          "enum": [
-            "set_flag"
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "set_flag"
+            },
+            "flag": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "value": {
+              "$ref": "common.schema.json#/$defs/flag_value"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "flag"
           ]
         },
-        "flag": {
-          "$ref": "common.schema.json#/$defs/id"
-        },
-        "value": {
-          "$ref": "common.schema.json#/$defs/flag_value"
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "const": "set_quest"
+            },
+            "quest": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "stage": {
+              "$ref": "common.schema.json#/$defs/id"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "quest",
+            "stage"
+          ]
         }
-      },
-      "additionalProperties": false,
-      "required": [
-        "action",
-        "flag"
       ],
-      "description": "Действие (SPEC §8); пока только set_flag."
+      "description": "Действие (SPEC §8, ADR-0034): set_flag или set_quest."
     },
     "event_actions": {
       "type": "array",

@@ -32,5 +32,18 @@
   "DLG_TRAVNITSA_THANKS": "Thank you, Mlava. We'll be careful.",
   "DLG_TRAVNITSA_REFUSE": "I told you all I know. Strangers shouldn't meddle in our affairs. Go.",
   "DLG_TRAVNITSA_ASK_AGAIN": "Remind us about the noon wraith.",
-  "DLG_TRAVNITSA_SECRET_AGAIN": "At the graveyard, at noon. Keep to the shade and don't linger."
+  "DLG_TRAVNITSA_SECRET_AGAIN": "At the graveyard, at noon. Keep to the shade and don't linger.",
+  "AREA_IZBA": "Elder's House",
+  "EXIT_IZBA": "Elder's house",
+  "EXIT_TO_VILLAGE": "To the yard",
+  "CHEST_STAROSTA": "Elder's chest",
+  "QUEST_KRYSY": "Rats in the Cellar",
+  "QUEST_KRYSY_STARTED": "Elder Ratibor asks us to drive the rats out of the cellar of his house. The reward is in the chest down there.",
+  "QUEST_KRYSY_CLEARED": "The rats are dead. The reward waits in the chest in the cellar.",
+  "QUEST_KRYSY_DONE": "The elder's chest is opened, the reward is ours.",
+  "DLG_STAROSTA_ASK_WORK": "Is there any work for us?",
+  "DLG_STAROSTA_WORK": "There is, though it's a shameful thing… Rats have bred in the cellar — big as cats, gnawing the grain, not afraid of people. Drive them out — the chest is down there too, and whatever is in it is yours.",
+  "DLG_STAROSTA_TAKE_WORK": "We'll do it.",
+  "DLG_STAROSTA_REPORT": "The rats are dealt with.",
+  "DLG_STAROSTA_THANKS": "Thank you, you saved us! The chest in the cellar is yours, as agreed."
 }

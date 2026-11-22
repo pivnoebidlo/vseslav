@@ -18,8 +18,12 @@ var module_id: String = ""
 var module_version: String = ""
 var mode: String = MODE_EXPLORATION
 var area: String = ""
-## Клетка каждого героя на карте.
+## Клетка каждого героя на карте; пусто — герои встают у точки появления [member spawn]
+## (переход в другую область).
 var heroes: Dictionary[String, Vector2i] = {}
+var spawn: String = ""
+## Содержимое открытых сундуков: "<область>.<id>" → мешок (Inventory.to_dict).
+var containers: Dictionary = {}
 var selected: String = ""
 var chained: Dictionary[String, bool] = {}
 var flags := WorldFlags.new()
@@ -49,6 +53,8 @@ func to_dict() -> Dictionary:
 		{
 			"area": area,
 			"heroes": hero_cells,
+			"spawn": spawn,
+			"containers": containers,
 			"selected": selected,
 			"chained": chain,
 			"flags": flags.to_dict(),
@@ -80,6 +86,8 @@ static func from_dict(data: Dictionary, errors: Array[String]) -> GameSave:
 		s.heroes[id] = JsonRead.to_vec2i(cells[key])
 		s.chained[id] = JsonRead.get_bool(chain, id, true)
 	s.selected = JsonRead.get_str(state, "selected")
+	s.spawn = JsonRead.get_str(state, "spawn")
+	s.containers = JsonRead.get_dict(state, "containers")
 	s.flags = WorldFlags.from_dict(JsonRead.get_dict(state, "flags"))
 	s.party = JsonRead.get_dict(state, "party")
 	s.rng = JsonRead.get_dict(state, "rng")
@@ -89,7 +97,7 @@ static func from_dict(data: Dictionary, errors: Array[String]) -> GameSave:
 		if s.encounter == "" or s.combat.is_empty():
 			errors.append(ERR_DATA)
 			return null
-	if s.area == "" or s.heroes.is_empty():
+	if s.area == "" or (s.heroes.is_empty() and s.spawn == ""):
 		errors.append(ERR_DATA)
 		return null
 	return s

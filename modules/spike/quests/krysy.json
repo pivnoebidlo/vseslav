@@ -1,0 +1,18 @@
+{
+  "title_key": "QUEST_KRYSY",
+  "stages": [
+    {
+      "id": "started",
+      "text_key": "QUEST_KRYSY_STARTED"
+    },
+    {
+      "id": "cleared",
+      "text_key": "QUEST_KRYSY_CLEARED"
+    },
+    {
+      "id": "done",
+      "text_key": "QUEST_KRYSY_DONE",
+      "final": true
+    }
+  ]
+}

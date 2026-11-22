@@ -33,6 +33,8 @@ static var flags := WorldFlags.new()
 static var grid_on := false
 ## Броски вне боя (проверки в диалогах) — через Rng ядра; seed на сессию.
 static var rng := Rng.new(randi())
+## Содержимое открытых сундуков: "<область>.<id>" → мешок (ADR-0034).
+static var chests: Dictionary = {}
 
 var _content: ModuleContent
 var _screens := PartyScreens.new()
@@ -45,6 +47,10 @@ var _hero_cells: Array[Vector2i] = []
 ## Куда смотрит камера в бою (чей ход).
 var _combat_focus := ""
 var _game_over := GameOverPanel.new()
+var _map_points := MapPoints.new()
+var _journal: JournalPanel
+## Куда идёт выбранный герой: "exit:<id>" или "chest:<id>" (MapPoints).
+var _going_to := ""
 var _area: AreaMap
 var _figures: FigureCatalog
 var _camera := ArenaCamera.new()
@@ -72,7 +78,7 @@ func _ready() -> void:
 	_content = ModuleLoader.load_all()
 	ModuleLocales.apply(_content.locales)
 	_figures = FigureCatalog.from_content(_content, RigProfile.load_all())
-	SceneEnv.add_to(self)
+	var env := SceneEnv.add_to(self)
 	add_child(_world)
 	_world.add_child(_camera)
 	_camera.current = true
@@ -81,23 +87,30 @@ func _ready() -> void:
 	add_child(_session)
 	_setup_ui()
 	var start := _content.start()
-	_area = _content.area(JsonRead.get_str(start, "area"))
+	var save := _take_save()
+	var area_id := save.area if save != null else JsonRead.get_str(start, "area")
+	_area = _content.area(area_id)
 	if _area == null:
 		_hint.text = tr("UI_EXPLORE_NO_START")
 		for err in _content.errors:
 			push_error(err)
 		return
 	_title.text = tr(_area.title_key)
+	if _area.interior:
+		env.background_color = Color(0.08, 0.07, 0.06)
 	_area_view.build(_area, PropCatalog.from_content(_content))
 	_area_view.set_grid_visible(grid_on)
 	_world.add_child(_area_view)
-	var save := _take_save()
+	_map_points.build(_area)
+	_world.add_child(_map_points)
 	_spawn_npcs()
 	_spawn_foes()
 	var spawn: Vector2i = _area.spawns.get(JsonRead.get_str(start, "spawn"), Vector2i.ZERO)
 	var cells: Dictionary[String, Vector2i] = {}
-	if save != null:
+	if save != null and not save.heroes.is_empty():
 		cells = save.heroes
+	elif save != null:
+		cells = _cells_at_spawn(save.spawn)
 	_spawn_party(spawn, cells)
 	if save != null:
 		_restore_group(save)
@@ -161,12 +174,17 @@ func _on_key(keycode: Key) -> void:
 			_set_grid(not _area_view.is_grid_visible())
 		KEY_TAB:
 			_select(_group.next_id())
+		KEY_J:
+			_journal.toggle(_content.quests, flags)
 
 
 func _on_hover(screen_pos: Vector2) -> void:
 	var id := _unit_under(screen_pos)
 	_set_hovered(id)
-	if _npcs.has(id):
+	_map_points.set_hovered(id.trim_prefix("@") if id.begins_with("@") else "")
+	if id.begins_with("@"):
+		_preview(_point_path(id.trim_prefix("@")))
+	elif _npcs.has(id):
 		_preview(_area.approach(_leader_cell(), id, _foe_cells()))
 	elif id != "":
 		_path_preview.clear()
@@ -176,8 +194,11 @@ func _on_hover(screen_pos: Vector2) -> void:
 
 func _on_click(screen_pos: Vector2) -> void:
 	var id := _unit_under(screen_pos)
+	_going_to = ""
 	if _heroes.has(id):
 		_select(id)
+	elif id.begins_with("@"):
+		_go_point(id.trim_prefix("@"))
 	elif _npcs.has(id):
 		_go_talk(id)
 	else:
@@ -195,6 +216,8 @@ func _unit_under(screen_pos: Vector2) -> String:
 	if hit.is_empty():
 		return ""
 	var collider: Object = hit["collider"]
+	if collider.has_meta("point"):
+		return "@" + str(collider.get_meta("point"))
 	return str(collider.get_meta("unit_id", ""))
 
 
@@ -378,6 +401,9 @@ func _trail_point(back: float) -> Variant:
 
 
 func _arrived() -> void:
+	if _going_to != "":
+		_reach_point()
+		return
 	if _talk_to == "":
 		return
 	var npc_id := _talk_to
@@ -617,6 +643,7 @@ func _on_combat_ended(winner: String) -> void:
 		_game_over.set_can_load(SaveStore.has_any())
 		return
 	flags.set_flag(_encounter.won_flag(), true)
+	_quests_updated(EventActions.apply(_encounter.on_won, flags))
 	# Добыча, траты и раны — в партию (ADR-0026, ADR-0027).
 	_screens.after_combat(state)
 	for c in _encounter.combatants:
@@ -644,6 +671,90 @@ func _combat_look() -> Vector3:
 	return view.position + _shift()
 
 
+# --- Выходы, сундуки, журнал (ADR-0034) ------------------------------------------
+
+
+## Путь к точке: на клетку выхода или к соседней с сундуком клетке.
+func _point_path(key: String) -> PathResult:
+	if MapPoints.kind_of(key) == MapPoints.EXIT:
+		var x := _area.get_exit(MapPoints.id_of(key))
+		return _area.path(_leader_cell(), x.at, _foe_cells())
+	var box := _area.get_container(MapPoints.id_of(key))
+	return _area.approach_cell(_leader_cell(), box.at, _foe_cells())
+
+
+func _go_point(key: String) -> void:
+	_talk_to = ""
+	_going_to = key
+	var p := _point_path(key)
+	if p.found():
+		_walk_leader(p)
+	else:
+		_reach_point()
+
+
+## Выбранный герой дошёл: на выходе — переход, у сундука — открыть.
+func _reach_point() -> void:
+	var key := _going_to
+	_going_to = ""
+	var cell := _leader_cell()
+	if MapPoints.kind_of(key) == MapPoints.EXIT:
+		var x := _area.get_exit(MapPoints.id_of(key))
+		if cell == x.at:
+			_travel(x)
+		return
+	var box := _area.get_container(MapPoints.id_of(key))
+	if AreaMap.is_next_to(cell, box.at):
+		_open_chest(box)
+
+
+## Переход в другую область: сохранение с точкой появления и пересоздание сцены.
+func _travel(x: AreaMap.Exit) -> void:
+	var s := _make_save()
+	s.area = x.to_area
+	s.heroes.clear()
+	s.spawn = x.to_spawn
+	SaveStore.write(s, SaveStore.AUTO)
+	SaveStore.pending = s
+	get_tree().change_scene_to_file.call_deferred(SCENE)
+
+
+func _cells_at_spawn(spawn: String) -> Dictionary[String, Vector2i]:
+	var ids: Array[String] = []
+	ids.assign(_screens.party.inventories.keys())
+	ids.sort()
+	var spots := _area.spawn_cells(spawn, ids.size())
+	var cells: Dictionary[String, Vector2i] = {}
+	for i in ids.size():
+		cells[ids[i]] = spots[i]
+	return cells
+
+
+## Сундук: при первом открытии — его действия (стадия квеста); содержимое делят герои,
+## что не взяли — остаётся в сундуке.
+func _open_chest(box: AreaMap.Chest) -> void:
+	_leader().view.face(_cell_pos(box.at))
+	var key := "%s.%s" % [_area.id, box.id]
+	if not chests.has(key):
+		chests[key] = box.contents.duplicate(true)
+		_quests_updated(EventActions.apply(box.on_open, flags))
+	var stored: Dictionary = chests[key]
+	var pile := Inventory.from_dict(stored)
+	if pile.purse == 0 and pile.bag.is_empty():
+		_notify(tr("LOG_CHEST_EMPTY"))
+		return
+	_screens.open_chest(box.name_key, pile, _group.ids)
+	await _screens.loot_finished
+	chests[key] = pile.to_dict()
+
+
+func _quests_updated(quests: Array[String]) -> void:
+	for id in quests:
+		if _content.quests.has(id):
+			var title := tr(JsonRead.get_str(_content.quests[id], "title_key"))
+			_notify(tr("LOG_JOURNAL_UPDATED").format({"title": title}))
+
+
 # --- Сохранения (ADR-0032) -----------------------------------------------------
 
 
@@ -655,6 +766,7 @@ func _take_save() -> GameSave:
 	if SaveStore.new_game:
 		SaveStore.new_game = false
 		flags = WorldFlags.new()
+		chests = {}
 		_screens.party = Party.from_db(_content.rules)
 		_screens.save()
 		return null
@@ -666,6 +778,7 @@ func _take_save() -> GameSave:
 		_hint.text = tr(errors[0])
 		return null
 	flags = save.flags
+	chests = save.containers.duplicate(true)
 	_screens.party = Party.from_dict(save.party, _content.rules, errors)
 	_screens.save()
 	if not save.rng.is_empty():
@@ -699,6 +812,7 @@ func _make_save() -> GameSave:
 	s.flags = WorldFlags.from_dict(flags.to_dict())
 	s.party = _screens.party.to_dict()
 	s.rng = rng.to_dict()
+	s.containers = chests.duplicate(true)
 	if _in_combat():
 		s.mode = GameSave.MODE_COMBAT
 		s.encounter = _encounter.id
@@ -785,6 +899,7 @@ func _setup_ui() -> void:
 	)
 	_party_button(party_row, "UI_TRADE", func() -> void: _screens.open_trade_for(_group.ids))
 	_party_button(party_row, "UI_REST", func() -> void: _screens.open_rest_for(_group.ids))
+	_party_button(party_row, "UI_JOURNAL", func() -> void: _journal.toggle(_content.quests, flags))
 	column.add_child(_party_bar)
 	_party_bar.hero_selected.connect(_select)
 	_party_bar.chain_toggled.connect(_toggle_chain)
@@ -794,10 +909,14 @@ func _setup_ui() -> void:
 	_session.turn_started.connect(func(id: String) -> void: _combat_focus = id)
 	_session.ended.connect(_on_combat_ended)
 	_screens.setup(_content.rules, _content.merchants_data())
+	_screens.dry_run = SaveStore.disabled
 	layer.add_child(_screens)
 	layer.add_child(_dialog)
 	layer.add_child(_game_over)
 	_game_over.load_pressed.connect(_load_latest)
 	_game_over.menu_pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
 	layer.add_child(_dice)
+	_journal = JournalPanel.new()
+	layer.add_child(_journal)
+	_dialog.quests_changed.connect(_quests_updated)
 	_dialog.setup(_dice, rng)

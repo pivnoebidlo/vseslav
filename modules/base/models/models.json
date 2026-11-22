@@ -19,6 +19,7 @@
     "poludnitsa": { "figure": "spirit" },
     "starik": { "file": "barbarian.glb", "hold": [] },
     "znakharka": { "file": "mage.glb", "hold": [] },
-    "kovach": { "file": "rogue.glb", "hold": [] }
+    "kovach": { "file": "rogue.glb", "hold": [] },
+    "krysa": { "figure": "beast" }
   }
 }

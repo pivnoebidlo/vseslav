@@ -47,6 +47,10 @@
     "start": [
       25,
       18
+    ],
+    "from_izba": [
+      29,
+      23
     ]
   },
   "npcs": [
@@ -275,6 +279,20 @@
         55,
         24
       ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "izba",
+      "name_key": "EXIT_IZBA",
+      "at": [
+        29,
+        22
+      ],
+      "to": {
+        "area": "izba",
+        "spawn": "door"
+      }
     }
   ]
 }

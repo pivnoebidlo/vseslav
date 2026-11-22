@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Импорт моделей окружения KayKit (CC0) в modules/base/props: клонирует наборы во
-# временную папку и переводит выбранные .gltf в .glb (tools/convert_gltf.gd).
+# временную папку, переводит выбранные .gltf в .glb (tools/convert_gltf.gd) и скачивает
+# готовые .glb утвари для изб.
 # Список и лицензии — CREDITS.md. Использование: tools/import_kaykit_props.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -46,3 +47,23 @@ add "$h/tree_dead_large.gltf" tree_dead_b
 
 "$GODOT" --headless --import >/dev/null 2>&1 || true
 "$GODOT" --headless -s res://tools/convert_gltf.gd -- "${args[@]}"
+
+# Утварь для изб — KayKit Dungeon Remastered (CC0), там уже .glb.
+d=https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0/main/addons/kaykit_dungeon_remastered/Assets/gltf
+get() { curl -sfL -o "$out/$2.glb" "$d/$1"; echo "$1 -> $out/$2.glb"; }
+get chest.glb chest
+get table_long.gltf.glb table_long
+get table_medium.gltf.glb table
+get bed_frame.gltf.glb bed
+get shelves.gltf.glb shelves
+get shelf_small.gltf.glb shelf
+get barrel_small.gltf.glb barrel_small
+get keg.gltf.glb keg
+get stool.gltf.glb stool
+get chair.gltf.glb chair
+get candle_lit.gltf.glb candle
+get trunk_medium_A.gltf.glb trunk
+get box_small.gltf.glb box
+
+# Модули хранят .glb как есть (ADR-0022): импорт Godot — keep.
+for f in "$out"/*.glb; do printf '[remap]\n\nimporter="keep"\n' > "$f.import"; done

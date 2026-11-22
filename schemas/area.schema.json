@@ -127,6 +127,10 @@
               ]
             },
             "minItems": 1
+          },
+          "then": {
+            "$ref": "common.schema.json#/$defs/event_actions",
+            "description": "Действия при победе (ADR-0034)."
           }
         },
         "additionalProperties": false,
@@ -138,6 +142,91 @@
         ],
         "description": "Энкаунтер (ADR-0032): кто ждёт на карте и что запускает бой."
       }
+    },
+    "interior": {
+      "type": "boolean",
+      "description": "Помещение: стены ниже, чтобы камера видела комнату."
+    },
+    "exits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "at": {
+            "$ref": "common.schema.json#/$defs/cell"
+          },
+          "to": {
+            "type": "object",
+            "properties": {
+              "area": {
+                "$ref": "common.schema.json#/$defs/id"
+              },
+              "spawn": {
+                "$ref": "common.schema.json#/$defs/id"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "area",
+              "spawn"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "at",
+          "to"
+        ]
+      },
+      "description": "Выходы в другие области: встал на клетку — перешёл (ADR-0034)."
+    },
+    "containers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "at": {
+            "$ref": "common.schema.json#/$defs/cell"
+          },
+          "prop": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/stack"
+            }
+          },
+          "purse": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "then": {
+            "$ref": "common.schema.json#/$defs/event_actions"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "at"
+        ]
+      },
+      "description": "Сундуки: содержимое и действия при первом открытии (ADR-0034)."
     },
     "style": {
       "type": "object",

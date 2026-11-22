@@ -25,7 +25,7 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	dialog_ids.assign(content.dialogs.keys())
 	dialog_ids.sort()
 	for id in dialog_ids:
-		_check_dialog(content.dialogs[id], "dialogs/%s.json" % id, errors)
+		_check_dialog(content, content.dialogs[id], "dialogs/%s.json" % id, errors)
 	_check_start(content, errors)
 	_check_name_keys(content, errors)
 
@@ -79,6 +79,8 @@ static func _check_area(content: ModuleContent, id: String, errors: Array[String
 		if npc.look != "" and not content.figures.has(npc.look):
 			errors.append("%s: unknown look '%s'" % [at, npc.look])
 	_check_area_props(content, area, where, errors)
+	_check_exits(content, area, where, errors)
+	_check_chests(content, area, where, errors)
 	for i in area.encounters.size():
 		_check_encounter(
 			content, area, area.encounters[i], "%s: $.encounters[%d]" % [where, i], errors
@@ -108,6 +110,62 @@ static func _check_area_props(
 			size = JsonRead.to_vec2i(o["size"])
 		if not map.encloses(Rect2i(JsonRead.to_vec2i(o.get("at", [])), size)):
 			errors.append("%s: must be inside the map" % at)
+
+
+static func _check_exits(
+	content: ModuleContent, area: AreaMap, where: String, errors: Array[String]
+) -> void:
+	for i in area.exits.size():
+		var x := area.exits[i]
+		var at := "%s: $.exits[%d]" % [where, i]
+		if not area.grid.is_walkable(x.at):
+			errors.append("%s: must stand on a walkable cell" % at)
+		var target := content.area(x.to_area)
+		if target == null:
+			errors.append("%s.to: unknown area '%s'" % [at, x.to_area])
+		elif not target.spawns.has(x.to_spawn):
+			errors.append("%s.to: no spawn '%s' in %s" % [at, x.to_spawn, x.to_area])
+
+
+static func _check_chests(
+	content: ModuleContent, area: AreaMap, where: String, errors: Array[String]
+) -> void:
+	for i in area.containers.size():
+		var box := area.containers[i]
+		var at := "%s: $.containers[%d]" % [where, i]
+		if not area.grid.is_walkable(box.at):
+			errors.append("%s: must stand on a walkable cell" % at)
+		if box.prop != "" and not content.props.has(box.prop):
+			errors.append("%s: unknown prop '%s'" % [at, box.prop])
+		var bag := Inventory.from_dict(box.contents)
+		for s in bag.bag:
+			if not content.rules.items.has(s.item):
+				errors.append("%s: unknown item '%s'" % [at, s.item])
+		_check_actions(content, box.on_open, at + ".then", errors)
+	for i in area.encounters.size():
+		var e := area.encounters[i]
+		_check_actions(content, e.on_won, "%s: $.encounters[%d].then" % [where, i], errors)
+
+
+## set_quest ведёт к существующему квесту и стадии.
+static func _check_actions(
+	content: ModuleContent, actions: Array, at: String, errors: Array[String]
+) -> void:
+	for raw: Variant in actions:
+		var a: Dictionary = raw
+		if JsonRead.get_str(a, "action") != EventActions.SET_QUEST:
+			continue
+		var quest := JsonRead.get_str(a, "quest")
+		var stage := JsonRead.get_str(a, "stage")
+		if not content.quests.has(quest):
+			errors.append("%s: unknown quest '%s'" % [at, quest])
+			continue
+		var stages: Array[String] = []
+		for s: Variant in JsonRead.get_array(content.quests[quest], "stages"):
+			var d: Dictionary = s
+			stages.append(JsonRead.get_str(d, "id"))
+		if not stages.has(stage):
+			errors.append("%s: quest '%s' has no stage '%s'" % [at, quest, stage])
 
 
 static func _check_encounter(
@@ -140,7 +198,9 @@ static func _check_encounter(
 
 
 ## Начальные узлы и переходы ведут к существующим узлам.
-static func _check_dialog(data: Dictionary, where: String, errors: Array[String]) -> void:
+static func _check_dialog(
+	content: ModuleContent, data: Dictionary, where: String, errors: Array[String]
+) -> void:
 	var nodes := JsonRead.get_dict(data, "nodes")
 	var targets: Array[String] = []
 	var start_value: Variant = data.get("start", "")
@@ -159,9 +219,18 @@ static func _check_dialog(data: Dictionary, where: String, errors: Array[String]
 	ids.sort()
 	for id in ids:
 		var node: Dictionary = nodes[id]
+		_check_actions(
+			content, JsonRead.get_array(node, "then"), "%s: $.nodes.%s.then" % [where, id], errors
+		)
 		var options := JsonRead.get_array(node, "options")
 		for i in options.size():
 			var option: Dictionary = options[i]
+			_check_actions(
+				content,
+				JsonRead.get_array(option, "then"),
+				"%s: $.nodes.%s.options[%d].then" % [where, id, i],
+				errors
+			)
 			for key: String in ["next", "fail"]:
 				var target := JsonRead.get_str(option, key)
 				if target != "" and not nodes.has(target):
@@ -228,6 +297,7 @@ static func _check_name_keys(content: ModuleContent, errors: Array[String]) -> v
 	for source in sources:
 		collect_name_keys(source, keys)
 	collect_name_keys(content.dialogs, keys, ["text"])
+	collect_name_keys(content.quests, keys, ["title_key", "text_key"])
 	var missing: Array[String] = []
 	for key in keys:
 		if not missing.has(key) and not _translated(content, key):

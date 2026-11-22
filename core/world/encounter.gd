@@ -19,6 +19,8 @@ var sight: int = 0
 var battle := Rect2i()
 ## Противники: {"id", "creature", "team", "at": [x, z] в клетках области}.
 var combatants: Array[Dictionary] = []
+## Действия при победе (ADR-0034), например смена стадии квеста.
+var on_won: Array = []
 
 
 static func from_dict(data: Dictionary) -> Encounter:
@@ -28,6 +30,7 @@ static func from_dict(data: Dictionary) -> Encounter:
 	e.zone = rect_of(JsonRead.get_array(data, "zone"))
 	e.sight = JsonRead.get_int(data, "sight")
 	e.battle = rect_of(JsonRead.get_array(data, "battle"))
+	e.on_won = JsonRead.get_array(data, "then")
 	for raw: Variant in JsonRead.get_array(data, "combatants"):
 		var c: Dictionary = raw
 		e.combatants.append(c)

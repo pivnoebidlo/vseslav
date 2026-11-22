@@ -60,6 +60,29 @@
                 "next": {
                   "$ref": "common.schema.json#/$defs/id"
                 },
+                "fail": {
+                  "$ref": "common.schema.json#/$defs/id",
+                  "description": "Узел при провале проверки; без него провал заканчивает разговор."
+                },
+                "check": {
+                  "type": "object",
+                  "properties": {
+                    "ability": {
+                      "$ref": "common.schema.json#/$defs/ability"
+                    },
+                    "dc": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 30
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "ability",
+                    "dc"
+                  ],
+                  "description": "Проверка характеристики говорящего героя: d20 + модификатор ≥ СЛ."
+                },
                 "if": {
                   "$ref": "common.schema.json#/$defs/flag_conditions"
                 },

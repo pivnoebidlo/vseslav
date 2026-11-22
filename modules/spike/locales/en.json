@@ -26,5 +26,11 @@
   "DLG_KUZNETS_WORK_ON": "Nothing, carry on.",
   "DLG_KUZNETS_BED": "The elder sent you? Fine, the hayloft is behind the forge. Just no fire in there!",
   "DLG_KUZNETS_THANKS": "Thank you, master.",
-  "DLG_KUZNETS_REST": "Hayloft behind the forge, I told you. Get some rest."
+  "DLG_KUZNETS_REST": "Hayloft behind the forge, I told you. Get some rest.",
+  "DLG_TRAVNITSA_PRESS": "You haven't told us everything. Speak plainly — we'll help.",
+  "DLG_TRAVNITSA_SECRET": "Persistent, aren't you… Very well. The lights are only half the trouble. At the old graveyard a noon wraith walks at midday. Whoever she catches in the heat, she cuts down with her sickle. The sun is her strength; shade hinders her.",
+  "DLG_TRAVNITSA_THANKS": "Thank you, Mlava. We'll be careful.",
+  "DLG_TRAVNITSA_REFUSE": "I told you all I know. Strangers shouldn't meddle in our affairs. Go.",
+  "DLG_TRAVNITSA_ASK_AGAIN": "Remind us about the noon wraith.",
+  "DLG_TRAVNITSA_SECRET_AGAIN": "At the graveyard, at noon. Keep to the shade and don't linger."
 }

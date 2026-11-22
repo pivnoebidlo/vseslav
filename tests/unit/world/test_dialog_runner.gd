@@ -26,6 +26,30 @@ const DIALOG := {
 	},
 }
 
+const CHECKED := {
+	"start": "ask",
+	"nodes":
+	{
+		"ask":
+		{
+			"text": "ASK",
+			"options":
+			[
+				{
+					"text": "CHARM",
+					"check": {"ability": "cha", "dc": 15},
+					"next": "yes",
+					"fail": "no",
+					"then": [{"action": "set_flag", "flag": "tried", "value": true}],
+				},
+				{"text": "BLUFF", "check": {"ability": "cha", "dc": 30}, "next": "yes"},
+			],
+		},
+		"yes": {"text": "YES"},
+		"no": {"text": "NO"},
+	},
+}
+
 
 func test_first_meeting_then_repeat() -> void:
 	var flags := WorldFlags.new()
@@ -91,3 +115,40 @@ func test_flags_from_json_numbers_and_round_trip() -> void:
 	assert_true(flags.matches({"flag": "unset", "eq": false}), "unset flag is false")
 	assert_false(flags.matches({"flag": "count", "eq": "3"}))
 	assert_eq(WorldFlags.from_dict(flags.to_dict()).to_dict(), flags.to_dict())
+
+
+func _speaker(cha: int) -> Abilities:
+	return Abilities.from_dict({"cha": cha})
+
+
+func test_check_success_goes_to_next() -> void:
+	var flags := WorldFlags.new()
+	var r := DialogRunner.start("t", CHECKED, flags)
+	r.choose(0, StubRng.new([13]), _speaker(14))
+	assert_eq(r.text_key(), "YES", "13 + 2 = 15 meets DC 15")
+	assert_eq(r.last_check.natural, 13)
+	assert_eq(r.last_check.modifier, 2)
+	assert_eq(r.last_check.total, 15)
+	assert_true(r.last_check.success)
+	assert_true(flags.matches({"flag": "tried"}), "actions run on either outcome")
+
+
+func test_check_failure_goes_to_fail() -> void:
+	var r := DialogRunner.start("t", CHECKED, WorldFlags.new())
+	r.choose(0, StubRng.new([12]), _speaker(14))
+	assert_eq(r.text_key(), "NO")
+	assert_false(r.last_check.success)
+
+
+func test_failure_without_fail_node_ends_talk() -> void:
+	var r := DialogRunner.start("t", CHECKED, WorldFlags.new())
+	r.choose(1, StubRng.new([20]), _speaker(10))
+	assert_true(r.ended(), "natural 20 is no auto-success on checks")
+	assert_eq(r.last_check.total, 20)
+
+
+func test_option_without_check_clears_last_check() -> void:
+	var r := DialogRunner.start("t", CHECKED, WorldFlags.new())
+	r.choose(0, StubRng.new([20]), _speaker(10))
+	r.choose(0)
+	assert_null(r.last_check)

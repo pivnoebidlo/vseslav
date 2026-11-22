@@ -190,7 +190,7 @@ func test_area_and_dialog_references_are_checked() -> void:
 	assert_true(_has_error(content, "areas/selo.json: $.npcs[1]: unknown look 'ghost'"))
 	assert_true(_has_error(content, "dialogs/ded.json: $.start: unknown node 'lost'"))
 	assert_true(
-		_has_error(content, "dialogs/ded.json: $.nodes.hello.options[0]: unknown node 'gone'")
+		_has_error(content, "dialogs/ded.json: $.nodes.hello.options[0].next: unknown node 'gone'")
 	)
 
 

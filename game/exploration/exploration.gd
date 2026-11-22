@@ -29,6 +29,8 @@ class Walker:
 ## Флаги мира и включённая сетка живут, пока запущена игра (сохранение — позже).
 static var flags := WorldFlags.new()
 static var grid_on := false
+## Броски вне боя (проверки в диалогах) — через Rng ядра; seed на сессию.
+static var rng := Rng.new(randi())
 
 var _content: ModuleContent
 var _area: AreaMap
@@ -47,6 +49,7 @@ var _look := Vector3.ZERO
 var _talk_to := ""
 var _hovered := ""
 var _dialog := DialogPanel.new()
+var _dice := DiceRoll.new()
 var _party_bar := PartyBar.new()
 var _grid_button := CheckButton.new()
 var _title := Label.new()
@@ -351,7 +354,14 @@ func _arrived() -> void:
 	_set_hovered("")
 	_path_preview.clear()
 	var runner := DialogRunner.start(npc.dialog, _content.dialogs[npc.dialog], flags)
-	_dialog.open(tr(npc.name_key), runner)
+	_dialog.open(tr(npc.name_key), runner, _names[_group.selected], _abilities(_group.selected))
+
+
+## Характеристики героя для проверок в разговоре.
+func _abilities(character_id: String) -> Abilities:
+	var errors: Array[String] = []
+	var data := _content.rules.characters[character_id]
+	return CombatantBuilder.from_character(_content.rules, data, errors).abilities
 
 
 ## Камера следит за выбранным, но не уходит далеко за край области.
@@ -461,3 +471,5 @@ func _setup_ui() -> void:
 	_party_bar.hero_selected.connect(_select)
 	_party_bar.chain_toggled.connect(_toggle_chain)
 	layer.add_child(_dialog)
+	layer.add_child(_dice)
+	_dialog.setup(_dice, rng)

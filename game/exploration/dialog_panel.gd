@@ -1,10 +1,16 @@
 class_name DialogPanel
 extends PanelContainer
 ## Окно разговора внизу экрана: имя собеседника, реплика, ответы (кнопки или 1–9).
+## Ответ с проверкой помечен «[Проверка Харизмы, СЛ 15]»; бросок показывает DiceRoll.
 
 signal finished
 
 var _runner: DialogRunner
+var _dice: DiceRoll
+var _rng: Rng
+var _speaker: Abilities
+var _speaker_name := ""
+var _busy := false
 var _name := Label.new()
 var _text := Label.new()
 var _options := VBoxContainer.new()
@@ -39,9 +45,18 @@ func _init() -> void:
 	visible = false
 
 
-func open(speaker: String, runner: DialogRunner) -> void:
+## [param dice] — общий виджет броска; [param rng] и [param abilities] — для проверок
+## героя [param hero_name], который говорит.
+func setup(dice: DiceRoll, rng: Rng) -> void:
+	_dice = dice
+	_rng = rng
+
+
+func open(npc_name: String, runner: DialogRunner, hero_name: String, abilities: Abilities) -> void:
 	_runner = runner
-	_name.text = speaker
+	_speaker = abilities
+	_speaker_name = hero_name
+	_name.text = npc_name
 	visible = true
 	_show()
 
@@ -52,7 +67,7 @@ func is_open() -> bool:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if not visible or key == null or not key.pressed:
+	if not visible or _busy or key == null or not key.pressed:
 		return
 	var n := key.keycode - KEY_1
 	if n >= 0 and n < _options.get_child_count():
@@ -73,7 +88,27 @@ func _show() -> void:
 	if options.is_empty():
 		_add_option(0, tr("UI_DIALOG_LEAVE"))
 	for i in options.size():
-		_add_option(i, tr(JsonRead.get_str(options[i], "text")))
+		var text := tr(JsonRead.get_str(options[i], "text"))
+		var check := JsonRead.get_dict(options[i], "check")
+		if not check.is_empty():
+			text = "%s %s" % [_check_label(check), text]
+		_add_option(i, text)
+
+
+func _check_label(check: Dictionary) -> String:
+	return (
+		tr("UI_CHECK_OPTION")
+		. format(
+			{
+				"ability": _ability_name(JsonRead.get_str(check, "ability")),
+				"dc": JsonRead.get_int(check, "dc"),
+			}
+		)
+	)
+
+
+func _ability_name(ability: String) -> String:
+	return tr("ABIL_" + ability.to_upper())
 
 
 func _add_option(index: int, text: String) -> void:
@@ -87,5 +122,20 @@ func _add_option(index: int, text: String) -> void:
 
 
 func _choose(index: int) -> void:
-	_runner.choose(index)
+	if _busy:
+		return
+	var options := _runner.options()
+	var check := JsonRead.get_dict(options[index], "check") if index < options.size() else {}
+	_runner.choose(index, _rng, _speaker)
+	var result := _runner.last_check
+	if result != null and _dice != null:
+		_busy = true
+		_options.modulate.a = 0.4
+		var title := tr("UI_DICE_CHECK").format(
+			{"name": _speaker_name, "ability": _ability_name(JsonRead.get_str(check, "ability"))}
+		)
+		_dice.play(title, result.rolls, result.natural, DiceText.vs_dc(result), result.success)
+		await _dice.finished
+		_options.modulate.a = 1.0
+		_busy = false
 	_show()

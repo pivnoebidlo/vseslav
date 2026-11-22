@@ -279,3 +279,14 @@ UI_GRID,Сетка (G),Grid (G)
 UI_PARTY_CHAINED,в группе,in group
 UI_PARTY_ALONE,отдельно,alone
 UI_PARTY_CHAIN_HINT,"Отцепить от группы или прицепить обратно: сцепленные идут за выбранным героем","Unchain from the group or chain back: chained heroes follow the selected one"
+UI_CHECK_OPTION,"[Проверка {ability}, СЛ {dc}]","[{ability} check, DC {dc}]"
+UI_DICE_CHECK,{name}: проверка {ability},{name}: {ability} check
+UI_DICE_SAVE,{name}: спасбросок {ability},{name}: {ability} save
+UI_DICE_ATTACK,{name} → {target}: {action},{name} → {target}: {action}
+UI_DICE_VS_DC,"{natural} {mod} = {total} против СЛ {dc} — {outcome}","{natural} {mod} = {total} vs DC {dc} — {outcome}"
+UI_DICE_VS_AC,"{natural} {mod} = {total} против КД {ac} — {outcome}","{natural} {mod} = {total} vs AC {ac} — {outcome}"
+UI_DICE_SUCCESS,успех,success
+UI_DICE_FAIL,провал,failure
+UI_DICE_HIT,попадание,hit
+UI_DICE_MISS,промах,miss
+UI_DICE_CRIT,критическое попадание!,critical hit!

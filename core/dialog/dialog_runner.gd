@@ -3,11 +3,15 @@ extends RefCounted
 ## Разговор по данным dialogs/<id>.json (ADR-0029): узлы с репликой собеседника и
 ## вариантами ответа. Условия ответов и начала ("if") и действия ("then") — в том же
 ## виде, что у декларативных событий (SPEC §8): {"flag", "eq"} и {"action": "set_flag"}.
+## Ответ может требовать проверки характеристики (ADR-0031): {"check": {"ability", "dc"}},
+## успех ведёт в "next", провал — в "fail" (без "fail" провал заканчивает разговор).
 
 const ACTION_SET_FLAG := "set_flag"
 const ACTIONS: Array[String] = [ACTION_SET_FLAG]
 
 var dialog_id: String = ""
+## Последняя проверка (для анимации броска); null — ответ был без проверки.
+var last_check: CheckResult = null
 ## Текущий узел; пусто — разговор окончен.
 var node_id: String = ""
 
@@ -70,7 +74,10 @@ func options() -> Array[Dictionary]:
 
 ## Выбрать ответ по номеру среди [method options]. Ответ без "next" заканчивает
 ## разговор; без вариантов ответа разговор заканчивает выбор 0 («уйти»).
-func choose(index: int) -> void:
+## Для ответа с проверкой бросает d20 через [param rng] с характеристиками
+## [param speaker] — того, кто говорит.
+func choose(index: int, rng: Rng = null, speaker: Abilities = null) -> void:
+	last_check = null
 	var visible := options()
 	if visible.is_empty():
 		node_id = ""
@@ -78,8 +85,18 @@ func choose(index: int) -> void:
 	if index < 0 or index >= visible.size():
 		return
 	var option := visible[index]
+	var next := JsonRead.get_str(option, "next")
+	var check := JsonRead.get_dict(option, "check")
+	if not check.is_empty():
+		var ability := JsonRead.get_str(check, "ability")
+		var modifier := speaker.modifier(ability) if speaker != null else 0
+		last_check = CheckResolver.roll(
+			rng if rng != null else Rng.new(), modifier, JsonRead.get_int(check, "dc")
+		)
+		if not last_check.success:
+			next = JsonRead.get_str(option, "fail")
 	apply(JsonRead.get_array(option, "then"), _flags)
-	_enter(JsonRead.get_str(option, "next"))
+	_enter(next)
 
 
 func _enter(id: String) -> void:

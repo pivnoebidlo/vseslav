@@ -15,6 +15,16 @@
           ]
         },
         {
+          "text": "DLG_TRAVNITSA_ASK_AGAIN",
+          "next": "secret_again",
+          "if": [
+            {
+              "flag": "knows_poludnitsa",
+              "eq": true
+            }
+          ]
+        },
+        {
           "text": "DLG_PASSING_BY"
         }
       ]
@@ -30,7 +40,47 @@
       ],
       "options": [
         {
+          "text": "DLG_TRAVNITSA_PRESS",
+          "check": {
+            "ability": "cha",
+            "dc": 15
+          },
+          "next": "secret",
+          "fail": "refuse"
+        },
+        {
           "text": "DLG_TRAVNITSA_PROMISE"
+        }
+      ]
+    },
+    "secret": {
+      "text": "DLG_TRAVNITSA_SECRET",
+      "then": [
+        {
+          "action": "set_flag",
+          "flag": "knows_poludnitsa",
+          "value": true
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_TRAVNITSA_THANKS"
+        }
+      ]
+    },
+    "refuse": {
+      "text": "DLG_TRAVNITSA_REFUSE",
+      "options": [
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "secret_again": {
+      "text": "DLG_TRAVNITSA_SECRET_AGAIN",
+      "options": [
+        {
+          "text": "DLG_BYE"
         }
       ]
     }

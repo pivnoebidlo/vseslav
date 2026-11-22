@@ -102,11 +102,15 @@ static func _check_dialog(data: Dictionary, where: String, errors: Array[String]
 		var options := JsonRead.get_array(node, "options")
 		for i in options.size():
 			var option: Dictionary = options[i]
-			var next := JsonRead.get_str(option, "next")
-			if next != "" and not nodes.has(next):
-				errors.append(
-					"%s: $.nodes.%s.options[%d]: unknown node '%s'" % [where, id, i, next]
-				)
+			for key: String in ["next", "fail"]:
+				var target := JsonRead.get_str(option, key)
+				if target != "" and not nodes.has(target):
+					errors.append(
+						(
+							"%s: $.nodes.%s.options[%d].%s: unknown node '%s'"
+							% [where, id, i, key, target]
+						)
+					)
 
 
 static func _check_start(content: ModuleContent, errors: Array[String]) -> void:

@@ -21,6 +21,8 @@ const FIXED_FILES: Dictionary[String, String] = {
 ## Папки, где каждый .json — отдельная запись своего типа.
 const DIR_FILES: Dictionary[String, String] = {
 	"arenas": "arena.schema.json",
+	"areas": "area.schema.json",
+	"dialogs": "dialog.schema.json",
 	"locales": "locale.schema.json",
 }
 
@@ -323,10 +325,16 @@ func _add_entries(
 	for rel in rels:
 		var data: Dictionary = p.files[rel]
 		var dir := rel.get_base_dir()
+		var entry_id := rel.get_file().get_basename()
 		if dir == "arenas":
-			var arena_id := rel.get_file().get_basename()
-			if owners.claim("arenas", arena_id, errs):
-				content.arenas[arena_id] = data
+			if owners.claim("arenas", entry_id, errs):
+				content.arenas[entry_id] = data
+		elif dir == "areas":
+			if owners.claim("areas", entry_id, errs):
+				content.areas[entry_id] = data
+		elif dir == "dialogs":
+			if owners.claim("dialogs", entry_id, errs):
+				content.dialogs[entry_id] = data
 		elif dir == "locales":
 			var lang := rel.get_file().get_basename()
 			var strings: Dictionary = content.locales.get(lang, {})

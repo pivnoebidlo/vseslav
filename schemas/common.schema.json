@@ -463,6 +463,72 @@
         }
       },
       "additionalProperties": false
+    },
+    "flag_value": {
+      "type": [
+        "boolean",
+        "integer",
+        "string"
+      ]
+    },
+    "flag_condition": {
+      "type": "object",
+      "properties": {
+        "flag": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "eq": {
+          "$ref": "common.schema.json#/$defs/flag_value"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "flag"
+      ],
+      "description": "Условие: флаг равен значению (не заданный флаг — false)."
+    },
+    "flag_conditions": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/flag_condition"
+      }
+    },
+    "event_action": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "enum": [
+            "set_flag"
+          ]
+        },
+        "flag": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "value": {
+          "$ref": "common.schema.json#/$defs/flag_value"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "flag"
+      ],
+      "description": "Действие (SPEC §8); пока только set_flag."
+    },
+    "event_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/event_action"
+      }
+    },
+    "cell": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 2
     }
   }
 }

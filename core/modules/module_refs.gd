@@ -1,7 +1,8 @@
 class_name ModuleRefs
 extends RefCounted
-## Проверка ссылок между файлами собранных модулей (ADR-0028): участники арен, товары
-## купцов, облик, ключи строк. Ссылки внутри правил проверяет RulesDb.validate.
+## Проверка ссылок между файлами собранных модулей (ADR-0028, ADR-0029): участники арен,
+## товары купцов, облик, области и диалоги, начало игры, ключи строк. Ссылки внутри
+## правил проверяет RulesDb.validate.
 
 const NAME_KEYS: Array[String] = ["name_key", "title_key"]
 
@@ -14,6 +15,17 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	for e in market_errors:
 		errors.append("merchants: " + e)
 	_check_figures(content, errors)
+	var area_ids: Array[String] = []
+	area_ids.assign(content.areas.keys())
+	area_ids.sort()
+	for id in area_ids:
+		_check_area(content, id, errors)
+	var dialog_ids: Array[String] = []
+	dialog_ids.assign(content.dialogs.keys())
+	dialog_ids.sort()
+	for id in dialog_ids:
+		_check_dialog(content.dialogs[id], "dialogs/%s.json" % id, errors)
+	_check_start(content, errors)
 	_check_name_keys(content, errors)
 
 
@@ -42,14 +54,81 @@ static func _check_arena(content: ModuleContent, id: String, errors: Array[Strin
 			errors.append("%s: unknown creature '%s'" % [at, creature])
 
 
+static func _check_area(content: ModuleContent, id: String, errors: Array[String]) -> void:
+	var where := "areas/%s.json" % id
+	var area := content.area(id)
+	for row in area.rows:
+		if row.length() != area.width():
+			errors.append("%s: $.map: rows must have equal length" % where)
+			break
+	for name: String in area.spawns:
+		if not area.grid.is_walkable(area.spawns[name]):
+			errors.append("%s: $.spawns.%s: not a walkable cell" % [where, name])
+	var seen: Array[String] = []
+	for i in area.npcs.size():
+		var npc := area.npcs[i]
+		var at := "%s: $.npcs[%d]" % [where, i]
+		if seen.has(npc.id):
+			errors.append("%s: duplicate npc id '%s'" % [at, npc.id])
+		seen.append(npc.id)
+		if not area.grid.is_walkable(npc.at):
+			errors.append("%s: stands on a blocked or missing cell" % at)
+		if npc.dialog != "" and not content.dialogs.has(npc.dialog):
+			errors.append("%s: unknown dialog '%s'" % [at, npc.dialog])
+		if npc.look != "" and not content.figures.has(npc.look):
+			errors.append("%s: unknown look '%s'" % [at, npc.look])
+
+
+## Начальные узлы и переходы ведут к существующим узлам.
+static func _check_dialog(data: Dictionary, where: String, errors: Array[String]) -> void:
+	var nodes := JsonRead.get_dict(data, "nodes")
+	var targets: Array[String] = []
+	var start_value: Variant = data.get("start", "")
+	if typeof(start_value) == TYPE_STRING:
+		targets.append(str(start_value))
+	else:
+		var variants: Array = start_value
+		for raw: Variant in variants:
+			var v: Dictionary = raw
+			targets.append(JsonRead.get_str(v, "node"))
+	for t in targets:
+		if not nodes.has(t):
+			errors.append("%s: $.start: unknown node '%s'" % [where, t])
+	var ids: Array[String] = []
+	ids.assign(nodes.keys())
+	ids.sort()
+	for id in ids:
+		var node: Dictionary = nodes[id]
+		var options := JsonRead.get_array(node, "options")
+		for i in options.size():
+			var option: Dictionary = options[i]
+			var next := JsonRead.get_str(option, "next")
+			if next != "" and not nodes.has(next):
+				errors.append(
+					"%s: $.nodes.%s.options[%d]: unknown node '%s'" % [where, id, i, next]
+				)
+
+
+static func _check_start(content: ModuleContent, errors: Array[String]) -> void:
+	for m in content.modules:
+		if m.start.is_empty():
+			continue
+		var area_id := JsonRead.get_str(m.start, "area")
+		var area := content.area(area_id)
+		if area == null:
+			errors.append("module.json: $.start.area: unknown area '%s'" % area_id)
+		elif not area.spawns.has(JsonRead.get_str(m.start, "spawn")):
+			errors.append(
+				"module.json: $.start.spawn: no spawn '%s' in %s" % [m.start["spawn"], area_id]
+			)
+
+
 static func _check_figures(content: ModuleContent, errors: Array[String]) -> void:
 	var ids: Array[String] = []
 	ids.assign(content.figures.keys())
 	ids.sort()
 	for id in ids:
 		var where := "models/models.json: $.figures.%s" % id
-		if not content.rules.characters.has(id) and not content.rules.creatures.has(id):
-			errors.append("%s: no character or creature with this id" % where)
 		var file := JsonRead.get_str(content.figures[id], "file")
 		if file != "" and not FileAccess.file_exists(content.figure_dirs[id].path_join(file)):
 			errors.append("%s: file %s not found" % [where, file])
@@ -69,10 +148,12 @@ static func _check_name_keys(content: ModuleContent, errors: Array[String]) -> v
 		content.rules.characters,
 		content.rules.creatures,
 		content.arenas,
+		content.areas,
 		content.merchants,
 	]
 	for source in sources:
 		collect_name_keys(source, keys)
+	collect_name_keys(content.dialogs, keys, ["text"])
 	var missing: Array[String] = []
 	for key in keys:
 		if not missing.has(key) and not _translated(content, key):
@@ -89,18 +170,21 @@ static func _translated(content: ModuleContent, key: String) -> bool:
 	return false
 
 
-## Все значения полей name_key и title_key во вложенных словарях и массивах.
-static func collect_name_keys(value: Variant, into: Array[String]) -> void:
+## Все значения полей [param fields] (по умолчанию name_key и title_key) во вложенных
+## словарях и массивах.
+static func collect_name_keys(
+	value: Variant, into: Array[String], fields: Array[String] = NAME_KEYS
+) -> void:
 	if typeof(value) == TYPE_DICTIONARY:
 		var d: Dictionary = value
 		var keys := d.keys()
 		keys.sort()
 		for key: Variant in keys:
-			if NAME_KEYS.has(str(key)) and typeof(d[key]) == TYPE_STRING:
+			if fields.has(str(key)) and typeof(d[key]) == TYPE_STRING:
 				into.append(str(d[key]))
 			else:
-				collect_name_keys(d[key], into)
+				collect_name_keys(d[key], into, fields)
 	elif typeof(value) == TYPE_ARRAY:
 		var a: Array = value
 		for item: Variant in a:
-			collect_name_keys(item, into)
+			collect_name_keys(item, into, fields)

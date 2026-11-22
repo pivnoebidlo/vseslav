@@ -11,7 +11,7 @@
    - Windows: `%APPDATA%\Godot\app_userdata\Vseslav\saves`
 
    Там же лежат снаряжение партии (`party.json`) и запасы купцов (`market.json`): между боями они сохраняются.
-3. Запуск: `godot --path .` или `godot --path . -- --arena=pogost`.
+3. Запуск: `godot --path .` (или собранная игра) → в меню «Арена — пошаговый бой»; арену можно выбрать в списке. Из консоли сразу на арену: `godot --path . -- --arena=pogost`.
 
 ## Управление
 

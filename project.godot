@@ -7,7 +7,7 @@ config_version=5
 
 config/name="Vseslav"
 config/description="RPG на Руси времён Всеслава Полоцкого"
-run/main_scene="res://game/arena/arena.tscn"
+run/main_scene="res://game/menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [debug]

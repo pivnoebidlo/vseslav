@@ -101,6 +101,14 @@ func refresh(display_name: String, c: Combatant) -> void:
 	_update_name()
 
 
+## Вне боя: только имя при наведении, без полоски хитов и состояний.
+func show_as_person(display_name: String) -> void:
+	_name_label.text = display_name
+	_bar_bg.visible = false
+	_bar_fill.visible = false
+	_cond_label.visible = false
+
+
 func set_hovered(hovered: bool) -> void:
 	_hovered = hovered
 	_update_name()

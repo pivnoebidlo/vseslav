@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dialog.schema.json",
+  "title": "Диалог (dialogs/<id>.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "start": {
+      "anyOf": [
+        {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "if": {
+                "$ref": "common.schema.json#/$defs/flag_conditions"
+              },
+              "node": {
+                "$ref": "common.schema.json#/$defs/id"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "node"
+            ]
+          },
+          "minItems": 1
+        }
+      ],
+      "description": "Первый узел или список вариантов начала с условиями."
+    },
+    "nodes": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "then": {
+            "$ref": "common.schema.json#/$defs/event_actions"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "$ref": "common.schema.json#/$defs/locale_key"
+                },
+                "next": {
+                  "$ref": "common.schema.json#/$defs/id"
+                },
+                "if": {
+                  "$ref": "common.schema.json#/$defs/flag_conditions"
+                },
+                "then": {
+                  "$ref": "common.schema.json#/$defs/event_actions"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "text"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "text"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "start",
+    "nodes"
+  ]
+}

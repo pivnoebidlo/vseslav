@@ -1,0 +1,38 @@
+{
+  "start": "hello",
+  "nodes": {
+    "hello": {
+      "text": "DLG_TRAVNITSA_HELLO",
+      "options": [
+        {
+          "text": "DLG_TRAVNITSA_ASK_LIGHTS",
+          "next": "lights",
+          "if": [
+            {
+              "flag": "heard_lights",
+              "eq": true
+            }
+          ]
+        },
+        {
+          "text": "DLG_PASSING_BY"
+        }
+      ]
+    },
+    "lights": {
+      "text": "DLG_TRAVNITSA_LIGHTS",
+      "then": [
+        {
+          "action": "set_flag",
+          "flag": "lights_told",
+          "value": true
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_TRAVNITSA_PROMISE"
+        }
+      ]
+    }
+  }
+}

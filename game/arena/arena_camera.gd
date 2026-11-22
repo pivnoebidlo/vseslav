@@ -26,6 +26,15 @@ func frame(width: int, depth: int, cell: float) -> void:
 	_place()
 
 
+## Следить за точкой (исследование): цель взгляда — [param point], масштаб — [param zoom].
+func focus(point: Vector3, zoom: float = -1.0) -> void:
+	fov = 50.0
+	if zoom > 0.0:
+		_zoom = clampf(zoom, ZOOM_MIN, ZOOM_MAX)
+	_target = point
+	_place()
+
+
 ## Обрабатывает ввод камеры; true — событие использовано.
 func handle_input(event: InputEvent) -> bool:
 	var key := event as InputEventKey

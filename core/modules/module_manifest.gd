@@ -16,6 +16,8 @@ var format: int = 0
 var api_version: int = 0
 var ruleset: String = ""
 var dependencies: Array[String] = []
+## Где начинается игра: {"area": id, "spawn": id}; пусто — модуль без начала.
+var start: Dictionary = {}
 ## Папка модуля (res://modules/base, user://modules/…).
 var dir: String = ""
 
@@ -29,6 +31,7 @@ static func from_dict(data: Dictionary, p_dir: String) -> ModuleManifest:
 	m.api_version = JsonRead.get_int(data, "api_version")
 	m.ruleset = JsonRead.get_str(data, "ruleset")
 	m.dependencies = JsonRead.get_str_array(data, "dependencies")
+	m.start = JsonRead.get_dict(data, "start")
 	m.dir = p_dir
 	return m
 

@@ -8,6 +8,7 @@ extends Node3D
 ##   --autoplay        за партию тоже играет ИИ (дымовая проверка)
 ##   --screenshot=PATH сохранить снимок экрана по окончании боя (или через 25 с) и выйти
 ##   --lang=ru|en      язык интерфейса (по умолчанию русский; меню настроек — позже)
+## Без аргументов арена открывается из главного меню (game/menu), с аргументами — сразу.
 
 const SAVE_DIR := "user://saves"
 const SAVE_PATH := "user://saves/arena_combat.json"
@@ -74,7 +75,7 @@ func _ready() -> void:
 	_screens.setup(_db, _content.merchants_data())
 	_screens.dry_run = _autoplay
 	_setup_materials()
-	_setup_environment()
+	SceneEnv.add_to(self)
 	_setup_ui()
 	_world = Node3D.new()
 	add_child(_world)
@@ -130,23 +131,6 @@ func _glow(mat: StandardMaterial3D, albedo: Color, emission: Color) -> void:
 	mat.emission = emission
 
 
-func _setup_environment() -> void:
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.62, 0.7, 0.78)
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.75, 0.75, 0.8)
-	env.ambient_light_energy = 0.6
-	var world_env := WorldEnvironment.new()
-	world_env.environment = env
-	add_child(world_env)
-
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-55.0, 35.0, 0.0)
-	sun.shadow_enabled = true
-	add_child(sun)
-
-
 func _setup_camera(grid: BattleGrid) -> void:
 	var camera := ArenaCamera.new()
 	camera.name = "Camera"
@@ -191,6 +175,7 @@ func _setup_ui() -> void:
 		_arena_select.add_item(tr(JsonRead.get_str(data, "title_key")))
 	_arena_select.item_selected.connect(_on_arena_selected)
 	arena_row.add_child(_arena_select)
+	_add_button(arena_row, "UI_MENU", _on_menu)
 
 	_initiative.anchor_left = 1.0
 	_initiative.anchor_right = 1.0
@@ -979,6 +964,11 @@ func _on_restart() -> void:
 	if _busy:
 		return
 	_new_combat()
+
+
+func _on_menu() -> void:
+	if not _busy:
+		get_tree().change_scene_to_file(MainMenu.SCENE)
 
 
 func _on_arena_selected(index: int) -> void:

@@ -21,6 +21,8 @@ func test_all_builtin_modules_load_cleanly() -> void:
 	assert_eq(ids, ["vseslav.base", "vseslav.spike"] as Array[String])
 	assert_eq(_content.arena_ids(), ["doroga", "pogost", "polyana"] as Array[String])
 	assert_eq(_content.rules.errors, [] as Array[String])
+	assert_eq(_content.start(), {"area": "derevnya", "spawn": "start"})
+	assert_eq(_content.area("derevnya").npcs.size(), 3)
 
 
 func test_schemas_use_only_supported_keywords() -> void:

@@ -266,3 +266,12 @@ LOG_REST_NOT_NOW,Отдыхать можно после боя.,You can rest aft
 err_rest_dead,Погибший не отдыхает.,The dead don't rest.
 err_rest_no_dice,Кости хитов кончились — до длинного отдыха.,No Hit Dice left until a long rest.
 err_rest_full_hp,Хиты и так полные.,HP already full.
+UI_GAME_TITLE,Всеслав,Vseslav
+UI_MENU_SUBTITLE,"Рабочая сборка: набросок деревни и тестовые бои","Work in progress: village sketch and test fights"
+UI_MENU_EXPLORE,Деревня — исследование,Village — exploration
+UI_MENU_ARENA,Арена — пошаговый бой,Arena — turn-based combat
+UI_MENU_QUIT,Выход,Quit
+UI_MENU,В меню,Menu
+UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — подойти и поговорить. Колесо — масштаб.","LMB on the ground to walk, on a villager to go and talk. Wheel to zoom."
+UI_EXPLORE_NO_START,"В загруженных модулях нет начальной области (module.json → start).","No starting area in the loaded modules (module.json → start)."
+UI_DIALOG_LEAVE,Уйти,Leave

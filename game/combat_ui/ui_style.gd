@@ -7,6 +7,7 @@ const TEAM_COLORS: Dictionary[String, Color] = {
 	"bandits": Color(0.85, 0.2, 0.15),
 	"beasts": Color(0.9, 0.55, 0.1),
 	"nechist": Color(0.6, 0.25, 0.85),
+	"village": Color(0.85, 0.78, 0.45),
 }
 ## Цвет стоимости действия: действие — тёплый, бонусное — зелёный, свободное — серый.
 const COST_COLORS: Dictionary[String, Color] = {

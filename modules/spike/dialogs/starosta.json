@@ -1,0 +1,101 @@
+{
+  "start": [
+    {
+      "if": [
+        {
+          "flag": "met_starosta",
+          "eq": true
+        }
+      ],
+      "node": "again"
+    },
+    {
+      "node": "hello"
+    }
+  ],
+  "nodes": {
+    "hello": {
+      "text": "DLG_STAROSTA_HELLO",
+      "then": [
+        {
+          "action": "set_flag",
+          "flag": "met_starosta",
+          "value": true
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_STAROSTA_ASK_BED",
+          "next": "bed"
+        },
+        {
+          "text": "DLG_STAROSTA_ASK_NEWS",
+          "next": "news"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "again": {
+      "text": "DLG_STAROSTA_AGAIN",
+      "options": [
+        {
+          "text": "DLG_STAROSTA_ASK_BED",
+          "next": "bed"
+        },
+        {
+          "text": "DLG_STAROSTA_ASK_NEWS",
+          "next": "news"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "bed": {
+      "text": "DLG_STAROSTA_BED",
+      "then": [
+        {
+          "action": "set_flag",
+          "flag": "ask_kuznets",
+          "value": true
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_STAROSTA_ASK_NEWS",
+          "next": "news"
+        },
+        {
+          "text": "DLG_THANKS"
+        }
+      ]
+    },
+    "news": {
+      "text": "DLG_STAROSTA_NEWS",
+      "then": [
+        {
+          "action": "set_flag",
+          "flag": "heard_lights",
+          "value": true
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_STAROSTA_ASK_BED",
+          "next": "bed",
+          "if": [
+            {
+              "flag": "ask_kuznets",
+              "eq": false
+            }
+          ]
+        },
+        {
+          "text": "DLG_STAROSTA_WILL_ASK"
+        }
+      ]
+    }
+  }
+}

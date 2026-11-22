@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "area.schema.json",
+  "title": "Область для исследования (areas/<id>.json)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "title_key": {
+      "$ref": "common.schema.json#/$defs/locale_key"
+    },
+    "map": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[.,#T=]+$",
+        "maxLength": 128
+      },
+      "minItems": 1,
+      "maxItems": 128,
+      "description": ". земля, , дорога, # постройка, T дерево, = плетень"
+    },
+    "spawns": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/cell"
+      }
+    },
+    "npcs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "at": {
+            "$ref": "common.schema.json#/$defs/cell"
+          },
+          "look": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "dialog": {
+            "$ref": "common.schema.json#/$defs/id"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "at"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "title_key",
+    "map",
+    "spawns"
+  ]
+}

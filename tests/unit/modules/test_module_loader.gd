@@ -160,3 +160,60 @@ func test_arena_references_are_checked() -> void:
 	var content := ModuleFixture.load_root()
 	assert_true(_has_error(content, "arenas/pole.json: $.combatants[0]: unknown creature 'drakon'"))
 	assert_true(_has_error(content, "arenas/pole.json: $.grid.map[1]: rows must have equal length"))
+
+
+func test_area_and_dialog_references_are_checked() -> void:
+	var area := {
+		"title_key": "t.area",
+		"map": ["....", ".#..", "...."],
+		"spawns": {"start": [1, 1]},
+		"npcs":
+		[
+			{"id": "ded", "name_key": "t.ded", "at": [3, 0], "dialog": "nobody"},
+			{"id": "ded", "name_key": "t.ded", "at": [0, 2], "look": "ghost"},
+		],
+	}
+	var dialog := {
+		"start": [{"node": "hello"}, {"node": "lost"}],
+		"nodes": {"hello": {"text": "t.hi", "options": [{"text": "t.hi", "next": "gone"}]}},
+	}
+	var files := {
+		"areas/selo.json": area,
+		"dialogs/ded.json": dialog,
+		"locales/ru.json": _strings(["t.dialogs.title", "t.area", "t.ded", "t.hi"]),
+	}
+	ModuleFixture.write("t.dialogs", [], files)
+	var content := ModuleFixture.load_root()
+	assert_true(_has_error(content, "areas/selo.json: $.spawns.start: not a walkable cell"))
+	assert_true(_has_error(content, "areas/selo.json: $.npcs[0]: unknown dialog 'nobody'"))
+	assert_true(_has_error(content, "areas/selo.json: $.npcs[1]: duplicate npc id 'ded'"))
+	assert_true(_has_error(content, "areas/selo.json: $.npcs[1]: unknown look 'ghost'"))
+	assert_true(_has_error(content, "dialogs/ded.json: $.start: unknown node 'lost'"))
+	assert_true(
+		_has_error(content, "dialogs/ded.json: $.nodes.hello.options[0]: unknown node 'gone'")
+	)
+
+
+func test_dialog_text_needs_a_translation() -> void:
+	var dialog := {"start": "a", "nodes": {"a": {"text": "t.missing"}}}
+	ModuleFixture.write("t.mute", [], {"dialogs/a.json": dialog})
+	var content := ModuleFixture.load_root()
+	assert_true(_has_error(content, "locales: no text for key 't.missing'"))
+
+
+func test_start_must_point_to_an_area_spawn() -> void:
+	var dir := ModuleFixture.write("t.begin", [])
+	var file := FileAccess.open(dir.path_join("module.json"), FileAccess.WRITE)
+	var manifest := {
+		"format": 1,
+		"id": "t.begin",
+		"title": "locale:t.begin.title",
+		"version": "1.0.0",
+		"api_version": 1,
+		"ruleset": "srd52@1",
+		"start": {"area": "nowhere", "spawn": "gate"},
+	}
+	file.store_string(JSON.stringify(manifest))
+	file.close()
+	var content := ModuleFixture.load_root()
+	assert_true(_has_error(content, "module.json: $.start.area: unknown area 'nowhere'"))

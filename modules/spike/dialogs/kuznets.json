@@ -1,0 +1,58 @@
+{
+  "start": [
+    {
+      "if": [
+        {
+          "flag": "kuznets_bed",
+          "eq": true
+        }
+      ],
+      "node": "rest"
+    },
+    {
+      "if": [
+        {
+          "flag": "ask_kuznets",
+          "eq": true
+        }
+      ],
+      "node": "bed"
+    },
+    {
+      "node": "hello"
+    }
+  ],
+  "nodes": {
+    "hello": {
+      "text": "DLG_KUZNETS_HELLO",
+      "options": [
+        {
+          "text": "DLG_KUZNETS_WORK_ON"
+        }
+      ]
+    },
+    "bed": {
+      "text": "DLG_KUZNETS_BED",
+      "then": [
+        {
+          "action": "set_flag",
+          "flag": "kuznets_bed",
+          "value": true
+        }
+      ],
+      "options": [
+        {
+          "text": "DLG_KUZNETS_THANKS"
+        }
+      ]
+    },
+    "rest": {
+      "text": "DLG_KUZNETS_REST",
+      "options": [
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    }
+  }
+}

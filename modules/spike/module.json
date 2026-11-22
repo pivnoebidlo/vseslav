@@ -7,5 +7,9 @@
   "ruleset": "srd52@1",
   "dependencies": [
     "vseslav.base"
-  ]
+  ],
+  "start": {
+    "area": "derevnya",
+    "spawn": "start"
+  }
 }

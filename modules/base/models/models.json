@@ -1,5 +1,5 @@
 {
-  "_comment": "Облик участников боя: id персонажа или существа → модель (KayKit, CC0, см. CREDITS.md), снаряжение в руках, свои анимации. figure — простая фигура без модели.",
+  "_comment": "Облик участников боя и жителей: id персонажа, существа или облика жителя → модель (KayKit, CC0, см. CREDITS.md), снаряжение в руках, свои анимации. figure — простая фигура без модели.",
   "figures": {
     "ratnik": { "file": "knight.glb", "hold": ["1H_Sword", "Round_Shield"] },
     "lovchiy": { "file": "rogue_hooded.glb", "hold": ["2H_Crossbow"] },
@@ -16,6 +16,9 @@
         "revive": ["Death_C_Skeletons_Resurrect"]
       } },
     "volk": { "figure": "beast" },
-    "poludnitsa": { "figure": "spirit" }
+    "poludnitsa": { "figure": "spirit" },
+    "starik": { "file": "barbarian.glb", "hold": [] },
+    "znakharka": { "file": "mage.glb", "hold": [] },
+    "kovach": { "file": "rogue.glb", "hold": [] }
   }
 }

@@ -13,6 +13,9 @@ var errors: Array[String] = []
 var rules := RulesDb.new()
 ## Тестовые арены по id (имя файла в arenas/ без .json).
 var arenas: Dictionary[String, Dictionary] = {}
+## Области для исследования и диалоги по id (имя файла без .json).
+var areas: Dictionary[String, Dictionary] = {}
+var dialogs: Dictionary[String, Dictionary] = {}
 var merchants: Dictionary[String, Dictionary] = {}
 ## Облик участников из models/models.json: id → описание.
 var figures: Dictionary[String, Dictionary] = {}
@@ -38,6 +41,21 @@ func merchants_data() -> Dictionary:
 	for id in ids:
 		list.append(merchants[id])
 	return {"merchants": list}
+
+
+## Начало игры — "start" последнего загруженного модуля, где оно есть:
+## {"area": id, "spawn": id} или пустой словарь.
+func start() -> Dictionary:
+	for i in range(modules.size() - 1, -1, -1):
+		if not modules[i].start.is_empty():
+			return modules[i].start
+	return {}
+
+
+func area(id: String) -> AreaMap:
+	if not areas.has(id):
+		return null
+	return AreaMap.from_dict(id, areas[id])
 
 
 func has_module(id: String) -> bool:

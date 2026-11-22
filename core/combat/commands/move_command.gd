@@ -95,8 +95,11 @@ static func path_for(state: CombatState, actor: Combatant, dest: Vector2i) -> Pa
 	return path
 
 
-## Достижимые клетки со стоимостью — для подсветки и ИИ.
-static func reachable_for(state: CombatState, actor: Combatant) -> Dictionary[Vector2i, int]:
+## Достижимые клетки со стоимостью — для подсветки и ИИ. [param allow_falls] = false —
+## без прыжков с уступов.
+static func reachable_for(
+	state: CombatState, actor: Combatant, allow_falls: bool = true
+) -> Dictionary[Vector2i, int]:
 	if actor.has_condition(Conditions.PRONE):
 		return {}
 	return Pathfinder.reachable(
@@ -104,7 +107,8 @@ static func reachable_for(state: CombatState, actor: Combatant) -> Dictionary[Ve
 		actor.column,
 		state.movement_left,
 		state.blocked_for(actor),
-		state.occupied_except(actor.id)
+		state.occupied_except(actor.id),
+		allow_falls
 	)
 
 

@@ -1,11 +1,12 @@
 {
-  "common": ["dash", "disengage", "dodge", "stand", "shove"],
+  "common": ["dash", "disengage", "dodge", "stand", "shove", "shove_prone"],
   "actions": [
     { "id": "dash", "name_key": "ACT_DASH", "kind": "effect", "target": "self", "special": "dash" },
     { "id": "disengage", "name_key": "ACT_DISENGAGE", "kind": "effect", "target": "self", "special": "disengage" },
     { "id": "dodge", "name_key": "ACT_DODGE", "kind": "effect", "target": "self", "special": "dodge" },
     { "id": "stand", "name_key": "ACT_STAND", "cost": "free", "kind": "effect", "target": "self", "special": "stand" },
     { "id": "shove", "name_key": "ACT_SHOVE", "kind": "effect", "target": "enemy", "range": 1, "special": "shove" },
+    { "id": "shove_prone", "name_key": "ACT_SHOVE_PRONE", "kind": "effect", "target": "enemy", "range": 1, "special": "shove_prone" },
 
     { "id": "second_wind", "name_key": "ACT_SECOND_WIND", "cost": "bonus", "kind": "heal", "target": "self",
       "heal": "1d10 + LEVEL", "resource": "second_wind" },

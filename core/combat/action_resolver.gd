@@ -493,9 +493,10 @@ static func _effect(
 			state.actions_left += 1
 		ActionDef.SPECIAL_STAND:
 			CombatRules.remove_condition(actor, Conditions.PRONE, "", events)
-		ActionDef.SPECIAL_SHOVE:
+		ActionDef.SPECIAL_SHOVE, ActionDef.SPECIAL_SHOVE_PRONE:
 			if target != null:
-				ForcedMove.shove(state, actor, target, events)
+				var prone := action.special == ActionDef.SPECIAL_SHOVE_PRONE
+				ForcedMove.shove(state, actor, target, events, prone)
 	for e in action.effects:
 		if e.on == EffectDef.ALWAYS and target != null:
 			_apply_effect(state, actor, action, e, target, false, events)

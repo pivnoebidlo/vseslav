@@ -2,9 +2,9 @@ class_name ForcedMove
 extends RefCounted
 ## Толчок (SRD 5.2, «Безоружный удар → Толкнуть», ADR-0037): цель делает спасбросок
 ## Силы или Ловкости (что у неё лучше) против СЛ 8 + Сила + мастерство. Провал —
-## цель отлетает на клетку от толкающего; с уступа от 10 футов — падает. Если клетка
-## позади занята, непроходима или выше — цель сбита с ног. Вынужденное перемещение
-## не провоцирует атак при отходе.
+## на выбор толкающего: цель отлетает на клетку от него (с уступа от 10 футов —
+## падает; если клетка позади занята, непроходима или выше — сбита с ног) или сразу
+## сбита с ног. Вынужденное перемещение не провоцирует атак при отходе.
 
 const REASON := "shove"
 
@@ -28,8 +28,13 @@ static func push_cell(state: CombatState, actor: Combatant, target: Combatant) -
 	return dest
 
 
+## [param prone_only] — не отталкивать, а сбить с ног.
 static func shove(
-	state: CombatState, actor: Combatant, target: Combatant, events: Array[CombatEvent]
+	state: CombatState,
+	actor: Combatant,
+	target: Combatant,
+	events: Array[CombatEvent],
+	prone_only: bool = false
 ) -> void:
 	var ability := Abilities.STR
 	if target.save_modifier(Abilities.DEX) > target.save_modifier(Abilities.STR):
@@ -37,7 +42,7 @@ static func shove(
 	var save := CombatRules.saving_throw(state, target, ability, shove_dc(actor), events, REASON)
 	if save.success:
 		return
-	var dest := push_cell(state, actor, target)
+	var dest := ActionResolver.NO_CELL if prone_only else push_cell(state, actor, target)
 	if dest == ActionResolver.NO_CELL:
 		if not target.has_condition(Conditions.PRONE):
 			CombatRules.add_condition(

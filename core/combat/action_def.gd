@@ -36,8 +36,9 @@ const SPECIAL_DODGE := "dodge"
 const SPECIAL_EXTRA_ACTION := "extra_action"
 ## Встать (половина скорости, без траты действия).
 const SPECIAL_STAND := "stand"
-## Толкнуть цель на клетку или сбить с ног (ForcedMove).
+## Толкнуть цель на клетку (если некуда — сбить с ног) или сразу сбить с ног (ForcedMove).
 const SPECIAL_SHOVE := "shove"
+const SPECIAL_SHOVE_PRONE := "shove_prone"
 const SPECIALS: Array[String] = [
 	SPECIAL_DASH,
 	SPECIAL_DISENGAGE,
@@ -45,6 +46,7 @@ const SPECIALS: Array[String] = [
 	SPECIAL_EXTRA_ACTION,
 	SPECIAL_STAND,
 	SPECIAL_SHOVE,
+	SPECIAL_SHOVE_PRONE,
 ]
 
 ## Приёмы оружия (weapon mastery SRD 5.2). Действуют только реализованные,

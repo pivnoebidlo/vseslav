@@ -103,3 +103,10 @@ func test_truncated_path() -> void:
 	var t := p.truncated(3)
 	assert_eq(t.total_cost(), 3)
 	assert_eq(t.cells[-1], Vector3i(3, 0, 0))
+
+
+func test_reachable_without_falls_skips_cells_only_a_jump_reaches() -> void:
+	var g := _grid(["2.", "##"])
+	assert_true(Pathfinder.reachable(g, Vector2i(0, 0), 6).has(Vector2i(1, 0)))
+	var none: Dictionary[Vector2i, bool] = {}
+	assert_false(Pathfinder.reachable(g, Vector2i(0, 0), 6, none, none, false).has(Vector2i(1, 0)))

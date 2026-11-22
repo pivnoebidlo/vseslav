@@ -391,7 +391,8 @@
             "dodge",
             "extra_action",
             "stand",
-            "shove"
+            "shove",
+            "shove_prone"
           ]
         },
         "sub_actions": {

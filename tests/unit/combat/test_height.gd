@@ -93,3 +93,51 @@ func test_shove_against_a_wall_knocks_prone_and_save_resists() -> void:
 	MiniCombat.use(t, "a", "shove", "b")
 	assert_eq(t.get_combatant("b").column, Vector2i(1, 0))
 	assert_false(t.get_combatant("b").has_condition(Conditions.PRONE))
+
+
+func test_knock_prone_option_does_not_push() -> void:
+	var s := _state(["22..."], Vector2i(0, 0), Vector2i(1, 0))
+	s.get_combatant("a").actions.append(
+		MiniCombat.action(
+			{
+				"id": "shove_prone",
+				"kind": "effect",
+				"target": "enemy",
+				"range": 1,
+				"special": "shove_prone"
+			}
+		)
+	)
+	MiniCombat.rolls(s, [2])
+	MiniCombat.use(s, "a", "shove_prone", "b")
+	var b := s.get_combatant("b")
+	assert_eq(b.column, Vector2i(1, 0))
+	assert_true(b.has_condition(Conditions.PRONE))
+	assert_eq(b.hp, 20)
+
+
+func test_ai_shoves_off_a_ledge_and_values_only_falls() -> void:
+	# 20 футов: 2к6 падения и «сбит с ног» ценнее удара на 1к6.
+	var s := _state(["44..."], Vector2i(0, 0), Vector2i(1, 0))
+	var a := s.get_combatant("a")
+	var b := s.get_combatant("b")
+	assert_gt(CombatAi.shove_value(s, a, b), 0)
+	var cmd := CombatAi.next_command(s)
+	assert_eq(JsonRead.get_str(cmd.to_dict(), "action"), "shove", "a ledge fall beats a 1d6 hit")
+	var flat := _state(["....."], Vector2i(0, 0), Vector2i(1, 0))
+	assert_eq(CombatAi.shove_value(flat, flat.get_combatant("a"), flat.get_combatant("b")), 0)
+
+
+func test_ai_archer_prefers_high_ground_and_avoids_jumping() -> void:
+	# Стрелок на уровне 0; рядом холм уровня 1 (подъём по склону), не на линии к цели.
+	var s := _state(["......", "......", ".1...."], Vector2i(0, 1), Vector2i(5, 0))
+	var a := s.get_combatant("a")
+	a.actions = [MiniCombat.ranged()]
+	var cmd := CombatAi.next_command(s)
+	assert_eq(JsonRead.get_str(cmd.to_dict(), "cmd"), "action", "already in range: shoots first")
+	s.actions_left = 1
+	var key_low := CombatAi._cell_key(s, a, Vector2i(0, 1), 0, [s.get_combatant("b")], true)
+	var key_high := CombatAi._cell_key(s, a, Vector2i(1, 2), 2, [s.get_combatant("b")], true)
+	assert_true(
+		CombatAi._less(key_high, key_low), "higher cell wins: %s vs %s" % [key_high, key_low]
+	)

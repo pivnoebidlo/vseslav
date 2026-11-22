@@ -68,12 +68,14 @@ static func find_path(
 
 ## Минимальная стоимость достижения каждой колонки в пределах [param budget].
 ## Стартовая колонка и клетки из [param no_stop] не включаются (но через них можно пройти).
+## [param allow_falls] = false — без прыжков с уступов.
 static func reachable(
 	grid: BattleGrid,
 	from: Vector2i,
 	budget: int,
 	occupied: Dictionary[Vector2i, bool] = {},
-	no_stop: Dictionary[Vector2i, bool] = {}
+	no_stop: Dictionary[Vector2i, bool] = {},
+	allow_falls: bool = true
 ) -> Dictionary[Vector2i, int]:
 	var best: Dictionary[Vector2i, int] = {}
 	var start := Vector3i(from.x, from.y, 0)
@@ -91,6 +93,8 @@ static func reachable(
 			var step_cost: int = step[1]
 			var cost: int = g[current] + step_cost
 			if cost > budget or closed.has(node):
+				continue
+			if not allow_falls and step[2]:
 				continue
 			if not g.has(node) or cost < g[node]:
 				g[node] = cost

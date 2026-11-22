@@ -5,13 +5,16 @@ extends RefCounted
 ##
 ## Порядок решений в ходу:
 ## встать → поднять упавшего союзника → бонусное действие (лечение, второе дыхание,
-## метка) → лучшее действие (атака или область) → «Натиск», если действие кончилось →
-## перемещение к позиции для удара → «Рывок», если никого не достать → конец хода.
+## метка) → лучшее действие (атака, область или толчок с обрыва) → «Натиск», если
+## действие кончилось → перемещение к позиции для удара (повыше, без прыжков, если
+## можно) → «Рывок», если никого не достать → конец хода.
 
 ## Оценки — в «сотых долях хита», чтобы обойтись целыми числами.
 const SCALE := 100
 ## Область применяется, если задевает не меньше стольких врагов и ни одного союзника.
 const AREA_MIN_ENEMIES := 2
+## Сколько хитов «стоит» сбить цель с ног (для оценки толчка).
+const PRONE_WORTH := 2
 
 
 static func next_command(state: CombatState) -> CombatCommand:
@@ -103,6 +106,22 @@ static func attack_value(
 	if target.hp > 0:
 		dmg = mini(dmg, target.hp)
 	return dmg * chance
+
+
+## Польза толчка (ADR-0037): только если цель полетит с уступа — шанс провала
+## спасброска × (средний урон падения + «сбит с ног»). Иначе 0: просто сбивать
+## с ног ИИ пока не умеет.
+static func shove_value(state: CombatState, actor: Combatant, target: Combatant) -> int:
+	if not target.is_alive():
+		return 0
+	var dest := ForcedMove.push_cell(state, actor, target)
+	if dest == ActionResolver.NO_CELL or not state.grid.is_fall(target.column, dest):
+		return 0
+	var drop := state.grid.level_at(target.column) - state.grid.level_at(dest)
+	var save := maxi(target.save_modifier(Abilities.STR), target.save_modifier(Abilities.DEX))
+	var fail := clampi((ForcedMove.shove_dc(actor) - save - 1) * 5, 0, 100)
+	var dmg := mini(IntMath.floor_div(CombatRules.fall_dice(drop) * 7, 2), target.hp)
+	return fail * (dmg + PRONE_WORTH)
 
 
 ## Хватает ли зарядов и предмет под рукой (без учёта действия в этом ходу).
@@ -231,6 +250,14 @@ static func _best_action(state: CombatState, actor: Combatant) -> CombatCommand:
 				if score > best_score:
 					best_score = score
 					best = UseActionCommand.new(actor.id, action.id, enemy.id)
+		elif action.special == ActionDef.SPECIAL_SHOVE:
+			for enemy in _enemies(state, actor):
+				if not _valid(state, actor, action, enemy.id):
+					continue
+				var push := _target_weight(enemy, shove_value(state, actor, enemy))
+				if push > best_score:
+					best_score = push
+					best = UseActionCommand.new(actor.id, action.id, enemy.id)
 		elif action.kind == ActionDef.KIND_SAVE and action.area != "":
 			var area := _best_area(state, actor, action)
 			if area.score > best_score:
@@ -340,6 +367,8 @@ static func _reposition(state: CombatState, actor: Combatant) -> CombatCommand:
 		return null
 	var ranged := _prefers_ranged(actor)
 	var reach := MoveCommand.reachable_for(state, actor)
+	# Без прыжков с уступов: клетка, куда только спрыгнуть, — в последнюю очередь.
+	var safe := MoveCommand.reachable_for(state, actor, false)
 	var best := actor.column
 	var best_key := _cell_key(state, actor, actor.column, 0, targets, ranged)
 	var cells: Array[Vector2i] = []
@@ -347,6 +376,7 @@ static func _reposition(state: CombatState, actor: Combatant) -> CombatCommand:
 		cells.append(cell)
 	for cell in cells:
 		var key := _cell_key(state, actor, cell, reach[cell], targets, ranged)
+		key[1] = 0 if safe.has(cell) else 1
 		if _less(key, best_key):
 			best = cell
 			best_key = key
@@ -355,9 +385,10 @@ static func _reposition(state: CombatState, actor: Combatant) -> CombatCommand:
 	return MoveCommand.new(actor.id, best)
 
 
-## Ключ клетки (меньше — лучше): [не может ударить, рядом с врагом (для стрелка),
-## сколько врагов видят клетку без укрытия (для стрелка), расстояние до ближайшего
-## врага, стоимость пути, z, x].
+## Ключ клетки (меньше — лучше): [не может ударить, только прыжком (заполняет
+## _reposition), рядом с врагом (для стрелка), сколько врагов видят клетку без
+## укрытия (для стрелка), минус уровень высоты (выше — лучше, ADR-0037),
+## расстояние до ближайшего врага, стоимость пути, z, x].
 static func _cell_key(
 	state: CombatState,
 	actor: Combatant,
@@ -383,7 +414,8 @@ static func _cell_key(
 				and LineOfSight.cover(state.grid, t.column, cell) == LineOfSight.Cover.NONE
 			):
 				exposed += 1
-	return [0 if can_hit else 1, adjacent, exposed, distance, cost, cell.y, cell.x]
+	var height := -state.grid.level_at(cell) if can_hit else 0
+	return [0 if can_hit else 1, 0, adjacent, exposed, height, distance, cost, cell.y, cell.x]
 
 
 static func _dash(state: CombatState, actor: Combatant) -> CombatCommand:

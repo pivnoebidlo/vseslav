@@ -46,6 +46,7 @@ var _dice: DiceRoll
 ## в [param world].
 func setup(layer: CanvasLayer, p_board: CombatBoard, world: Node3D) -> void:
 	board = p_board
+	GameSettings.ensure_loaded()
 	_initiative = InitiativeBar.new()
 	_actions = ActionBar.new()
 	_log = CombatLogPanel.new()
@@ -55,32 +56,24 @@ func setup(layer: CanvasLayer, p_board: CombatBoard, world: Node3D) -> void:
 	_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_ui)
-	_initiative.anchor_left = 1.0
-	_initiative.anchor_right = 1.0
-	_initiative.offset_left = -640
-	_initiative.offset_right = -12
+	# Порядок хода — сверху по центру (ADR-0035).
+	_initiative.anchor_left = 0.5
+	_initiative.anchor_right = 0.5
+	_initiative.offset_left = -360
+	_initiative.offset_right = 360
 	_initiative.offset_top = 12
-	_initiative.alignment = FlowContainer.ALIGNMENT_END
+	_initiative.alignment = FlowContainer.ALIGNMENT_CENTER
 	_ui.add_child(_initiative)
-	# Низ экрана: журнал слева, панель хода справа. Контейнер на весь экран
-	# пропускает мышь к полю, а сам считает размеры панелей.
-	var bottom := HBoxContainer.new()
-	bottom.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
-	bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_ui.add_child(bottom)
-	_log.custom_minimum_size = Vector2(500, 0)
-	_log.size_flags_vertical = Control.SIZE_SHRINK_END
-	bottom.add_child(_log)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bottom.add_child(spacer)
+	# Низ экрана: панель хода по центру, журнал боя слева (виден, если включён
+	# в опциях). Слои на весь экран пропускают мышь к полю, а сами считают размеры.
 	_actions.custom_minimum_size = Vector2(520, 0)
-	_actions.size_flags_vertical = Control.SIZE_SHRINK_END
 	_actions.action_pressed.connect(_on_action_pressed)
 	_actions.end_turn_pressed.connect(_on_end_turn)
 	_actions.item_pressed.connect(_on_item_pressed)
-	bottom.add_child(_actions)
+	_ui.add_child(_bottom_row(_actions, BoxContainer.ALIGNMENT_CENTER))
+	_log.custom_minimum_size = Vector2(440, 0)
+	_ui.add_child(_bottom_row(_log, BoxContainer.ALIGNMENT_BEGIN))
+	set_log_visible(GameSettings.show_combat_log)
 	_reaction_dialog.anchor_left = 0.5
 	_reaction_dialog.anchor_right = 0.5
 	_reaction_dialog.offset_left = -220
@@ -105,6 +98,20 @@ func setup(layer: CanvasLayer, p_board: CombatBoard, world: Node3D) -> void:
 		win.focus_mode = Control.FOCUS_NONE
 		win.pressed.connect(debug_win)
 		_ui.add_child(win)
+
+
+## Слой на весь экран, прижимающий [param panel] к низу: по центру или к левому краю.
+func _bottom_row(panel: Control, align: BoxContainer.AlignmentMode) -> VBoxContainer:
+	var layer := VBoxContainer.new()
+	layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
+	layer.alignment = BoxContainer.ALIGNMENT_END
+	layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var row := HBoxContainer.new()
+	row.alignment = align
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(row)
+	row.add_child(panel)
+	return layer
 
 
 ## Начать бой: события начала (инициатива), затем ходы до хода игрока.
@@ -151,6 +158,11 @@ func can_save() -> bool:
 
 func show_ui(on: bool) -> void:
 	_ui.visible = on
+
+
+## Журнал боя: скрыт по умолчанию, включается в опциях (ADR-0035).
+func set_log_visible(on: bool) -> void:
+	_log.visible = on
 
 
 func write(text: String, color: Color = Color.WHITE) -> void:

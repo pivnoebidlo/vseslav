@@ -30,7 +30,6 @@ class Walker:
 
 ## Флаги мира и включённая сетка живут, пока запущена игра (сохранение — позже).
 static var flags := WorldFlags.new()
-static var grid_on := false
 ## Броски вне боя (проверки в диалогах) — через Rng ядра; seed на сессию.
 static var rng := Rng.new(randi())
 ## Содержимое открытых сундуков: "<область>.<id>" → мешок (ADR-0034).
@@ -69,12 +68,14 @@ var _hovered := ""
 var _dialog := DialogPanel.new()
 var _dice := DiceRoll.new()
 var _party_bar := PartyBar.new()
-var _grid_button := CheckButton.new()
+var _side := SideMenu.new()
+var _menu := GameMenu.new()
 var _title := Label.new()
 var _hint := Label.new()
 
 
 func _ready() -> void:
+	GameSettings.ensure_loaded()
 	_content = ModuleLoader.load_all()
 	ModuleLocales.apply(_content.locales)
 	_figures = FigureCatalog.from_content(_content, RigProfile.load_all())
@@ -99,7 +100,7 @@ func _ready() -> void:
 	if _area.interior:
 		env.background_color = Color(0.08, 0.07, 0.06)
 	_area_view.build(_area, PropCatalog.from_content(_content))
-	_area_view.set_grid_visible(grid_on)
+	_area_view.set_grid_visible(GameSettings.show_grid)
 	_world.add_child(_area_view)
 	_map_points.build(_area)
 	_world.add_child(_map_points)
@@ -142,23 +143,22 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _dialog.is_open() or _screens.is_open() or _heroes.is_empty():
+	var key := event as InputEventKey
+	var pressed := key != null and key.pressed and not key.echo
+	if pressed and key.keycode == KEY_ESCAPE and not _in_combat():
+		_toggle_menu()
+		return
+	if _menu.is_open() or _dialog.is_open() or _screens.is_open() or _heroes.is_empty():
 		return
 	var button := event as InputEventMouseButton
 	if button != null and button.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_camera.handle_input(event)
 		return
-	var key := event as InputEventKey
-	if key != null and key.pressed and not key.echo:
-		if key.keycode == KEY_F5:
-			_quick_save()
-			return
-		if key.keycode == KEY_F9:
-			_load_latest()
-			return
+	if pressed and _save_key(key.keycode):
+		return
 	if _in_combat():
 		return
-	if key != null and key.pressed and not key.echo:
+	if pressed:
 		_on_key(key.keycode)
 		return
 	var motion := event as InputEventMouseMotion
@@ -168,14 +168,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_click(button.position)
 
 
+## F5 и F9 работают и в бою; true — клавиша обработана.
+func _save_key(keycode: Key) -> bool:
+	if keycode == KEY_F5:
+		_quick_save()
+	elif keycode == KEY_F9:
+		_load_latest()
+	else:
+		return false
+	return true
+
+
 func _on_key(keycode: Key) -> void:
 	match keycode:
 		KEY_G:
 			_set_grid(not _area_view.is_grid_visible())
 		KEY_TAB:
 			_select(_group.next_id())
+		KEY_I:
+			_open_window("items")
 		KEY_J:
-			_journal.toggle(_content.quests, flags)
+			_open_window("journal")
+		KEY_T:
+			_open_window("trade")
+		KEY_R:
+			_open_window("rest")
 
 
 func _on_hover(screen_pos: Vector2) -> void:
@@ -264,7 +281,7 @@ func _preview(p: PathResult) -> void:
 
 
 func _select(id: String) -> void:
-	if id == "" or id == _group.selected:
+	if id == "" or id == _group.selected or _in_combat():
 		return
 	_leader().view.set_active(false)
 	_group.select(id)
@@ -282,13 +299,24 @@ func _toggle_chain(id: String) -> void:
 
 
 func _set_grid(on: bool) -> void:
-	grid_on = on
+	GameSettings.show_grid = on
+	GameSettings.save()
 	_area_view.set_grid_visible(on)
-	_grid_button.set_pressed_no_signal(on)
 
 
+## Портреты: вне боя — хиты партии; в бою — хиты бойцов и рамка у того, чей ход.
 func _refresh_bar() -> void:
-	_party_bar.refresh(_group, _names)
+	var hp: Dictionary[String, Vector2i] = {}
+	var combat := _in_combat() and _session.state != null
+	for id in _group.ids:
+		if combat:
+			var c := _session.state.get_combatant(id)
+			if c != null:
+				hp[id] = Vector2i(c.hp, c.max_hp)
+		else:
+			var hero := _screens.party.build_hero(_content.rules, id)
+			hp[id] = Vector2i(hero.hp, hero.max_hp)
+	_party_bar.refresh(_group, _names, hp, combat, _combat_focus)
 
 
 # --- Ходьба -------------------------------------------------------------------
@@ -564,7 +592,6 @@ func _start_combat(e: Encounter) -> void:
 	_talk_to = ""
 	_path_preview.clear()
 	_set_hovered("")
-	_party_bar.visible = false
 	for id in _group.ids:
 		var w := _heroes[id]
 		w.path.clear()
@@ -587,7 +614,7 @@ func _start_combat(e: Encounter) -> void:
 ## перебегают в свои клетки, иначе ставятся сразу (загрузка).
 func _enter_combat(e: Encounter, state: CombatState, animate: bool) -> void:
 	_encounter = e
-	_party_bar.visible = false
+	_set_combat_ui(true)
 	_board.build(state.grid, e.battle.position)
 	_session.units.clear()
 	for id in _group.ids:
@@ -632,6 +659,7 @@ func _resume_combat(save: GameSave) -> void:
 func _on_combat_status(turn: String, hint: String) -> void:
 	_title.text = turn
 	_hint.text = hint
+	_refresh_bar()
 
 
 func _on_combat_ended(winner: String) -> void:
@@ -655,8 +683,8 @@ func _on_combat_ended(winner: String) -> void:
 		_heroes[id].view.set_active(id == _group.selected)
 	_encounter = null
 	_session.show_ui(false)
-	_area_view.set_grid_visible(grid_on)
-	_party_bar.visible = true
+	_area_view.set_grid_visible(GameSettings.show_grid)
+	_set_combat_ui(false)
 	_title.text = tr(_area.title_key)
 	_hint.text = tr("UI_EXPLORE_HINT")
 	_trail = [_leader().view.position]
@@ -848,28 +876,61 @@ func _notify(text: String) -> void:
 # --- Интерфейс ----------------------------------------------------------------
 
 
-## Кнопка экрана партии: снаряжение, торг, отдых — только вне боя и разговора.
-func _party_button(row: HBoxContainer, key: String, open: Callable) -> void:
-	var b := Button.new()
-	b.text = tr(key)
-	b.focus_mode = Control.FOCUS_NONE
-	b.pressed.connect(
-		func() -> void:
-			if not _in_combat() and not _dialog.is_open():
-				_path_preview.clear()
-				open.call()
-	)
-	row.add_child(b)
+## Окна из колонки слева и по клавишам: вещи, торг, отдых — только вне боя
+## и разговора; журнал — всегда, кроме разговора; меню — всегда.
+func _open_window(id: String) -> void:
+	if id == "menu":
+		_toggle_menu()
+		return
+	if _dialog.is_open() or _screens.is_open():
+		return
+	if id == "journal":
+		_journal.toggle(_content.quests, flags)
+		return
+	if _in_combat():
+		return
+	_path_preview.clear()
+	match id:
+		"items":
+			_screens.open_equipment_for(_group.ids)
+		"trade":
+			_screens.open_trade_for(_group.ids)
+		"rest":
+			_screens.open_rest_for(_group.ids)
+
+
+func _toggle_menu() -> void:
+	if _menu.is_open():
+		_menu.close()
+		return
+	var can_save := not _in_combat() or _session.can_save()
+	_menu.open(can_save and _area != null, SaveStore.has_any())
+
+
+func _apply_options() -> void:
+	_session.set_log_visible(GameSettings.show_combat_log)
+	if not _in_combat() and _area != null:
+		_area_view.set_grid_visible(GameSettings.show_grid)
+
+
+## Бой: окна партии гаснут, портреты показывают хиты бойцов.
+func _set_combat_ui(on: bool) -> void:
+	for id: String in ["items", "trade", "rest"]:
+		_side.set_item_enabled(id, not on)
+	_refresh_bar()
 
 
 func _setup_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
+	# Слева сверху — название области и подсказка, под ними — колонка кнопок окон.
 	var column := VBoxContainer.new()
 	column.position = Vector2(12, 12)
-	column.add_theme_constant_override("separation", 10)
+	column.add_theme_constant_override("separation", 12)
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(column)
 	var panel := PanelContainer.new()
+	UiStyle.panel(panel)
 	column.add_child(panel)
 	var box := VBoxContainer.new()
 	panel.add_child(box)
@@ -877,30 +938,19 @@ func _setup_ui() -> void:
 	box.add_child(_title)
 	_hint.text = tr("UI_EXPLORE_HINT")
 	_hint.modulate = Color(1, 1, 1, 0.7)
+	_hint.add_theme_font_size_override("font_size", 12)
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hint.custom_minimum_size = Vector2(360, 0)
+	_hint.custom_minimum_size = Vector2(300, 0)
 	box.add_child(_hint)
-	var row := HBoxContainer.new()
-	box.add_child(row)
-	var menu := Button.new()
-	menu.text = tr("UI_MENU")
-	menu.focus_mode = Control.FOCUS_NONE
-	menu.pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
-	row.add_child(menu)
-	_grid_button.text = tr("UI_GRID")
-	_grid_button.focus_mode = Control.FOCUS_NONE
-	_grid_button.set_pressed_no_signal(grid_on)
-	_grid_button.toggled.connect(_set_grid)
-	row.add_child(_grid_button)
-	var party_row := HBoxContainer.new()
-	box.add_child(party_row)
-	_party_button(
-		party_row, "UI_EQUIPMENT", func() -> void: _screens.open_equipment_for(_group.ids)
-	)
-	_party_button(party_row, "UI_TRADE", func() -> void: _screens.open_trade_for(_group.ids))
-	_party_button(party_row, "UI_REST", func() -> void: _screens.open_rest_for(_group.ids))
-	_party_button(party_row, "UI_JOURNAL", func() -> void: _journal.toggle(_content.quests, flags))
-	column.add_child(_party_bar)
+	_side.add_item("items", "I", "UI_SIDE_ITEMS")
+	_side.add_item("journal", "J", "UI_SIDE_JOURNAL")
+	_side.add_item("trade", "T", "UI_TRADE")
+	_side.add_item("rest", "R", "UI_REST")
+	_side.add_item("menu", "Esc", "UI_SIDE_MENU")
+	_side.chosen.connect(_open_window)
+	_side.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	column.add_child(_side)
+	layer.add_child(_party_bar)
 	_party_bar.hero_selected.connect(_select)
 	_party_bar.chain_toggled.connect(_toggle_chain)
 	_session.setup(layer, _board, _world)
@@ -918,5 +968,11 @@ func _setup_ui() -> void:
 	layer.add_child(_dice)
 	_journal = JournalPanel.new()
 	layer.add_child(_journal)
+	_menu.setup()
+	layer.add_child(_menu)
+	_menu.save_pressed.connect(_quick_save)
+	_menu.load_pressed.connect(_load_latest)
+	_menu.quit_pressed.connect(func() -> void: get_tree().change_scene_to_file(MainMenu.SCENE))
+	_menu.options_changed.connect(_apply_options)
 	_dialog.quests_changed.connect(_quests_updated)
 	_dialog.setup(_dice, rng)

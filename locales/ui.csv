@@ -271,7 +271,7 @@ UI_MENU_SUBTITLE,"Рабочая сборка: деревня, лес и пог�
 UI_MENU_EXPLORE,Новая игра,New game
 UI_MENU_QUIT,Выход,Quit
 UI_MENU,В меню,Menu
-UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб, Q/E — поворот, F5 — сохранить, F9 — загрузить.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms, Q/E rotate, F5 saves, F9 loads."
+UI_EXPLORE_HINT,"ЛКМ по земле — идти, по жителю — поговорить, по герою или портрету — выбрать (Tab — следующий). G — сетка, колесо — масштаб, Q/E — поворот, F5/F9 — сохранить/загрузить, Esc — меню.","LMB on the ground to walk, on a villager to talk, on a hero or portrait to select (Tab for next). G toggles the grid, wheel zooms, Q/E rotate, F5/F9 save/load, Esc opens the menu."
 UI_EXPLORE_NO_START,"В загруженных модулях нет начальной области (module.json → start).","No starting area in the loaded modules (module.json → start)."
 UI_DIALOG_LEAVE,Уйти,Leave
 UI_GRID,Сетка (G),Grid (G)
@@ -311,3 +311,12 @@ UI_HEALTH_HURT,ранен,wounded
 UI_HEALTH_BAD,плох,badly wounded
 UI_HEALTH_DYING,при смерти,near death
 UI_HEALTH_DOWN,повержен,down
+UI_SIDE_ITEMS,Вещи,Items
+UI_SIDE_JOURNAL,Журнал,Journal
+UI_SIDE_MENU,Меню,Menu
+UI_GAME_MENU,Меню,Menu
+UI_GAME_MENU_SAVE,Сохранить (F5),Save (F5)
+UI_GAME_MENU_LOAD,Загрузить (F9),Load (F9)
+UI_GAME_MENU_QUIT,В главное меню,Main menu
+UI_OPTIONS,Опции,Options
+UI_OPTION_COMBAT_LOG,Журнал боя,Combat log

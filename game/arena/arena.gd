@@ -124,6 +124,8 @@ func _setup_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	_session.setup(layer, _board, _world)
+	# Арена — инструмент разработчика: журнал боя виден всегда.
+	_session.set_log_visible(true)
 
 	var panel := PanelContainer.new()
 	panel.position = Vector2(12, 12)

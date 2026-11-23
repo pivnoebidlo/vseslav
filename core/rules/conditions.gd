@@ -27,6 +27,9 @@ const RECKLESS := "reckless"
 const BLESSED := "blessed"
 ## «Направляющий снаряд»: следующая атака по носителю — с преимуществом.
 const GUIDED := "guided"
+## «Дубовая кожа»: КД носителя не ниже [constant BARKSKIN_AC] (SRD 5.2 Barkskin).
+const BARKSKIN := "barkskin"
+const BARKSKIN_AC := 17
 
 const SRD: Array[String] = [
 	BLINDED, FRIGHTENED, INCAPACITATED, POISONED, PRONE, RESTRAINED, STUNNED, UNCONSCIOUS
@@ -48,6 +51,7 @@ const ALL: Array[String] = [
 	RECKLESS,
 	BLESSED,
 	GUIDED,
+	BARKSKIN,
 ]
 ## Состояния, которые включают в себя другие.
 const IMPLIES: Dictionary[String, Array] = {

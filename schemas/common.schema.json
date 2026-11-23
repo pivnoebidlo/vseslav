@@ -144,7 +144,8 @@
         "raging",
         "reckless",
         "blessed",
-        "guided"
+        "guided",
+        "barkskin"
       ]
     },
     "attack_type": {
@@ -389,6 +390,36 @@
         },
         "concentration": {
           "type": "boolean"
+        },
+        "spell_level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "description": "Круг заклинания (ADR-0044): тратит ячейку slot_<круг> или ближайшую выше."
+        },
+        "upcast": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]?d[0-9]{1,3}$",
+          "description": "Кости к урону или лечению за каждый круг ячейки выше круга заклинания."
+        },
+        "at_level": {
+          "type": "object",
+          "description": "Урон заговора с уровня персонажа: {\"5\": {\"damage\": [...]}}.",
+          "propertyNames": {
+            "pattern": "^([1-9]|1[0-9]|20)$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "damage": {
+                "type": "array",
+                "items": {
+                  "$ref": "common.schema.json#/$defs/damage_part"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
         },
         "resource": {
           "$ref": "common.schema.json#/$defs/id"

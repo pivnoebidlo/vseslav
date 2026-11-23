@@ -5,6 +5,8 @@ extends RefCounted
 
 const ERR_UNKNOWN_ACTION := "err_unknown_action"
 const ERR_INCAPACITATED := "err_incapacitated"
+## Лечение по области — не больше шести союзников (SRD: «до шести существ»).
+const MAX_AREA_HEAL := 6
 const ERR_ACTION_USED := "err_action_used"
 const ERR_BONUS_USED := "err_bonus_used"
 const ERR_REACTION_ONLY := "err_reaction_only"
@@ -54,7 +56,7 @@ static func can_afford(state: CombatState, actor: Combatant, action: ActionDef) 
 				return ERR_BONUS_USED
 		ActionDef.COST_REACTION:
 			return ERR_REACTION_ONLY
-	if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
+	if action.resource != "" and slot_for(actor, action) == "":
 		return ERR_NO_RESOURCE
 	if not actor.item_ready(action):
 		return ERR_ITEM_NOT_READY
@@ -122,13 +124,14 @@ static func apply(
 	state: CombatState, actor: Combatant, action: ActionDef, target_id: String, cell: Vector2i
 ) -> Array[CombatEvent]:
 	var events: Array[CombatEvent] = []
-	_pay(state, actor, action)
-	events.append(
-		CombatEvent.new(
-			CombatEvent.ACTION,
-			{"id": actor.id, "action": action.id, "target": target_id, "cell": [cell.x, cell.y]}
-		)
-	)
+	var spent := _pay(state, actor, action)
+	var data := {"id": actor.id, "action": action.id, "target": target_id, "cell": [cell.x, cell.y]}
+	if action.spell_level > 0:
+		var level := spent.trim_prefix("slot_").to_int()
+		action = action.cast_with(level)
+		if level > action.spell_level:
+			data["slot"] = level
+	events.append(CombatEvent.new(CombatEvent.ACTION, data))
 	if action.concentration:
 		CombatRules.end_concentration(state, actor, events)
 		actor.concentration = action.id
@@ -154,7 +157,8 @@ static func apply(
 		ActionDef.KIND_HEAL:
 			var amount := action.heal.roll(state.rng, actor.formula_vars(action))
 			amount += heal_bonus(actor, action)
-			CombatRules.heal(state, target, maxi(amount, 0), events)
+			for t in _heal_targets(state, actor, action, target, cell):
+				CombatRules.heal(state, t, maxi(amount, 0), events)
 		ActionDef.KIND_EFFECT:
 			_effect(state, actor, action, target, events)
 	if action.consumes and actor.inventory != null:
@@ -183,7 +187,37 @@ static func is_weapon_attack(action: ActionDef) -> bool:
 	return action.kind == ActionDef.KIND_ATTACK and action.tags.has("weapon")
 
 
-static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> void:
+## Какой ресурс потратит действие: у заклинания — ячейка его круга или ближайшая выше,
+## где хватает (ADR-0044); пусто — нечем.
+static func slot_for(actor: Combatant, action: ActionDef) -> String:
+	if action.spell_level <= 0:
+		if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
+			return ""
+		return action.resource
+	for level in range(action.spell_level, 10):
+		var key := "slot_%d" % level
+		if actor.resource_left(key) >= action.resource_cost:
+			return key
+	return ""
+
+
+## Кого лечит: цель или, у лечения по области, союзников в ней (до шести).
+static func _heal_targets(
+	state: CombatState, actor: Combatant, action: ActionDef, target: Combatant, cell: Vector2i
+) -> Array[Combatant]:
+	var list: Array[Combatant] = []
+	if action.area == "":
+		if target != null:
+			list.append(target)
+		return list
+	for c in targets_in_area(state, actor, action, cell):
+		if c.team == actor.team and list.size() < MAX_AREA_HEAL:
+			list.append(c)
+	return list
+
+
+## Тратит действие и ресурс; возвращает потраченный ресурс (ячейку).
+static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> String:
 	match action.cost:
 		ActionDef.COST_ACTION:
 			if state.extra_attacks > 0 and is_weapon_attack(action):
@@ -197,12 +231,12 @@ static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> voi
 			state.bonus_used = true
 		ActionDef.COST_REACTION:
 			actor.reaction_ready = false
-	if action.resource != "":
-		actor.resources[action.resource] = (
-			actor.resource_left(action.resource) - action.resource_cost
-		)
+	var spent := slot_for(actor, action)
+	if spent != "":
+		actor.resources[spent] = actor.resource_left(spent) - action.resource_cost
 	if action.special == ActionDef.SPECIAL_STAND:
 		state.movement_left -= stand_cost(actor)
+	return spent
 
 
 # --- Атака ---------------------------------------------------------------------
@@ -484,11 +518,11 @@ static func _rage_strike(actor: Combatant, action: ActionDef) -> bool:
 
 ## Прибавка к лечению заклинанием (черта heal_bonus, путь Целителя).
 static func heal_bonus(actor: Combatant, action: ActionDef) -> int:
-	if not action.tags.has("spell") or action.resource == "":
+	if not action.tags.has("spell") or action.spell_level <= 0:
 		return 0
 	var total := 0
 	for t in actor.traits_of(TraitDef.HEAL_BONUS):
-		total += t.value
+		total += t.value + maxi(action.cast_level, action.spell_level)
 	return total
 
 

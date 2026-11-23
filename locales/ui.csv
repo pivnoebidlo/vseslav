@@ -577,3 +577,4 @@ LOG_REACTION_UNCANNY,{name} уворачивается — урон вдвое �
 UI_REACT_UNCANNY,"Попадание: {source} → {target}. {reactor} может увернуться: урон вдвое меньше.","Hit: {source} → {target}. {reactor} can dodge: half damage."
 UI_REACT_DODGE,Увернуться (реакция),Dodge (reaction)
 UI_EXTRA_ATTACK_LEFT,(ещё атак: {n}),({n} more attacks)
+COND_BARKSKIN,дубовая кожа (КД не ниже 17),oak skin (AC at least 17)

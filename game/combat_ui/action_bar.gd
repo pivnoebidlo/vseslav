@@ -225,7 +225,13 @@ func _chip(text: String, ready: bool, color: Color) -> PanelContainer:
 func _button(actor: Combatant, action: ActionDef, affordable: bool, selected: bool) -> Button:
 	var button := Button.new()
 	var text := TranslationServer.translate(action.name_key)
-	if action.resource != "":
+	if action.spell_level > 0:
+		# Заклинание: ячейки его круга и выше (ADR-0044).
+		var slots := 0
+		for level in range(action.spell_level, 10):
+			slots += actor.resource_left("slot_%d" % level)
+		text += " ×%d" % slots
+	elif action.resource != "":
 		text += " ×%d" % actor.resource_left(action.resource)
 	elif action.consumes:
 		text += " ×%d" % actor.item_count(action)

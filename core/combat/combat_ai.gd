@@ -130,7 +130,7 @@ static func shove_value(state: CombatState, actor: Combatant, target: Combatant)
 
 ## Хватает ли зарядов и предмет под рукой (без учёта действия в этом ходу).
 static func _has_means(actor: Combatant, action: ActionDef) -> bool:
-	if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
+	if action.resource != "" and ActionResolver.slot_for(actor, action) == "":
 		return false
 	if not actor.item_ready(action):
 		return false

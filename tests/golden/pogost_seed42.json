@@ -403,8 +403,8 @@
         ],
         "armor_class": 19,
         "at": [
-          2,
-          3
+          6,
+          4
         ],
         "concentration": "",
         "conditions": [],
@@ -417,7 +417,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 20,
+        "hp": 28,
         "id": "ratnik",
         "initiative_bonus": 3,
         "inventory": {
@@ -437,9 +437,7 @@
           "off_hand": "shchit",
           "purse": 40
         },
-        "last_damage_tags": [
-          "slashing"
-        ],
+        "last_damage_tags": [],
         "level": 3,
         "masteries": [
           "sap",
@@ -700,6 +698,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -719,13 +718,15 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "ally",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "2d8"
           },
           {
             "ability": "",
@@ -924,7 +925,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 25,
+        "hp": 26,
         "id": "lovchiy",
         "initiative_bonus": 3,
         "inventory": {
@@ -963,7 +964,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "favored_enemy": 0,
+          "favored_enemy": 1,
           "slot_1": 3
         },
         "resources_max": {
@@ -1097,10 +1098,97 @@
           },
           {
             "ability": "",
+            "area": "burst",
+            "area_size": 2,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "cast_level": 0,
+            "concentration": true,
+            "consumes": false,
+            "cost": "action",
+            "damage": [
+              {
+                "formula": "2d10",
+                "type": "radiant"
+              }
+            ],
+            "effects": [],
+            "heal": "0",
+            "id": "moonbeam",
+            "item": "",
+            "kind": "save",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_MOONBEAM",
+            "range": 24,
+            "resource": "slot_2",
+            "resource_cost": 1,
+            "save_ability": "con",
+            "save_dc": "8 + PROF + SPELL",
+            "save_half": true,
+            "special": "",
+            "spell_level": 2,
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic",
+              "radiant"
+            ],
+            "target": "point",
+            "two_handed": false,
+            "upcast": "1d10"
+          },
+          {
+            "ability": "",
+            "area": "",
+            "area_size": 0,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "cast_level": 0,
+            "concentration": false,
+            "consumes": false,
+            "cost": "bonus",
+            "damage": [],
+            "effects": [
+              {
+                "condition": "barkskin",
+                "on": "always",
+                "rounds": 600,
+                "save_ability": "",
+                "save_ends": ""
+              }
+            ],
+            "heal": "0",
+            "id": "barkskin",
+            "item": "",
+            "kind": "effect",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_BARKSKIN",
+            "range": 1,
+            "resource": "slot_2",
+            "resource_cost": 1,
+            "save_ability": "",
+            "save_dc": "8 + PROF + MOD",
+            "save_half": false,
+            "special": "",
+            "spell_level": 2,
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic"
+            ],
+            "target": "ally",
+            "two_handed": false,
+            "upcast": ""
+          },
+          {
+            "ability": "",
             "area": "cone",
             "area_size": 3,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -1125,13 +1213,15 @@
             "save_dc": "8 + PROF + SPELL",
             "save_half": true,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "point",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "1d8"
           },
           {
             "ability": "spell",
@@ -1216,6 +1306,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "bonus",
@@ -1235,13 +1326,15 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "ally",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "2d4"
           },
           {
             "ability": "",
@@ -1249,6 +1342,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -1268,13 +1362,15 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "ally",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "2d8"
           },
           {
             "ability": "",
@@ -1282,6 +1378,7 @@
             "area_size": 1,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": true,
             "consumes": false,
             "cost": "action",
@@ -1309,13 +1406,15 @@
             "save_dc": "8 + PROF + SPELL",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "point",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": ""
           },
           {
             "ability": "",
@@ -1503,7 +1602,7 @@
           4,
           7
         ],
-        "concentration": "entangle",
+        "concentration": "moonbeam",
         "conditions": [],
         "creature_tags": [
           "humanoid"
@@ -1540,10 +1639,12 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "slot_1": 0
+          "slot_1": 0,
+          "slot_2": 0
         },
         "resources_max": {
-          "slot_1": 4
+          "slot_1": 4,
+          "slot_2": 2
         },
         "reviving": false,
         "save_proficiencies": [
@@ -1935,8 +2036,8 @@
         ],
         "armor_class": 14,
         "at": [
-          2,
-          1
+          8,
+          5
         ],
         "concentration": "",
         "conditions": [],
@@ -1949,7 +2050,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 2,
+        "hp": 13,
         "id": "tat",
         "initiative_bonus": 5,
         "inventory": {
@@ -1967,9 +2068,7 @@
           "purse": 30
         },
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing"
+          "slashing"
         ],
         "level": 3,
         "masteries": [
@@ -2427,8 +2526,8 @@
         ],
         "armor_class": 14,
         "at": [
-          1,
-          0
+          6,
+          5
         ],
         "concentration": "",
         "conditions": [
@@ -2437,19 +2536,9 @@
             "ends_count": 0,
             "ends_on": "",
             "id": "raging",
-            "rounds": 3,
+            "rounds": 5,
             "save_ability": "",
             "save_dc": 10,
-            "source": "yaryy"
-          },
-          {
-            "concentration": false,
-            "ends_count": 1,
-            "ends_on": "source_turn_start",
-            "id": "reckless",
-            "rounds": 0,
-            "save_ability": "",
-            "save_dc": 0,
             "source": "yaryy"
           }
         ],
@@ -2689,6 +2778,50 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
+            "concentration": false,
+            "consumes": false,
+            "cost": "action",
+            "damage": [],
+            "effects": [
+              {
+                "condition": "blinded",
+                "on": "failed_save",
+                "rounds": 10,
+                "save_ability": "",
+                "save_ends": "con"
+              }
+            ],
+            "heal": "0",
+            "id": "blindness",
+            "item": "",
+            "kind": "save",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_BLINDNESS",
+            "range": 24,
+            "resource": "slot_2",
+            "resource_cost": 1,
+            "save_ability": "con",
+            "save_dc": "8 + PROF + SPELL",
+            "save_half": false,
+            "special": "",
+            "spell_level": 2,
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic"
+            ],
+            "target": "enemy",
+            "two_handed": false,
+            "upcast": ""
+          },
+          {
+            "ability": "",
+            "area": "",
+            "area_size": 0,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -2729,6 +2862,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "ranged",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -2761,6 +2895,7 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
@@ -2768,7 +2903,8 @@
               "radiant"
             ],
             "target": "enemy",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "1d6"
           },
           {
             "ability": "",
@@ -2776,6 +2912,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": true,
             "consumes": false,
             "cost": "action",
@@ -2803,13 +2940,15 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "ally",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": ""
           },
           {
             "ability": "",
@@ -2817,6 +2956,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -2836,13 +2976,15 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "ally",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "2d8"
           },
           {
             "ability": "",
@@ -2850,6 +2992,7 @@
             "area_size": 0,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "bonus",
@@ -2869,13 +3012,15 @@
             "save_dc": "8 + PROF + MOD",
             "save_half": false,
             "special": "",
+            "spell_level": 1,
             "sub_actions": [],
             "tags": [
               "spell",
               "magic"
             ],
             "target": "ally",
-            "two_handed": false
+            "two_handed": false,
+            "upcast": "2d4"
           },
           {
             "ability": "",
@@ -3102,12 +3247,14 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "channel": 0,
-          "slot_1": 0
+          "channel": 2,
+          "slot_1": 0,
+          "slot_2": 2
         },
         "resources_max": {
           "channel": 2,
-          "slot_1": 4
+          "slot_1": 4,
+          "slot_2": 2
         },
         "reviving": false,
         "save_proficiencies": [
@@ -3133,7 +3280,7 @@
             "rounds": 0,
             "tags": [],
             "type": "heal_bonus",
-            "value": 3,
+            "value": 2,
             "when": ""
           },
           {
@@ -4412,10 +4559,9 @@
         "initiative_bonus": 1,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing",
-          "force"
+          "spell",
+          "magic",
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -5051,9 +5197,10 @@
         "initiative_bonus": 1,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "fire"
+          "weapon",
+          "wood",
+          "aspen",
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -5694,7 +5841,7 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "slashing"
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -6004,7 +6151,8 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "slashing"
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -6028,7 +6176,7 @@
     "disengaged": false,
     "ended": true,
     "free_interaction_used": false,
-    "movement_left": 1,
+    "movement_left": 6,
     "order": [
       "lovchiy",
       "razboynik_5",
@@ -6048,16 +6196,14 @@
     ],
     "rng": {
       "seed": "42",
-      "state": "-6054398630541045301"
+      "state": "6868897438018121749"
     },
-    "round": 8,
+    "round": 5,
     "save_format": 3,
-    "turn_index": 7,
-    "turn_once": [
-      "trait_2"
-    ],
+    "turn_index": 8,
+    "turn_once": [],
     "winner": "party"
   },
   "seed": 42,
-  "steps": 167
+  "steps": 104
 }

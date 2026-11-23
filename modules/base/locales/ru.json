@@ -108,5 +108,12 @@
   "FEAT_DEFENSE_DESC": "+1 к КД, пока на герое доспех.",
   "TRAIT_EXTRA_ATTACK": "Вторая атака",
   "TRAIT_FAST_MOVEMENT": "Быстрые ноги",
-  "TRAIT_UNCANNY_DODGE": "Увёртливость"
+  "TRAIT_UNCANNY_DODGE": "Увёртливость",
+  "ACT_POISON_SPRAY": "Гнилой дух",
+  "ACT_TOLL_THE_DEAD": "Погребальный звон",
+  "ACT_BARKSKIN": "Дубовая кожа",
+  "ACT_MOONBEAM": "Лунный столп",
+  "ACT_BLINDNESS": "Тьма в очах",
+  "ACT_CALL_LIGHTNING": "Перунова стрела",
+  "ACT_MASS_HEALING_WORD": "Общая молитва о здравии"
 }

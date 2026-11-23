@@ -101,6 +101,13 @@ var item: String = ""
 var consumes: bool = false
 ## Оружие двуручное: в руку — только при свободной второй руке.
 var two_handed: bool = false
+## Круг заклинания (ADR-0044): 0 — не заклинание с ячейкой (заговор, умение). Ячейка —
+## slot_<круг>; когда их нет — ближайшая выше, и действие усиливается на [member upcast].
+var spell_level: int = 0
+## Кости, прибавляемые к урону (или лечению) за каждый круг ячейки выше круга заклинания: "1d6".
+var upcast: String = ""
+## Круг ячейки, которой заклинание сотворено сейчас (копия действия при сотворении).
+var cast_level: int = 0
 
 
 func is_attack() -> bool:
@@ -123,7 +130,7 @@ func to_dict() -> Dictionary:
 	var fx: Array = []
 	for e in effects:
 		fx.append(e.to_dict())
-	return {
+	var data := {
 		"id": id,
 		"name_key": name_key,
 		"cost": cost,
@@ -153,6 +160,12 @@ func to_dict() -> Dictionary:
 		"consumes": consumes,
 		"two_handed": two_handed,
 	}
+	# Только у заклинаний с ячейками: прочие действия (и старые сохранения) не меняются.
+	if spell_level > 0:
+		data["spell_level"] = spell_level
+		data["upcast"] = upcast
+		data["cast_level"] = cast_level
+	return data
 
 
 ## Читает действие из данных. Ошибки (неизвестные значения, плохие формулы)
@@ -199,8 +212,37 @@ static func from_dict(data: Dictionary, errors: Array[String] = []) -> ActionDef
 	a.item = JsonRead.get_str(data, "item")
 	a.consumes = JsonRead.get_bool(data, "consumes")
 	a.two_handed = JsonRead.get_bool(data, "two_handed")
+	a.spell_level = clampi(JsonRead.get_int(data, "spell_level"), 0, 9)
+	a.upcast = JsonRead.get_str(data, "upcast")
+	a.cast_level = JsonRead.get_int(data, "cast_level")
+	if a.spell_level > 0 and a.resource == "":
+		a.resource = "slot_%d" % a.spell_level
+	if a.upcast != "" and not _is_dice(a.upcast):
+		errors.append("%s: upcast must be dice like 1d6" % a.id)
 	_check(a, errors)
 	return a
+
+
+static func _is_dice(text: String) -> bool:
+	var parts := text.split("d")
+	return parts.size() == 2 and parts[0].is_valid_int() and parts[1].is_valid_int()
+
+
+## Копия, сотворённая ячейкой круга [param level]: выше круга — урон или лечение
+## больше на [member upcast] за каждый круг.
+func cast_with(level: int) -> ActionDef:
+	var copy := ActionDef.from_dict(to_dict())
+	copy.cast_level = level
+	var extra := level - spell_level
+	if extra <= 0 or upcast == "":
+		return copy
+	var parts := upcast.split("d")
+	var dice := "%dd%s" % [parts[0].to_int() * extra, parts[1]]
+	if kind == KIND_HEAL:
+		copy.heal = Formula.parse(heal.text + " + " + dice)
+	elif not damage.is_empty():
+		copy.damage.append(DamagePart.new(Formula.parse(dice), damage[0].damage_type))
+	return copy
 
 
 static func _formula(

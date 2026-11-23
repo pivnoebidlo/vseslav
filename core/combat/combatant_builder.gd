@@ -102,6 +102,7 @@ static func from_character(
 	for action_id in action_ids:
 		var a := db.make_action(action_id, errors)
 		if a != null:
+			_scale(db.actions[action_id], c.level, a)
 			c.actions.append(a)
 	_finish(db, c, errors)
 	return c
@@ -187,6 +188,26 @@ static func _collect_class_features(
 			c.resources_max[str(key)] = JsonRead.to_int(res[key])
 	if JsonRead.get_bool(cls, "weapon_mastery"):
 		c.masteries = ["*"]
+
+
+## Заговоры растут с уровнем (ADR-0044): "at_level": {"5": {"damage": [...]}} —
+## берётся урон для наибольшего достигнутого уровня.
+static func _scale(data: Dictionary, level: int, a: ActionDef) -> void:
+	var at := JsonRead.get_dict(data, "at_level")
+	var best := 0
+	for key: Variant in at:
+		var lvl := str(key).to_int()
+		if lvl <= level and lvl > best:
+			best = lvl
+	if best == 0:
+		return
+	var parts := JsonRead.get_array(JsonRead.get_dict(at, str(best)), "damage")
+	if parts.is_empty():
+		return
+	a.damage.clear()
+	for item: Variant in parts:
+		var entry: Dictionary = item
+		a.damage.append(DamagePart.from_dict(entry))
 
 
 ## Снаряжение: доспех и щит → КД и скорость; оружие и расходники → действия

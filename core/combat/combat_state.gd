@@ -158,6 +158,8 @@ func effective_ac(target: Combatant) -> int:
 	for t in target.traits_of(TraitDef.AC_BONUS):
 		if t.when == TraitDef.WHEN_ADJACENT_ALLY and ally_adjacent(target, target.team, ""):
 			ac += t.value
+	if Conditions.has(target.conditions, Conditions.BARKSKIN):
+		ac = maxi(ac, Conditions.BARKSKIN_AC)
 	return ac
 
 

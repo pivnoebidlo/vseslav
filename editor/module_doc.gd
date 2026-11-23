@@ -84,6 +84,8 @@ static func create(
 	}
 	doc._dirty[MANIFEST] = true
 	doc.put_value(KIND_LOCALE, "ru", [title_key(id)], title)
+	# Ключи во всех языках одни и те же (перевод пишется позже).
+	doc.put_value(KIND_LOCALE, "en", [title_key(id)], "")
 	doc.save(errors)
 	return doc
 

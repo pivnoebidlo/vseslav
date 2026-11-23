@@ -182,3 +182,40 @@ func test_area_file_survives_a_round_trip_unchanged() -> void:
 	copy.save(errors)
 	var written := FileAccess.get_file_as_string(copy.dir.path_join("areas/izba.json"))
 	assert_eq(written, original, "the editor keeps the file format")
+
+
+func test_texts_keep_the_same_keys_in_every_language() -> void:
+	var doc := _new_doc()
+	assert_eq(_raw(doc, ModuleDoc.title_key("t.story"), "en"), "")
+	var undo := UndoStack.new()
+	undo.push(doc, DialogOps.new_dialog(doc, "ded", "Привет."))
+	var key := DialogOps.node_key("ded", DialogOps.FIRST_NODE)
+	assert_eq(doc.text(key, "ru"), "Привет.")
+	assert_eq(_raw(doc, key, "en"), "", "en key exists, empty")
+	# Перевод написан — русский стёрт: ключ остаётся пустым, пока есть английский.
+	var en := DocEdit.new()
+	en.set_text(doc, key, "en", "Hello.")
+	undo.push(doc, en)
+	var wipe := DocEdit.new()
+	wipe.set_text(doc, key, "ru", "")
+	undo.push(doc, wipe)
+	assert_eq(_raw(doc, key, "ru"), "")
+	assert_eq(doc.text(key, "en"), "Hello.")
+	# Пусто во всех языках — ключ уходит отовсюду.
+	var gone := DocEdit.new()
+	gone.set_text(doc, key, "en", "")
+	undo.push(doc, gone)
+	assert_eq(_raw(doc, key, "ru"), "<none>")
+	assert_eq(_raw(doc, key, "en"), "<none>")
+	undo.undo(doc)
+	assert_eq(doc.text(key, "en"), "Hello.")
+	# Удаление диалога убирает его строки из обоих языков.
+	undo.push(doc, DialogOps.delete_dialog(doc, "ded"))
+	assert_eq(_raw(doc, key, "ru"), "<none>")
+	assert_eq(_raw(doc, key, "en"), "<none>")
+
+
+## Строка как она лежит в модуле; "<none>" — ключа нет.
+func _raw(doc: ModuleDoc, key: String, lang: String) -> String:
+	var v: Variant = doc.get_value(ModuleDoc.KIND_LOCALE, lang, [key])
+	return "<none>" if v == null else str(v)

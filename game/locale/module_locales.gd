@@ -18,12 +18,14 @@ static func apply(locales: Dictionary[String, Dictionary]) -> void:
 	var langs: Array[String] = []
 	langs.assign(locales.keys())
 	langs.sort()
+	var ru: Dictionary = locales.get("ru", {})
 	for lang in langs:
-		_applied.append(_add(lang, locales[lang]))
+		_applied.append(_add(lang, locales[lang], ru))
 
 
 ## Добавляет строки модуля из папки [param module_dir] для всех языков.
 static func load_module(module_dir: String) -> void:
+	var ru := {}
 	for lang in LANGS:
 		var path := module_dir.path_join("locales").path_join(lang + ".json")
 		var text := FileAccess.get_file_as_string(path)
@@ -34,13 +36,20 @@ static func load_module(module_dir: String) -> void:
 			push_error("Bad locale file: %s" % path)
 			continue
 		var data: Dictionary = parsed
-		_add(lang, data)
+		if lang == "ru":
+			ru = data
+		_add(lang, data, ru)
 
 
-static func _add(lang: String, data: Dictionary) -> Translation:
+## Пустая строка (перевод ещё не написан, ADR-0039) — текст из [param fallback] (русский).
+static func _add(lang: String, data: Dictionary, fallback: Dictionary = {}) -> Translation:
 	var translation := Translation.new()
 	translation.locale = lang
 	for key: Variant in data:
-		translation.add_message(StringName(str(key)), str(data[key]))
+		var text := str(data[key])
+		if text == "":
+			text = str(fallback.get(key, ""))
+		if text != "":
+			translation.add_message(StringName(str(key)), text)
 	TranslationServer.add_translation(translation)
 	return translation

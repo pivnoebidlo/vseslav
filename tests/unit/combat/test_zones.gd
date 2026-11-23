@@ -14,7 +14,7 @@ func _state(level: int) -> CombatState:
 	var party := Party.from_db(_db)
 	if level >= 5:
 		party.give_xp(6500)
-		assert_true(party.level_up(_db, "volkhv", {"feat": "alert"}))
+		assert_true(party.level_up(_db, "volkhv", {"feat": "alert", "spells": ["poison_spray"]}))
 		assert_true(party.level_up(_db, "volkhv"))
 	var arena := {
 		"id": "t",

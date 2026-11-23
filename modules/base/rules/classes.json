@@ -23,6 +23,7 @@
       "id": "lovchiy", "name_key": "CLASS_LOVCHIY", "recharge": { "favored_enemy": "long", "slot_1": "long", "slot_2": "long" }, "hit_die": 10, "saves": ["str", "dex"],
       "armor": ["light", "medium", "shield"], "weapons": ["simple", "martial"], "weapon_mastery": true,
       "spell_ability": "wis", "spell_list": ["cure_wounds", "healing_word", "entangle", "barkskin"],
+      "prepared": { "1": 2, "2": 3, "3": 4, "4": 5, "5": 6 },
       "levels": {
         "1": { "actions": ["hunters_mark"], "resources": { "favored_enemy": 2, "slot_1": 2 },
                "traits": [ { "type": "bonus_damage", "formula": "1d6", "damage_type": "force",
@@ -31,7 +32,7 @@
                              "name_key": "TRAIT_STYLE_ARCHERY" } ] },
         "3": { "resources": { "slot_1": 3 } },
         "4": { "choice": "feat" },
-        "5": { "actions": ["barkskin"], "resources": { "slot_1": 4, "slot_2": 2 },
+        "5": { "resources": { "slot_1": 4, "slot_2": 2 },
                "traits": [ { "type": "extra_attack", "value": 1, "name_key": "TRAIT_EXTRA_ATTACK" } ] }
       },
       "paths": [
@@ -46,15 +47,17 @@
       "spell_ability": "wis",
       "spell_list": ["produce_flame", "thorn_whip", "poison_spray", "cure_wounds", "healing_word", "entangle", "thunderwave",
         "barkskin", "moonbeam", "call_lightning"],
+      "cantrips": { "1": 2, "4": 3 }, "prepared": { "1": 4, "2": 5, "3": 6, "4": 7, "5": 9 },
       "levels": {
         "1": { "resources": { "slot_1": 2 } },
         "2": { "resources": { "slot_1": 3 } },
-        "3": { "actions": ["moonbeam", "moonbeam_move", "barkskin"], "resources": { "slot_1": 4, "slot_2": 2 } },
-        "4": { "choice": "feat", "actions": ["poison_spray"], "resources": { "slot_2": 3 } },
-        "5": { "actions": ["call_lightning", "call_lightning_strike"], "resources": { "slot_3": 2 } }
+        "3": { "resources": { "slot_1": 4, "slot_2": 2 } },
+        "4": { "choice": "feat", "resources": { "slot_2": 3 } },
+        "5": { "resources": { "slot_3": 2 } }
       },
       "paths": [
-        { "id": "perunov", "name_key": "PATH_PERUNOV", "level": 3, "actions": ["thunderwave"] }
+        { "id": "perunov", "name_key": "PATH_PERUNOV", "level": 3, "actions": ["thunderwave"],
+          "levels": { "5": { "actions": ["call_lightning"] } } }
       ]
     },
     {
@@ -100,16 +103,18 @@
       "weapon_mastery": false, "spell_ability": "wis",
       "spell_list": ["sacred_flame", "toll_the_dead", "guiding_bolt", "bless", "cure_wounds", "healing_word",
         "blindness", "mass_healing_word"],
+      "cantrips": { "1": 3, "4": 4 }, "prepared": { "1": 4, "2": 5, "3": 6, "4": 7, "5": 9 },
       "levels": {
         "1": { "resources": { "slot_1": 2 } },
         "2": { "actions": ["divine_spark"], "resources": { "slot_1": 3, "channel": 2 } },
-        "3": { "actions": ["blindness"], "resources": { "slot_1": 4, "slot_2": 2 } },
-        "4": { "choice": "feat", "actions": ["toll_the_dead"], "resources": { "slot_2": 3 } },
-        "5": { "actions": ["mass_healing_word"], "resources": { "slot_3": 2 } }
+        "3": { "resources": { "slot_1": 4, "slot_2": 2 } },
+        "4": { "choice": "feat", "resources": { "slot_2": 3 } },
+        "5": { "resources": { "slot_3": 2 } }
       },
       "paths": [
-        { "id": "tselitel", "name_key": "PATH_TSELITEL", "level": 3,
-          "traits": [ { "type": "heal_bonus", "value": 2, "name_key": "TRAIT_DISCIPLE_OF_LIFE" } ] }
+        { "id": "tselitel", "name_key": "PATH_TSELITEL", "level": 3, "actions": ["bless", "cure_wounds"],
+          "traits": [ { "type": "heal_bonus", "value": 2, "name_key": "TRAIT_DISCIPLE_OF_LIFE" } ],
+          "levels": { "5": { "actions": ["mass_healing_word"] } } }
       ]
     }
   ]

@@ -65,7 +65,7 @@ func test_xp_goes_to_members_and_level_up_adds_hp() -> void:
 func test_level_and_xp_survive_save_and_combat() -> void:
 	var party := Party.from_db(_db)
 	party.give_xp(5000)
-	party.level_up(_db, "lovchiy", {"feat": "alert"})
+	party.level_up(_db, "lovchiy", {"feat": "alert", "spells": ["healing_word"]})
 	var loaded := Party.from_dict(party.to_dict(), _db)
 	assert_eq(loaded.level_of(_db, "lovchiy"), 4)
 	assert_eq(loaded.state_of("lovchiy").xp, 5900)

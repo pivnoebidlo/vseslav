@@ -13,7 +13,7 @@ func _caster(level: int) -> Combatant:
 	var data: Dictionary = _db.characters["volkhv"].duplicate()
 	data["level"] = level
 	if level >= 4:
-		data["picks"] = {"4": {"feat": "alert"}}
+		data["picks"] = {"4": {"feat": "alert", "spells": ["poison_spray"]}}
 	var errors: Array[String] = []
 	var c := CombatantBuilder.from_character(_db, data, errors)
 	assert_eq(errors, [] as Array[String])
@@ -71,7 +71,9 @@ func test_mass_heal_and_barkskin_in_combat() -> void:
 	}
 	var party := Party.from_db(_db)
 	party.give_xp(6500)
-	assert_true(party.level_up(_db, "svyashchennik", {"feat": "alert"}))
+	assert_true(
+		party.level_up(_db, "svyashchennik", {"feat": "alert", "spells": ["toll_the_dead"]})
+	)
 	assert_true(party.level_up(_db, "svyashchennik"))
 	var errors: Array[String] = []
 	var state := ArenaLoader.new_combat(arena, 5, _db, errors, party)

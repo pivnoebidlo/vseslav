@@ -80,11 +80,16 @@ static func from_character(
 		var entry: Dictionary = t
 		c.traits.append(TraitDef.from_dict(entry, errors))
 	var spell_list := JsonRead.get_str_array(cls, "spell_list")
-	for spell in JsonRead.get_str_array(data, "spells"):
+	for spell in LevelChoice.known_spells(data, c.level):
 		if not spell_list.has(spell):
 			errors.append("%s: spell '%s' is not on the class list" % [id, spell])
 		elif not action_ids.has(spell):
 			action_ids.append(spell)
+	# Действия для сотворённых заклинаний (сдвинуть зону, ударить снова) — сами (ADR-0046).
+	for key: String in _sorted_keys(db.actions):
+		var zone_of := JsonRead.get_str(db.actions[key], "zone_of")
+		if zone_of != "" and action_ids.has(zone_of) and not action_ids.has(key):
+			action_ids.append(key)
 
 	var hit_die := JsonRead.get_int(cls, "hit_die", 8)
 	var con := c.abilities.modifier(Abilities.CON)
@@ -174,6 +179,11 @@ static func _collect_class_features(
 		path_found = true
 		if c.level >= JsonRead.get_int(path, "level", 3):
 			features.append(path)
+		# Умения пути на старших уровнях (ADR-0047): "levels": {"5": {...}}.
+		var path_levels := JsonRead.get_dict(path, "levels")
+		for lvl in range(1, c.level + 1):
+			if path_levels.has(str(lvl)):
+				features.append(JsonRead.get_dict(path_levels, str(lvl)))
 	if not path_found:
 		errors.append("%s: unknown path '%s'" % [c.id, path_id])
 	for f in features:
@@ -188,6 +198,13 @@ static func _collect_class_features(
 			c.resources_max[str(key)] = JsonRead.to_int(res[key])
 	if JsonRead.get_bool(cls, "weapon_mastery"):
 		c.masteries = ["*"]
+
+
+static func _sorted_keys(source: Dictionary[String, Dictionary]) -> Array[String]:
+	var keys: Array[String] = []
+	keys.assign(source.keys())
+	keys.sort()
+	return keys
 
 
 ## Заговоры растут с уровнем (ADR-0044): "at_level": {"5": {"damage": [...]}} —

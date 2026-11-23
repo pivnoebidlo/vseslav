@@ -233,6 +233,9 @@ func _gain_text(hero: Combatant) -> String:
 	var path := _path(cls, JsonRead.get_str(data, "path"))
 	if JsonRead.get_int(path, "level", 3) == next:
 		_feature_names(path, names)
+	var counts := LevelChoice.spells_to_pick(_db, _party.character_data(_db, _current), next)
+	if counts.x + counts.y > 0:
+		names.append(_fmt("UI_HERO_GAIN_SPELLS", {"n": counts.x + counts.y}))
 	if after != null and after.proficiency > hero.proficiency:
 		names.append(_fmt("UI_HERO_GAIN_PROF", {"bonus": "+%d" % after.proficiency}))
 	var text := _fmt("UI_HERO_GAIN", {"level": next, "hp": hp})

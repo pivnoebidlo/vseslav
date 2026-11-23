@@ -20,6 +20,11 @@ var _second := OptionButton.new()
 var _third := OptionButton.new()
 var _accept := Button.new()
 var _group := ButtonGroup.new()
+## Нужна ли черта/характеристики на этом уровне; сколько заговоров (x) и заклинаний (y).
+var _feat_needed := false
+var _counts := Vector2i.ZERO
+var _spells: Array[String] = []
+var _spell_hint := Label.new()
 
 
 ## [param data] — данные персонажа с его выборами, [param abilities] — нынешние значения.
@@ -37,32 +42,17 @@ func setup(db: RulesDb, data: Dictionary, abilities: Abilities, level: int) -> v
 	box.add_theme_constant_override("separation", 10)
 	box.custom_minimum_size = Vector2(760, 0)
 	add_child(box)
+	_feat_needed = LevelChoice.feat_needed(db, data, level)
+	_counts = LevelChoice.spells_to_pick(db, data, level)
 	var title := Label.new()
-	title.text = TranslationServer.translate("UI_LEVEL_CHOICE").format({"level": level})
+	var title_key := "UI_LEVEL_CHOICE" if _feat_needed else "UI_LEVEL_CHOICE_SPELLS"
+	title.text = TranslationServer.translate(title_key).format({"level": level})
 	title.add_theme_font_size_override("font_size", 18)
 	box.add_child(title)
-	var plus_two := _radio(box, "UI_LEVEL_PLUS_TWO", MODE_PLUS_TWO, "")
-	plus_two.add_child(_abilities_picker(_first))
-	var plus_one := _radio(box, "UI_LEVEL_PLUS_ONE", MODE_PLUS_ONE, "")
-	plus_one.add_child(_abilities_picker(_second))
-	plus_one.add_child(_abilities_picker(_third))
-	_third.select(1)
-	var feats := LevelChoice.feats_for(db, data)
-	if not feats.is_empty():
-		var head := Label.new()
-		head.text = TranslationServer.translate("UI_LEVEL_FEATS")
-		head.add_theme_color_override("font_color", UiStyle.ACTIVE.darkened(0.1))
-		box.add_child(head)
-	for id in feats:
-		var feat: Dictionary = db.feats[id]
-		var row := _radio(box, JsonRead.get_str(feat, "name_key"), "", id)
-		var desc := Label.new()
-		desc.text = TranslationServer.translate(JsonRead.get_str(feat, "desc_key"))
-		desc.add_theme_font_size_override("font_size", 12)
-		desc.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
-		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(desc)
+	if _feat_needed:
+		_feat_section(box)
+	if _counts.x + _counts.y > 0:
+		_spell_section(box, level)
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	buttons.add_theme_constant_override("separation", 8)
@@ -81,8 +71,79 @@ func setup(db: RulesDb, data: Dictionary, abilities: Abilities, level: int) -> v
 	_refresh()
 
 
+func _feat_section(box: VBoxContainer) -> void:
+	var plus_two := _radio(box, "UI_LEVEL_PLUS_TWO", MODE_PLUS_TWO, "")
+	plus_two.add_child(_abilities_picker(_first))
+	var plus_one := _radio(box, "UI_LEVEL_PLUS_ONE", MODE_PLUS_ONE, "")
+	plus_one.add_child(_abilities_picker(_second))
+	plus_one.add_child(_abilities_picker(_third))
+	_third.select(1)
+	var feats := LevelChoice.feats_for(_db, _data)
+	if not feats.is_empty():
+		var head := Label.new()
+		head.text = TranslationServer.translate("UI_LEVEL_FEATS")
+		head.add_theme_color_override("font_color", UiStyle.ACTIVE.darkened(0.1))
+		box.add_child(head)
+	for id in feats:
+		var feat: Dictionary = _db.feats[id]
+		var row := _radio(box, JsonRead.get_str(feat, "name_key"), "", id)
+		var desc := Label.new()
+		desc.text = TranslationServer.translate(JsonRead.get_str(feat, "desc_key"))
+		desc.add_theme_font_size_override("font_size", 12)
+		desc.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(desc)
+
+
+## Заговоры и заклинания на выбор: флажки; сколько нужно — в подсказке.
+func _spell_section(box: VBoxContainer, level: int) -> void:
+	var head := Label.new()
+	head.text = TranslationServer.translate("UI_LEVEL_SPELLS")
+	head.add_theme_color_override("font_color", UiStyle.ACTIVE.darkened(0.1))
+	box.add_child(head)
+	_spell_hint.add_theme_font_size_override("font_size", 12)
+	box.add_child(_spell_hint)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 16)
+	box.add_child(grid)
+	var options: Array[String] = []
+	if _counts.x > 0:
+		options.append_array(LevelChoice.spell_options(_db, _data, level, true))
+	if _counts.y > 0:
+		options.append_array(LevelChoice.spell_options(_db, _data, level, false))
+	for id in options:
+		var raw: Dictionary = _db.actions[id]
+		var check := CheckBox.new()
+		var circle := JsonRead.get_int(raw, "spell_level")
+		var name := TranslationServer.translate(JsonRead.get_str(raw, "name_key", id))
+		check.text = (
+			TranslationServer.translate("UI_LEVEL_CANTRIP").format({"name": name})
+			if circle == 0
+			else TranslationServer.translate("UI_LEVEL_CIRCLE").format({"name": name, "n": circle})
+		)
+		check.focus_mode = Control.FOCUS_NONE
+		check.toggled.connect(
+			func(on: bool) -> void:
+				if on and not _spells.has(id):
+					_spells.append(id)
+				elif not on:
+					_spells.erase(id)
+				_refresh()
+		)
+		grid.add_child(check)
+
+
 ## Выбор в виде, который понимает Party.level_up.
 func pick() -> Dictionary:
+	var out := _feat_pick() if _feat_needed else {}
+	if not _spells.is_empty():
+		out[LevelChoice.SPELLS] = _spells.duplicate()
+	return out
+
+
+func _feat_pick() -> Dictionary:
 	if _feat != "":
 		return {LevelChoice.FEAT: _feat}
 	if _mode == MODE_PLUS_TWO:
@@ -132,3 +193,6 @@ func _ability(option: OptionButton) -> String:
 ## «Принять» — только для годного выбора (например, не выше 20).
 func _refresh() -> void:
 	_accept.disabled = LevelChoice.problem(_db, _data, pick(), _abilities) != ""
+	_spell_hint.text = TranslationServer.translate("UI_LEVEL_SPELLS_HINT").format(
+		{"cantrips": _counts.x, "spells": _counts.y, "chosen": _spells.size()}
+	)

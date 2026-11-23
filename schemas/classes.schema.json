@@ -62,6 +62,30 @@
           "spell_list": {
             "$ref": "common.schema.json#/$defs/ids"
           },
+          "cantrips": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^([1-9]|1[0-9]|20)$"
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Сколько заговоров знает к уровню (ADR-0047)."
+          },
+          "prepared": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^([1-9]|1[0-9]|20)$"
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Сколько заклинаний с ячейками подготовлено к уровню (ADR-0047)."
+          },
           "recharge": {
             "type": "object",
             "propertyNames": {
@@ -135,6 +159,29 @@
                   "type": "array",
                   "items": {
                     "$ref": "common.schema.json#/$defs/trait"
+                  }
+                },
+                "levels": {
+                  "type": "object",
+                  "description": "Умения пути на старших уровнях (ADR-0047).",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^([1-9]|1[0-9]|20)$"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "actions": {
+                        "$ref": "common.schema.json#/$defs/ids"
+                      },
+                      "traits": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "common.schema.json#/$defs/trait"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 }
               },

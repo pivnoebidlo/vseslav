@@ -573,3 +573,9 @@ COND_BARKSKIN,дубовая кожа (КД не ниже 17),oak skin (AC at le
 UI_SLOT_LEVEL,Ячейка,Spell slot
 UI_SLOT_N,{n} круг (×{left}),Level {n} (×{left})
 err_no_zone,Сначала нужно сотворить это заклинание и держать на нём сосредоточение,Cast the spell first and keep concentrating on it
+UI_LEVEL_CHOICE_SPELLS,{level} уровень: новые заклинания,Level {level}: new spells
+UI_LEVEL_SPELLS,Новые заклинания,New spells
+UI_LEVEL_SPELLS_HINT,"Выбери заговоров: {cantrips}, заклинаний: {spells} (отмечено {chosen})","Choose cantrips: {cantrips}, spells: {spells} ({chosen} marked)"
+UI_LEVEL_CANTRIP,{name} (заговор),{name} (cantrip)
+UI_LEVEL_CIRCLE,"{name} ({n} круг)","{name} (level {n})"
+UI_HERO_GAIN_SPELLS,новых заклинаний: {n},new spells: {n}

@@ -3,7 +3,7 @@
   "expected": {
     "actions_left": 0,
     "arena_id": "spike.pogost",
-    "bonus_used": true,
+    "bonus_used": false,
     "combatants": [
       {
         "abilities": {
@@ -403,8 +403,8 @@
         ],
         "armor_class": 19,
         "at": [
-          6,
-          5
+          2,
+          3
         ],
         "concentration": "",
         "conditions": [],
@@ -925,7 +925,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 25,
+        "hp": 31,
         "id": "lovchiy",
         "initiative_bonus": 3,
         "inventory": {
@@ -948,11 +948,7 @@
           "main_hand": "luk",
           "purse": 15
         },
-        "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing"
-        ],
+        "last_damage_tags": [],
         "level": 3,
         "masteries": [
           "nick",
@@ -964,7 +960,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "favored_enemy": 0,
+          "favored_enemy": 1,
           "slot_1": 3
         },
         "resources_max": {
@@ -1098,6 +1094,47 @@
           },
           {
             "ability": "",
+            "area": "cone",
+            "area_size": 3,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "cast_level": 0,
+            "concentration": false,
+            "consumes": false,
+            "cost": "action",
+            "damage": [
+              {
+                "formula": "2d8",
+                "type": "thunder"
+              }
+            ],
+            "effects": [],
+            "heal": "0",
+            "id": "thunderwave",
+            "item": "",
+            "kind": "save",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_THUNDERWAVE",
+            "range": 3,
+            "resource": "slot_1",
+            "resource_cost": 1,
+            "save_ability": "con",
+            "save_dc": "8 + PROF + SPELL",
+            "save_half": true,
+            "special": "",
+            "spell_level": 1,
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic"
+            ],
+            "target": "point",
+            "two_handed": false,
+            "upcast": "1d8"
+          },
+          {
+            "ability": "",
             "area": "burst",
             "area_size": 1,
             "attack_bonus": "MOD + PROF",
@@ -1138,46 +1175,6 @@
             "target": "point",
             "two_handed": false,
             "upcast": "1d10"
-          },
-          {
-            "ability": "",
-            "area": "burst",
-            "area_size": 1,
-            "attack_bonus": "MOD + PROF",
-            "attack_type": "melee",
-            "concentration": false,
-            "consumes": false,
-            "cost": "action",
-            "damage": [
-              {
-                "formula": "2d10",
-                "type": "radiant"
-              }
-            ],
-            "effects": [],
-            "heal": "0",
-            "id": "moonbeam_move",
-            "item": "",
-            "kind": "save",
-            "long_range": 0,
-            "mastery": "",
-            "name_key": "ACT_MOONBEAM_MOVE",
-            "range": 12,
-            "resource": "",
-            "resource_cost": 1,
-            "save_ability": "con",
-            "save_dc": "8 + PROF + SPELL",
-            "save_half": true,
-            "special": "",
-            "sub_actions": [],
-            "tags": [
-              "spell",
-              "magic",
-              "radiant"
-            ],
-            "target": "point",
-            "two_handed": false,
-            "zone_of": "moonbeam"
           },
           {
             "ability": "",
@@ -1222,47 +1219,6 @@
             "target": "ally",
             "two_handed": false,
             "upcast": ""
-          },
-          {
-            "ability": "",
-            "area": "cone",
-            "area_size": 3,
-            "attack_bonus": "MOD + PROF",
-            "attack_type": "melee",
-            "cast_level": 0,
-            "concentration": false,
-            "consumes": false,
-            "cost": "action",
-            "damage": [
-              {
-                "formula": "2d8",
-                "type": "thunder"
-              }
-            ],
-            "effects": [],
-            "heal": "0",
-            "id": "thunderwave",
-            "item": "",
-            "kind": "save",
-            "long_range": 0,
-            "mastery": "",
-            "name_key": "ACT_THUNDERWAVE",
-            "range": 3,
-            "resource": "slot_1",
-            "resource_cost": 1,
-            "save_ability": "con",
-            "save_dc": "8 + PROF + SPELL",
-            "save_half": true,
-            "special": "",
-            "spell_level": 1,
-            "sub_actions": [],
-            "tags": [
-              "spell",
-              "magic"
-            ],
-            "target": "point",
-            "two_handed": false,
-            "upcast": "1d8"
           },
           {
             "ability": "spell",
@@ -1456,6 +1412,46 @@
             "target": "point",
             "two_handed": false,
             "upcast": ""
+          },
+          {
+            "ability": "",
+            "area": "burst",
+            "area_size": 1,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "concentration": false,
+            "consumes": false,
+            "cost": "action",
+            "damage": [
+              {
+                "formula": "2d10",
+                "type": "radiant"
+              }
+            ],
+            "effects": [],
+            "heal": "0",
+            "id": "moonbeam_move",
+            "item": "",
+            "kind": "save",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_MOONBEAM_MOVE",
+            "range": 12,
+            "resource": "",
+            "resource_cost": 1,
+            "save_ability": "con",
+            "save_dc": "8 + PROF + SPELL",
+            "save_half": true,
+            "special": "",
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic",
+              "radiant"
+            ],
+            "target": "point",
+            "two_handed": false,
+            "zone_of": "moonbeam"
           },
           {
             "ability": "",
@@ -2086,13 +2082,13 @@
         "creature_tags": [
           "humanoid"
         ],
-        "dead": false,
-        "death_failures": 0,
+        "dead": true,
+        "death_failures": 4,
         "death_saves": true,
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 18,
+        "hp": 0,
         "id": "tat",
         "initiative_bonus": 5,
         "inventory": {
@@ -2578,7 +2574,7 @@
             "ends_count": 0,
             "ends_on": "",
             "id": "raging",
-            "rounds": 6,
+            "rounds": 5,
             "save_ability": "",
             "save_dc": 10,
             "source": "yaryy"
@@ -2603,7 +2599,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 31,
+        "hp": 22,
         "id": "yaryy",
         "initiative_bonus": 3,
         "inventory": {
@@ -2614,16 +2610,14 @@
             },
             "volchya_shkura"
           ],
-          "belt": [
-            "otvar"
-          ],
+          "belt": [],
           "main_hand": "sekira",
           "purse": 10
         },
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "radiant"
+          "weapon",
+          "iron",
+          "piercing"
         ],
         "level": 3,
         "masteries": [
@@ -2835,6 +2829,86 @@
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "cast_level": 0,
+            "concentration": true,
+            "consumes": false,
+            "cost": "action",
+            "damage": [],
+            "effects": [
+              {
+                "condition": "blessed",
+                "on": "always",
+                "rounds": 10,
+                "save_ability": "",
+                "save_ends": ""
+              }
+            ],
+            "heal": "0",
+            "id": "bless",
+            "item": "",
+            "kind": "effect",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_BLESS",
+            "range": 6,
+            "resource": "slot_1",
+            "resource_cost": 1,
+            "save_ability": "",
+            "save_dc": "8 + PROF + MOD",
+            "save_half": false,
+            "special": "",
+            "spell_level": 1,
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic"
+            ],
+            "target": "ally",
+            "two_handed": false,
+            "upcast": ""
+          },
+          {
+            "ability": "",
+            "area": "",
+            "area_size": 0,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "cast_level": 0,
+            "concentration": false,
+            "consumes": false,
+            "cost": "action",
+            "damage": [],
+            "effects": [],
+            "heal": "2d8 + SPELL",
+            "id": "cure_wounds",
+            "item": "",
+            "kind": "heal",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_CURE_WOUNDS",
+            "range": 1,
+            "resource": "slot_1",
+            "resource_cost": 1,
+            "save_ability": "",
+            "save_dc": "8 + PROF + MOD",
+            "save_half": false,
+            "special": "",
+            "spell_level": 1,
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic"
+            ],
+            "target": "ally",
+            "two_handed": false,
+            "upcast": "2d8"
+          },
+          {
+            "ability": "",
+            "area": "",
+            "area_size": 0,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "cast_level": 0,
             "concentration": false,
             "consumes": false,
             "cost": "action",
@@ -2961,86 +3035,6 @@
             "target": "enemy",
             "two_handed": false,
             "upcast": "1d6"
-          },
-          {
-            "ability": "",
-            "area": "",
-            "area_size": 0,
-            "attack_bonus": "MOD + PROF",
-            "attack_type": "melee",
-            "cast_level": 0,
-            "concentration": true,
-            "consumes": false,
-            "cost": "action",
-            "damage": [],
-            "effects": [
-              {
-                "condition": "blessed",
-                "on": "always",
-                "rounds": 10,
-                "save_ability": "",
-                "save_ends": ""
-              }
-            ],
-            "heal": "0",
-            "id": "bless",
-            "item": "",
-            "kind": "effect",
-            "long_range": 0,
-            "mastery": "",
-            "name_key": "ACT_BLESS",
-            "range": 6,
-            "resource": "slot_1",
-            "resource_cost": 1,
-            "save_ability": "",
-            "save_dc": "8 + PROF + MOD",
-            "save_half": false,
-            "special": "",
-            "spell_level": 1,
-            "sub_actions": [],
-            "tags": [
-              "spell",
-              "magic"
-            ],
-            "target": "ally",
-            "two_handed": false,
-            "upcast": ""
-          },
-          {
-            "ability": "",
-            "area": "",
-            "area_size": 0,
-            "attack_bonus": "MOD + PROF",
-            "attack_type": "melee",
-            "cast_level": 0,
-            "concentration": false,
-            "consumes": false,
-            "cost": "action",
-            "damage": [],
-            "effects": [],
-            "heal": "2d8 + SPELL",
-            "id": "cure_wounds",
-            "item": "",
-            "kind": "heal",
-            "long_range": 0,
-            "mastery": "",
-            "name_key": "ACT_CURE_WOUNDS",
-            "range": 1,
-            "resource": "slot_1",
-            "resource_cost": 1,
-            "save_ability": "",
-            "save_dc": "8 + PROF + MOD",
-            "save_half": false,
-            "special": "",
-            "spell_level": 1,
-            "sub_actions": [],
-            "tags": [
-              "spell",
-              "magic"
-            ],
-            "target": "ally",
-            "two_handed": false,
-            "upcast": "2d8"
           },
           {
             "ability": "",
@@ -5253,10 +5247,9 @@
         "initiative_bonus": 1,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "wood",
-          "aspen",
-          "piercing"
+          "spell",
+          "magic",
+          "fire"
         ],
         "level": 1,
         "masteries": [],
@@ -6253,7 +6246,7 @@
       "seed": "42",
       "state": "-1437984752574806931"
     },
-    "round": 4,
+    "round": 5,
     "save_format": 3,
     "turn_index": 9,
     "turn_once": [],
@@ -6273,5 +6266,5 @@
     ]
   },
   "seed": 42,
-  "steps": 104
+  "steps": 112
 }

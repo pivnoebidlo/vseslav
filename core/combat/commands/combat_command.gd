@@ -54,7 +54,8 @@ static func _from_dict(data: Dictionary) -> CombatCommand:
 				actor,
 				JsonRead.get_str(data, "action"),
 				JsonRead.get_str(data, "target"),
-				JsonRead.to_vec2i(data.get("cell", [-1, -1]))
+				JsonRead.to_vec2i(data.get("cell", [-1, -1])),
+				JsonRead.get_int(data, "slot")
 			)
 		"end_turn":
 			return EndTurnCommand.new(actor)

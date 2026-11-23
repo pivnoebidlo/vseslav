@@ -7,6 +7,8 @@ extends PanelContainer
 signal action_pressed(action_id: String)
 signal end_turn_pressed
 signal item_pressed(item_id: String, op: String)
+## Выбран круг ячейки для выбранного заклинания (0 — наименьший подходящий).
+signal slot_pressed(level: int)
 
 const ROWS: Array[String] = [ActionDef.COST_ACTION, ActionDef.COST_BONUS, ActionDef.COST_FREE]
 const ROW_KEYS: Dictionary[String, String] = {
@@ -23,7 +25,9 @@ func _init() -> void:
 	UiStyle.panel(self)
 
 
-func refresh(state: CombatState, actor: Combatant, enabled: bool, selected: String) -> void:
+func refresh(
+	state: CombatState, actor: Combatant, enabled: bool, selected: String, slot: int = 0
+) -> void:
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -38,6 +42,9 @@ func refresh(state: CombatState, actor: Combatant, enabled: bool, selected: Stri
 		var row := _cost_row(state, actor, cost, selected)
 		if row != null:
 			box.add_child(row)
+	var slots := _slot_row(actor, actor.get_action(selected) if selected != "" else null, slot)
+	if slots != null:
+		box.add_child(slots)
 	var items := _items_row(state, actor)
 	if items != null:
 		box.add_child(items)
@@ -47,6 +54,37 @@ func refresh(state: CombatState, actor: Combatant, enabled: bool, selected: Stri
 	UiStyle.style_cost_button(end, ActionDef.COST_REACTION, false)
 	end.pressed.connect(func() -> void: end_turn_pressed.emit())
 	box.add_child(end)
+
+
+## Выбор ячейки для выбранного заклинания (ADR-0044): круги, которые есть сейчас;
+## без выбора — наименьший подходящий. Только если выбирать есть из чего.
+func _slot_row(actor: Combatant, action: ActionDef, slot: int) -> HBoxContainer:
+	if action == null or action.spell_level <= 0:
+		return null
+	var levels: Array[int] = []
+	for level in range(action.spell_level, 10):
+		if actor.resource_left("slot_%d" % level) > 0:
+			levels.append(level)
+	if levels.size() < 2:
+		return null
+	var current := slot if levels.has(slot) else levels[0]
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	var chip := _chip(TranslationServer.translate("UI_SLOT_LEVEL"), true, UiStyle.ACTIVE)
+	chip.custom_minimum_size = Vector2(HEADER_WIDTH, 0)
+	row.add_child(chip)
+	for level in levels:
+		var b := Button.new()
+		b.text = TranslationServer.translate("UI_SLOT_N").format(
+			{"n": level, "left": actor.resource_left("slot_%d" % level)}
+		)
+		b.focus_mode = Control.FOCUS_NONE
+		b.toggle_mode = true
+		b.button_pressed = level == current
+		UiStyle.style_cost_button(b, ActionDef.COST_ACTION, level == current)
+		b.pressed.connect(func() -> void: slot_pressed.emit(level))
+		row.add_child(b)
+	return row
 
 
 ## Имя, реакция, перемещение (число и полоска).

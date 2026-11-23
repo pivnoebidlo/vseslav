@@ -28,10 +28,16 @@ const BLESS_DIE := 4
 const IGNORE_COVER_TAG := "ignore_cover"
 
 
+## [param slot] — круг ячейки, выбранный игроком (0 — наименьший подходящий).
 static func validate(
-	state: CombatState, actor: Combatant, action: ActionDef, target_id: String, cell: Vector2i
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	target_id: String,
+	cell: Vector2i,
+	slot: int = 0
 ) -> String:
-	var err := can_afford(state, actor, action)
+	var err := can_afford(state, actor, action, slot)
 	if err != "":
 		return err
 	return _validate_target(state, actor, action, target_id, cell)
@@ -39,7 +45,9 @@ static func validate(
 
 ## Хватает ли участнику действия, бонусного действия, зарядов и т. п. — без учёта цели.
 ## По этой проверке UI включает и выключает кнопки действий.
-static func can_afford(state: CombatState, actor: Combatant, action: ActionDef) -> String:
+static func can_afford(
+	state: CombatState, actor: Combatant, action: ActionDef, slot: int = 0
+) -> String:
 	if action == null:
 		return ERR_UNKNOWN_ACTION
 	if Conditions.incapacitated(actor.conditions) or not actor.is_alive():
@@ -56,7 +64,7 @@ static func can_afford(state: CombatState, actor: Combatant, action: ActionDef) 
 				return ERR_BONUS_USED
 		ActionDef.COST_REACTION:
 			return ERR_REACTION_ONLY
-	if action.resource != "" and slot_for(actor, action) == "":
+	if action.resource != "" and slot_for(actor, action, slot) == "":
 		return ERR_NO_RESOURCE
 	if not actor.item_ready(action):
 		return ERR_ITEM_NOT_READY
@@ -121,10 +129,15 @@ static func stand_cost(actor: Combatant) -> int:
 
 
 static func apply(
-	state: CombatState, actor: Combatant, action: ActionDef, target_id: String, cell: Vector2i
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	target_id: String,
+	cell: Vector2i,
+	slot: int = 0
 ) -> Array[CombatEvent]:
 	var events: Array[CombatEvent] = []
-	var spent := _pay(state, actor, action)
+	var spent := _pay(state, actor, action, slot)
 	var data := {"id": actor.id, "action": action.id, "target": target_id, "cell": [cell.x, cell.y]}
 	if action.spell_level > 0:
 		var level := spent.trim_prefix("slot_").to_int()
@@ -187,13 +200,18 @@ static func is_weapon_attack(action: ActionDef) -> bool:
 	return action.kind == ActionDef.KIND_ATTACK and action.tags.has("weapon")
 
 
-## Какой ресурс потратит действие: у заклинания — ячейка его круга или ближайшая выше,
+## Какой ресурс потратит действие: у заклинания — ячейка круга [param wanted] (выбор
+## игрока, не ниже круга заклинания) или, без выбора, его круга или ближайшая выше,
 ## где хватает (ADR-0044); пусто — нечем.
-static func slot_for(actor: Combatant, action: ActionDef) -> String:
+static func slot_for(actor: Combatant, action: ActionDef, wanted: int = 0) -> String:
 	if action.spell_level <= 0:
 		if action.resource != "" and actor.resource_left(action.resource) < action.resource_cost:
 			return ""
 		return action.resource
+	if wanted > 0:
+		var key := "slot_%d" % wanted
+		var fits := wanted >= action.spell_level
+		return key if fits and actor.resource_left(key) >= action.resource_cost else ""
 	for level in range(action.spell_level, 10):
 		var key := "slot_%d" % level
 		if actor.resource_left(key) >= action.resource_cost:
@@ -217,7 +235,7 @@ static func _heal_targets(
 
 
 ## Тратит действие и ресурс; возвращает потраченный ресурс (ячейку).
-static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> String:
+static func _pay(state: CombatState, actor: Combatant, action: ActionDef, slot: int) -> String:
 	match action.cost:
 		ActionDef.COST_ACTION:
 			if state.extra_attacks > 0 and is_weapon_attack(action):
@@ -231,7 +249,7 @@ static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> Str
 			state.bonus_used = true
 		ActionDef.COST_REACTION:
 			actor.reaction_ready = false
-	var spent := slot_for(actor, action)
+	var spent := slot_for(actor, action, slot)
 	if spent != "":
 		actor.resources[spent] = actor.resource_left(spent) - action.resource_cost
 	if action.special == ActionDef.SPECIAL_STAND:

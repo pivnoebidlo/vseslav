@@ -26,6 +26,8 @@ var units: Dictionary[String, UnitView] = {}
 var board: CombatBoard
 
 var _selected: ActionDef = null
+## Круг ячейки для выбранного заклинания (0 — наименьший подходящий).
+var _slot := 0
 var _busy := false
 var _active := false
 var _hovered_id := ""
@@ -70,6 +72,11 @@ func setup(layer: CanvasLayer, p_board: CombatBoard, world: Node3D) -> void:
 	_actions.action_pressed.connect(_on_action_pressed)
 	_actions.end_turn_pressed.connect(_on_end_turn)
 	_actions.item_pressed.connect(_on_item_pressed)
+	_actions.slot_pressed.connect(
+		func(level: int) -> void:
+			_slot = level
+			_refresh()
+	)
 	_ui.add_child(_bottom_row(_actions, BoxContainer.ALIGNMENT_CENTER))
 	_log.custom_minimum_size = Vector2(440, 0)
 	_ui.add_child(_bottom_row(_log, BoxContainer.ALIGNMENT_BEGIN))
@@ -374,7 +381,7 @@ func _use_selected(actor: Combatant, target: Combatant, cell: Vector2i) -> void:
 		if target == null:
 			return
 		target_id = target.id
-	_player_command(UseActionCommand.new(actor.id, _selected.id, target_id, cell))
+	_player_command(UseActionCommand.new(actor.id, _selected.id, target_id, cell, _slot))
 
 
 func _auto_attack(actor: Combatant, target: Combatant) -> void:
@@ -397,6 +404,7 @@ func _on_action_pressed(action_id: String) -> void:
 		_player_command(UseActionCommand.new(actor.id, action.id, actor.id))
 		return
 	_selected = action
+	_slot = 0
 	_refresh()
 
 
@@ -411,6 +419,16 @@ func _on_end_turn() -> void:
 	if _busy or state.ended or not _is_player_turn():
 		return
 	_player_command(EndTurnCommand.new(state.current().id))
+
+
+## Выбранное заклинание так, как оно будет сотворено выбранной ячейкой (для предпросмотра).
+func _cast_preview(actor: Combatant) -> ActionDef:
+	if _selected.spell_level <= 0:
+		return _selected
+	var spent := ActionResolver.slot_for(actor, _selected, _slot)
+	if spent == "":
+		return _selected
+	return _selected.cast_with(spent.trim_prefix("slot_").to_int())
 
 
 func _cancel_selection() -> void:
@@ -440,7 +458,7 @@ func _on_hover(screen_pos: Vector2) -> void:
 		_path_preview.show_combat(state, actor, walk_to, board.position_of)
 		if _selected != null:
 			lines.append_array(
-				CombatHints.selected_preview(state, actor, _selected, unit, cell, area)
+				CombatHints.selected_preview(state, actor, _cast_preview(actor), unit, cell, area)
 			)
 		elif unit != null and unit.team != actor.team:
 			var best := CombatHints.best_attack(state, actor, unit)
@@ -692,7 +710,7 @@ func _refresh() -> void:
 	_initiative.refresh(state)
 	var current := state.current()
 	var player := _active and not _busy and not state.ended and _is_player_turn()
-	_actions.refresh(state, current, player, _selected.id if _selected != null else "")
+	_actions.refresh(state, current, player, _selected.id if _selected != null else "", _slot)
 	board.clear()
 	if current == null:
 		return

@@ -570,3 +570,5 @@ UI_REACT_UNCANNY,"Попадание: {source} → {target}. {reactor} може�
 UI_REACT_DODGE,Увернуться (реакция),Dodge (reaction)
 UI_EXTRA_ATTACK_LEFT,(ещё атак: {n}),({n} more attacks)
 COND_BARKSKIN,дубовая кожа (КД не ниже 17),oak skin (AC at least 17)
+UI_SLOT_LEVEL,Ячейка,Spell slot
+UI_SLOT_N,{n} круг (×{left}),Level {n} (×{left})

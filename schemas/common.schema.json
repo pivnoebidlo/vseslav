@@ -610,6 +610,24 @@
           "type": "object",
           "properties": {
             "action": {
+              "const": "give_xp"
+            },
+            "amount": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "amount"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
               "const": "join_party"
             },
             "character": {
@@ -710,7 +728,7 @@
           ]
         }
       ],
-      "description": "Действие (SPEC §8, ADR-0034, ADR-0042): set_flag, set_quest, give_item, take_item, give_money, join_party, leave_party, message, start_dialog, start_combat, teleport."
+      "description": "Действие (SPEC §8, ADR-0034, ADR-0042, ADR-0043): set_flag, set_quest, give_item, take_item, give_money, give_xp, join_party, leave_party, message, start_dialog, start_combat, teleport."
     },
     "event_actions": {
       "type": "array",

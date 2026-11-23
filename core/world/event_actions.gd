@@ -5,6 +5,7 @@ extends RefCounted
 ##   set_flag {flag, value}            set_quest {quest, stage} (флаг quest.<id>)
 ##   give_item {item, count}           take_item {item, count} (у всего отряда)
 ##   give_money {kuny} (меньше нуля — забрать)
+##   give_xp {amount} — опыт каждому в отряде (ADR-0043)
 ##   join_party {character}            leave_party {character} (флаг party.<id>)
 ##   message {text}                    start_dialog {dialog, speaker?}
 ##   start_combat {encounter}          teleport {area, spawn}
@@ -15,6 +16,7 @@ const SET_QUEST := "set_quest"
 const GIVE_ITEM := "give_item"
 const TAKE_ITEM := "take_item"
 const GIVE_MONEY := "give_money"
+const GIVE_XP := "give_xp"
 const JOIN_PARTY := "join_party"
 const LEAVE_PARTY := "leave_party"
 const MESSAGE := "message"
@@ -27,6 +29,7 @@ const ALL: Array[String] = [
 	GIVE_ITEM,
 	TAKE_ITEM,
 	GIVE_MONEY,
+	GIVE_XP,
 	JOIN_PARTY,
 	LEAVE_PARTY,
 	MESSAGE,
@@ -42,6 +45,7 @@ const NOTICE_LOST := "item_lost"
 const NOTICE_MONEY := "money"
 const NOTICE_JOINED := "joined"
 const NOTICE_LEFT := "left"
+const NOTICE_XP := "xp"
 
 
 ## Флаг, в котором хранится стадия квеста.
@@ -77,6 +81,11 @@ static func run(actions: Array, ctx: EventContext) -> void:
 				_take_item(a, ctx)
 			GIVE_MONEY:
 				_give_money(a, ctx)
+			GIVE_XP:
+				var amount := clampi(JsonRead.get_int(a, "amount"), 0, 100000)
+				if ctx.party != null and amount > 0:
+					ctx.party.give_xp(amount)
+					ctx.requests.append({"notice": NOTICE_XP, "amount": amount})
 			JOIN_PARTY, LEAVE_PARTY:
 				_party_change(a, ctx, kind == JOIN_PARTY)
 			_:

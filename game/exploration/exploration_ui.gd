@@ -20,6 +20,8 @@ static func open_window(x: Exploration, id: String) -> void:
 		return
 	x._path_preview.clear()
 	match id:
+		"hero":
+			x._screens.open_hero_for(x._group.ids)
 		"items":
 			x._screens.open_equipment_for(x._group.ids)
 		"trade":
@@ -44,7 +46,7 @@ static func apply_options(x: Exploration) -> void:
 
 ## Бой: окна партии гаснут, портреты показывают хиты бойцов.
 static func set_combat_ui(x: Exploration, on: bool) -> void:
-	for id: String in ["items", "trade", "rest"]:
+	for id: String in ["hero", "items", "trade", "rest"]:
 		x._side.set_item_enabled(id, not on)
 	x._refresh_bar()
 
@@ -71,6 +73,7 @@ static func setup(x: Exploration) -> void:
 	x._hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	x._hint.custom_minimum_size = Vector2(300, 0)
 	box.add_child(x._hint)
+	x._side.add_item("hero", "C", "UI_SIDE_HERO")
 	x._side.add_item("items", "I", "UI_SIDE_ITEMS")
 	x._side.add_item("journal", "J", "UI_SIDE_JOURNAL")
 	x._side.add_item("trade", "T", "UI_TRADE")
@@ -89,6 +92,11 @@ static func setup(x: Exploration) -> void:
 	x._session.ended.connect(x._on_combat_ended)
 	x._screens.setup(x._content.rules, x._content.merchants_data())
 	x._screens.dry_run = SaveStore.disabled
+	# Вещи, отдых, уровень — портреты (хиты) пересчитываются.
+	x._screens.changed.connect(x._refresh_bar)
+	x._screens.xp_gained.connect(
+		func(amount: int) -> void: x._notify(x.tr("LOG_COMBAT_XP").format({"amount": amount}))
+	)
 	layer.add_child(x._screens)
 	layer.add_child(x._dialog)
 	layer.add_child(x._game_over)

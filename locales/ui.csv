@@ -530,3 +530,41 @@ UI_MAP_EVENTS,События области,Area events
 UI_MAP_EVENTS_HINT,Пока нет. «Событие» на панели — зона на карте; кнопка ниже — при входе в область.,None yet. The Event tool places a zone; the button below adds one on entering the area.
 UI_MAP_ADD_AREA_EVENT,+ событие при входе в область,+ event on entering the area
 UI_ED_NPC_IF,Когда на месте:,Present when:
+UI_SIDE_HERO,Герой,Hero
+UI_HERO_LINE,"{class} · {level} уровень · {origin}","{class} · level {level} · {origin}"
+UI_HERO_LINE_PATH,"{class} · путь: {path} · {level} уровень · {origin}","{class} · path: {path} · level {level} · {origin}"
+UI_HERO_XP,"Опыт {xp} / {next} — до {level} уровня","XP {xp} / {next} — to level {level}"
+UI_HERO_XP_MAX,"Опыт {xp} — высший уровень","XP {xp} — top level"
+UI_HERO_LEVEL_UP,Повысить уровень,Level up
+UI_HERO_GAIN,"{level} уровень: +{hp} хитов","Level {level}: +{hp} HP"
+UI_HERO_GAIN_PROF,мастерство {bonus},proficiency {bonus}
+UI_HERO_ABILITIES,Характеристики,Abilities
+UI_HERO_SAVES,Спасброски,Saving throws
+UI_HERO_COMBAT,В бою,In combat
+UI_HERO_FEATURES,Умения,Features
+UI_HERO_SPELLS,Заговоры,Spells
+UI_HERO_NONE,—,—
+UI_HERO_AC,КД,AC
+UI_HERO_HP,Хиты,HP
+UI_HERO_SPEED,Скорость,Speed
+UI_HERO_SPEED_VALUE,{n} кл.,{n} sq.
+UI_HERO_INIT,Инициатива,Initiative
+UI_HERO_PROF,Мастерство,Proficiency
+UI_HERO_HIT_DICE,Кости хитов,Hit Dice
+UI_HERO_HIT_DICE_VALUE,{left}/{n} к{die},{left}/{n} d{die}
+UI_AB_STR,СИЛ,STR
+UI_AB_DEX,ЛОВ,DEX
+UI_AB_CON,ТЕЛ,CON
+UI_AB_INT,ИНТ,INT
+UI_AB_WIS,МДР,WIS
+UI_AB_CHA,ХАР,CHA
+UI_ABN_STR,Сила,Strength
+UI_ABN_DEX,Ловкость,Dexterity
+UI_ABN_CON,Телосложение,Constitution
+UI_ABN_INT,Интеллект,Intelligence
+UI_ABN_WIS,Мудрость,Wisdom
+UI_ABN_CHA,Харизма,Charisma
+LOG_HERO_SAVED,Уровень повышен — сохранено.,Level raised — saved.
+LOG_EV_XP,Опыт: +{amount} каждому,XP: +{amount} each
+LOG_COMBAT_XP,За победу: +{amount} опыта каждому,Victory: +{amount} XP each
+UI_EV_ACT_GIVE_XP,опыт,experience

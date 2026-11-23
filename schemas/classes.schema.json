@@ -149,6 +149,15 @@
           "levels"
         ]
       }
+    },
+    "xp_levels": {
+      "type": "array",
+      "description": "Опыт всего для уровней 1, 2, 3… (ADR-0043): первый 0, дальше по возрастанию; модуль-дополнение заменяет таблицу целиком.",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "maxItems": 20
     }
   },
   "additionalProperties": false,

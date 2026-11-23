@@ -18,6 +18,7 @@
       "armor_class": 12,
       "hp": 11,
       "speed": 6,
+      "xp": 25,
       "carries": [
         "stegach",
         "topor",
@@ -96,6 +97,7 @@
       "armor_class": 15,
       "hp": 45,
       "speed": 6,
+      "xp": 450,
       "carries": [
         "kozhukh",
         "mech"
@@ -160,6 +162,7 @@
       "armor_class": 12,
       "hp": 11,
       "speed": 8,
+      "xp": 50,
       "traits": [
         {
           "type": "pack_tactics",
@@ -216,6 +219,7 @@
       "armor_class": 14,
       "hp": 45,
       "speed": 6,
+      "xp": 200,
       "defenses": [
         {
           "kind": "resist",
@@ -305,6 +309,7 @@
       "armor_class": 13,
       "hp": 40,
       "speed": 8,
+      "xp": 450,
       "defenses": [
         {
           "kind": "resist",
@@ -373,6 +378,7 @@
       "armor_class": 13,
       "hp": 7,
       "speed": 6,
+      "xp": 25,
       "traits": [
         {
           "type": "pack_tactics",

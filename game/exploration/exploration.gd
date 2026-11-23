@@ -199,6 +199,8 @@ func _on_key(keycode: Key) -> void:
 			_set_grid(not _area_view.is_grid_visible())
 		KEY_TAB:
 			_select(_group.next_id())
+		KEY_C:
+			_open_window("hero")
 		KEY_I:
 			_open_window("items")
 		KEY_J:

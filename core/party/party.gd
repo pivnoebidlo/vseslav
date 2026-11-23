@@ -24,6 +24,7 @@ static func from_db(db: RulesDb) -> Party:
 			JsonRead.get_dict(db.characters[id], "inventory")
 		)
 		party.states[id] = HeroState.new()
+		party._init_progress(db, id)
 		if party.members.size() < MAX_MEMBERS:
 			party.members.append(id)
 	return party
@@ -76,7 +77,7 @@ func build_hero(db: RulesDb, character_id: String) -> Combatant:
 		return null
 	var errors: Array[String] = []
 	var c := CombatantBuilder.from_character(
-		db, db.characters[character_id], errors, inventory_copy(character_id)
+		db, character_data(db, character_id), errors, inventory_copy(character_id)
 	)
 	state_of(character_id).apply_to(c)
 	return c
@@ -89,8 +90,73 @@ func take_from_combat(state: CombatState) -> void:
 		if c.inventory == null or not inventories.has(c.template):
 			continue
 		inventories[c.template] = Inventory.from_dict(c.inventory.to_dict())
-		var before := state_of(c.template).hit_dice_spent
-		states[c.template] = HeroState.from_combatant(c, before, true)
+		var before := state_of(c.template)
+		var after := HeroState.from_combatant(c, before.hit_dice_spent, true)
+		after.level = before.level
+		after.xp = before.xp
+		states[c.template] = after
+
+
+## Данные персонажа с его нынешним уровнем (для сборки бойца).
+func character_data(db: RulesDb, character_id: String) -> Dictionary:
+	var data: Dictionary = db.characters[character_id].duplicate()
+	if state_of(character_id).level > 0:
+		data["level"] = state_of(character_id).level
+	return data
+
+
+## Уровень героя: повышенный или из данных.
+func level_of(db: RulesDb, character_id: String) -> int:
+	var state := state_of(character_id)
+	if state.level > 0:
+		return state.level
+	var data: Dictionary = db.characters.get(character_id, {})
+	return clampi(JsonRead.get_int(data, "level", 1), 1, Progression.LEVEL_CAP)
+
+
+## Опыт всем, кто в отряде (каждому полностью, ADR-0043).
+func give_xp(amount: int) -> void:
+	if amount <= 0:
+		return
+	for id in members:
+		state_of(id).xp += amount
+
+
+func can_level_up(db: RulesDb, character_id: String) -> bool:
+	var state := state_of(character_id)
+	return Progression.can_level_up(db, level_of(db, character_id), state.xp)
+
+
+## Повышает уровень на один; false — опыта не хватает или предел. Новые хиты
+## приходят сразу (раны остаются ранами), кость хитов — тоже.
+func level_up(db: RulesDb, character_id: String) -> bool:
+	if not inventories.has(character_id) or not can_level_up(db, character_id):
+		return false
+	var state := state_of(character_id)
+	state.level = level_of(db, character_id) + 1
+	return true
+
+
+## Опыт за победу: сумма xp существ противника из данных.
+static func combat_xp(db: RulesDb, state: CombatState) -> int:
+	var total := 0
+	var heroes := ""
+	for c in state.sorted_combatants():
+		if c.player:
+			heroes = c.team
+			break
+	for c in state.sorted_combatants():
+		if c.team != heroes and db.creatures.has(c.template):
+			total += maxi(JsonRead.get_int(db.creatures[c.template], "xp"), 0)
+	return total
+
+
+## Уровень и опыт из данных, если ещё не заданы (новый герой или старое сохранение).
+func _init_progress(db: RulesDb, character_id: String) -> void:
+	var state := state_of(character_id)
+	if state.level <= 0:
+		state.level = level_of(db, character_id)
+	state.xp = maxi(state.xp, Progression.xp_for(db, state.level))
 
 
 func to_dict() -> Dictionary:
@@ -128,6 +194,7 @@ static func from_dict(data: Dictionary, db: RulesDb, errors: Array[String] = [])
 		else:
 			errors.append_array(problems)
 		party.states[id] = HeroState.from_dict(JsonRead.get_dict(hero_data, "state"))
+		party._init_progress(db, id)
 	# Без состава (старые сохранения) — все по умолчанию.
 	if data.has("members"):
 		party.set_members(JsonRead.get_str_array(data, "members"))

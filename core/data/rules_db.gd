@@ -14,6 +14,8 @@ var classes: Dictionary[String, Dictionary] = {}
 var origins: Dictionary[String, Dictionary] = {}
 var characters: Dictionary[String, Dictionary] = {}
 var creatures: Dictionary[String, Dictionary] = {}
+## Таблица опыта по уровням (classes.json → xp_levels, ADR-0043); пусто — уровни не растут.
+var xp_levels: Array[int] = []
 var errors: Array[String] = []
 ## Если задано — записи из разных модулей заменяют друг друга по правилам ADR-0028.
 var owners: ContentOwners = null
@@ -50,6 +52,11 @@ func add(file: String, data: Dictionary) -> void:
 			_index(data, "items", items)
 		"classes":
 			_index(data, "classes", classes)
+			# Модуль-дополнение может заменить таблицу целиком.
+			if data.has("xp_levels"):
+				xp_levels.clear()
+				for v: Variant in JsonRead.get_array(data, "xp_levels"):
+					xp_levels.append(JsonRead.to_int(v))
 		"origins":
 			_index(data, "origins", origins)
 		"characters":
@@ -73,6 +80,7 @@ func validate() -> void:
 	for id in common_actions:
 		if not actions.has(id):
 			errors.append("common action '%s' is not defined" % id)
+	Progression.validate(xp_levels, errors)
 	for id: String in _sorted(classes):
 		Rest.validate_class(classes[id], errors)
 	for id: String in _sorted(characters):

@@ -22,7 +22,8 @@ static func from_entry(
 			errors.append("unknown character '%s'" % char_id)
 			return null
 		var inv := party.inventory_copy(char_id) if party != null else null
-		c = from_character(db, db.characters[char_id], errors, inv)
+		var data := party.character_data(db, char_id) if party != null else db.characters[char_id]
+		c = from_character(db, data, errors, inv)
 		if c != null and party != null:
 			party.state_of(char_id).apply_to(c)
 	elif entry.has("creature"):

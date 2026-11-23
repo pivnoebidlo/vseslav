@@ -9,6 +9,10 @@ var hit_dice_spent: int = 0
 ## Ресурс (ячейка, «Второе дыхание»…) → сколько потрачено.
 var spent: Dictionary[String, int] = {}
 var dead: bool = false
+## Уровень героя (ADR-0043); 0 — ещё не задан, берётся из данных персонажа.
+var level: int = 0
+## Накопленный опыт, всего.
+var xp: int = 0
 
 
 ## Переносит состояние на собранного бойца: хиты, заряды, гибель.
@@ -31,6 +35,7 @@ static func from_combatant(c: Combatant, hit_dice_spent_before: int, stand_up: b
 		hp = 1
 	s.damage = 0 if s.dead else c.max_hp - hp
 	s.hit_dice_spent = hit_dice_spent_before
+	s.level = c.level
 	for key: String in c.resources_max:
 		var used := c.resources_max[key] - c.resource_left(key)
 		if used > 0:
@@ -44,7 +49,14 @@ func to_dict() -> Dictionary:
 	var spent_dict := {}
 	for key: Variant in keys:
 		spent_dict[str(key)] = spent[key]
-	return {"damage": damage, "hit_dice_spent": hit_dice_spent, "spent": spent_dict, "dead": dead}
+	return {
+		"damage": damage,
+		"hit_dice_spent": hit_dice_spent,
+		"spent": spent_dict,
+		"dead": dead,
+		"level": level,
+		"xp": xp,
+	}
 
 
 static func from_dict(data: Dictionary) -> HeroState:
@@ -55,4 +67,6 @@ static func from_dict(data: Dictionary) -> HeroState:
 	for key: Variant in spent_dict:
 		s.spent[str(key)] = maxi(JsonRead.to_int(spent_dict[key]), 0)
 	s.dead = JsonRead.get_bool(data, "dead")
+	s.level = clampi(JsonRead.get_int(data, "level"), 0, Progression.LEVEL_CAP)
+	s.xp = maxi(JsonRead.get_int(data, "xp"), 0)
 	return s

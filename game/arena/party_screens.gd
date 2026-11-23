@@ -8,6 +8,8 @@ signal changed
 signal message(text: String)
 ## Окно добычи закрыто (сундук на карте: что не взяли — остаётся в нём).
 signal loot_finished
+## Отряд получил опыт за победу (каждому по [param amount]).
+signal xp_gained(amount: int)
 
 var party: Party
 var market: Market
@@ -19,6 +21,7 @@ var _equipment: EquipmentScreen
 var _trade: TradeScreen
 var _loot: LootScreen
 var _rest: RestScreen
+var _hero: HeroScreen
 
 
 ## [param merchants] — купцы из модулей (ModuleContent.merchants_data).
@@ -36,7 +39,8 @@ func setup(db: RulesDb, merchants: Dictionary) -> void:
 	_trade = TradeScreen.new()
 	_loot = LootScreen.new()
 	_rest = RestScreen.new()
-	for screen: PanelContainer in [_equipment, _trade, _loot, _rest]:
+	_hero = HeroScreen.new()
+	for screen: PanelContainer in [_equipment, _trade, _loot, _rest, _hero]:
 		screen.set_anchors_preset(Control.PRESET_CENTER)
 		screen.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		screen.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -45,6 +49,7 @@ func setup(db: RulesDb, merchants: Dictionary) -> void:
 	_trade.closed.connect(_on_closed)
 	_loot.closed.connect(_on_loot_closed)
 	_rest.closed.connect(_on_rest_closed)
+	_hero.closed.connect(_on_hero_closed)
 
 
 ## Герои партии, которые участвуют в бою [param state].
@@ -77,6 +82,17 @@ func open_trade_for(heroes: Array[String], note: String = "") -> void:
 	_trade.open(_db, party, market, heroes, note)
 
 
+## Окно «Герой» (ADR-0043): лист персонажа, опыт, повышение уровня.
+func open_hero_for(heroes: Array[String]) -> void:
+	_hide_all()
+	_hero.open(_db, party, heroes)
+
+
+func _hide_all() -> void:
+	for screen: Control in [_equipment, _trade, _rest, _loot, _hero]:
+		screen.visible = false
+
+
 func open_rest_for(heroes: Array[String]) -> void:
 	_equipment.visible = false
 	_trade.visible = false
@@ -93,7 +109,7 @@ func open_chest(title: String, pile: Inventory, heroes: Array[String]) -> void:
 
 
 func is_open() -> bool:
-	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible
+	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible or _hero.visible
 
 
 ## Отдых — только между боями; false — бой ещё идёт.
@@ -104,22 +120,28 @@ func open_rest(state: CombatState) -> bool:
 	return true
 
 
-## После боя: добыча (если победили), затем потраченное списывается из снаряжения.
+## После боя: опыт за победу, добыча, затем потраченное списывается из снаряжения.
 ## Добыча считается отдельным генератором — копией генератора боя, — состояние
 ## боя не меняется. В дымовом прогоне окно добычи не открывается.
-func after_combat(state: CombatState) -> void:
+## Возвращает, сколько опыта получил каждый в отряде.
+func after_combat(state: CombatState) -> int:
 	# Поражение на арене не сохраняется: партия остаётся такой, как перед боем.
 	if not Loot.heroes_won(state):
-		return
+		return 0
+	var xp := Party.combat_xp(_db, state)
+	party.give_xp(xp)
+	if xp > 0:
+		xp_gained.emit(xp)
 	var pile := Loot.collect(state, _db, party, Rng.from_dict(state.rng.to_dict()))
 	party.take_from_combat(state)
 	save()
 	if dry_run or (pile.purse == 0 and pile.bag.is_empty()):
-		return
+		return xp
 	_equipment.visible = false
 	_trade.visible = false
 	var heroes := heroes_of(state, party)
 	_loot.open(_db, party, pile, heroes)
+	return xp
 
 
 func save() -> void:
@@ -137,6 +159,13 @@ func _on_rest_closed(was_changed: bool) -> void:
 	if was_changed:
 		save()
 		message.emit(TranslationServer.translate("LOG_REST_SAVED"))
+
+
+func _on_hero_closed(was_changed: bool) -> void:
+	if was_changed:
+		save()
+		message.emit(TranslationServer.translate("LOG_HERO_SAVED"))
+		changed.emit()
 
 
 func _on_loot_closed(was_changed: bool) -> void:

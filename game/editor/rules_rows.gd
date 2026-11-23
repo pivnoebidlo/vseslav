@@ -148,6 +148,8 @@ func _action_fields(row: Control, index: int, item: Dictionary) -> void:
 			row.add_child(_number(index, "count", JsonRead.get_int(item, "count", 1), 1, 999))
 		EventActions.GIVE_MONEY:
 			row.add_child(_number(index, "kuny", JsonRead.get_int(item, "kuny"), -100000, 100000))
+		EventActions.GIVE_XP:
+			row.add_child(_number(index, "amount", JsonRead.get_int(item, "amount", 1), 1, 100000))
 		EventActions.JOIN_PARTY, EventActions.LEAVE_PARTY:
 			var who := JsonRead.get_str(item, "character")
 			row.add_child(_pick(_catalog.characters, who, _setter(index, "character")))
@@ -188,6 +190,8 @@ func _default_action(kind: String) -> Dictionary:
 			a.merge({"item": _first(_catalog.items), "count": 1})
 		EventActions.GIVE_MONEY:
 			a["kuny"] = 10
+		EventActions.GIVE_XP:
+			a["amount"] = 100
 		EventActions.JOIN_PARTY, EventActions.LEAVE_PARTY:
 			a["character"] = _first(_catalog.characters)
 		EventActions.MESSAGE:

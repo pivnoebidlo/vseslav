@@ -114,6 +114,8 @@ func _notice_text(r: Dictionary) -> String:
 			var kuny := JsonRead.get_int(r, "kuny")
 			var key := "LOG_EV_MONEY" if kuny >= 0 else "LOG_EV_MONEY_LOST"
 			return CombatLogFormat.tr_fmt(key, {"money": EquipmentScreen.money_text(absi(kuny))})
+		EventActions.NOTICE_XP:
+			return CombatLogFormat.tr_fmt("LOG_EV_XP", {"amount": JsonRead.get_int(r, "amount")})
 		EventActions.NOTICE_JOINED, EventActions.NOTICE_LEFT:
 			var key := (
 				"LOG_EV_JOINED" if r["notice"] == EventActions.NOTICE_JOINED else "LOG_EV_LEFT"

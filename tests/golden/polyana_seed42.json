@@ -1,5 +1,5 @@
 {
-  "arena": "res://modules/spike/arenas/polyana.json",
+  "arena": "res://tests/fixtures/arenas/polyana.json",
   "expected": {
     "actions_left": 0,
     "arena_id": "spike.polyana",

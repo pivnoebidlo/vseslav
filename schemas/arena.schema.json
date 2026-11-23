@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "arena.schema.json",
-  "title": "Тестовая арена (arenas/<id>.json)",
+  "title": "Тестовая арена — фикстура боя (tests/fixtures/arenas/<id>.json, ADR-0045)",
   "type": "object",
   "properties": {
     "_comment": {

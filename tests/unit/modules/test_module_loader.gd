@@ -145,21 +145,15 @@ func test_name_key_without_text_is_an_error() -> void:
 	assert_true(_has_error(content, "locales: no text for key 'ITEM_TOPOR'"))
 
 
-func test_arena_references_are_checked() -> void:
-	var arena := {
-		"id": "t.pole",
-		"title_key": "t.arena.title",
-		"grid": {"map": ["...", ".."]},
-		"combatants": [{"id": "x", "creature": "drakon", "team": "y", "at": [0, 0]}],
-	}
+## Арен в формате модуля больше нет (ADR-0045): такой файл — ошибка «не из формата».
+func test_arenas_are_not_part_of_the_format() -> void:
 	var files := {
-		"arenas/pole.json": arena,
-		"locales/ru.json": _strings(["t.arena.title", "t.arenas.title"]),
+		"arenas/pole.json": {"id": "t.pole", "grid": {"map": ["..."]}, "combatants": []},
+		"locales/ru.json": _strings(["t.arenas.title"]),
 	}
 	ModuleFixture.write("t.arenas", [], files)
 	var content := ModuleFixture.load_root()
-	assert_true(_has_error(content, "arenas/pole.json: $.combatants[0]: unknown creature 'drakon'"))
-	assert_true(_has_error(content, "arenas/pole.json: $.grid.map[1]: rows must have equal length"))
+	assert_true(_has_error(content, "arenas/pole.json: unknown file"))
 
 
 func test_area_and_dialog_references_are_checked() -> void:

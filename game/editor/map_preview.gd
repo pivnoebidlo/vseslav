@@ -9,7 +9,7 @@ signal cell_clicked(cell: Vector2i)
 
 var _viewport := SubViewport.new()
 var _world := Node3D.new()
-var _camera := ArenaCamera.new()
+var _camera := MapCamera.new()
 var _view: AreaView = null
 var _area_id := ""
 

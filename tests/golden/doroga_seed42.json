@@ -1,5 +1,5 @@
 {
-  "arena": "res://modules/spike/arenas/doroga.json",
+  "arena": "res://tests/fixtures/arenas/doroga.json",
   "expected": {
     "actions_left": 0,
     "arena_id": "spike.doroga",

@@ -1,9 +1,6 @@
 keys,ru,en
 UI_END_TURN,Конец хода,End turn
-UI_SAVE,Сохранить,Save
 UI_LOAD,Загрузить,Load
-UI_RESTART,Заново,Restart
-UI_ARENA,Арена:,Arena:
 UI_ROUND_TURN,Раунд {round}. Ходит {name},Round {round}. {name}'s turn
 UI_READY,есть,ready
 UI_SPENT,нет,spent
@@ -72,11 +69,8 @@ LOG_DEATH_SAVE_STABLE,{name} больше не умирает (стабилиз�
 LOG_DEATH_SAVE_HIT,{name} получает удар лёжа — провалов {failures},{name} is hit while down — {failures} failures
 LOG_WIN,Победа!,Victory!
 LOG_LOSS,Поражение…,Defeat…
-LOG_SAVED,Бой сохранён.,Combat saved.
 LOG_LOADED,Бой загружен.,Combat loaded.
 LOG_NO_SAVE,Нет сохранения.,No save found.
-LOG_COMBAT_SEED,"Бой: --arena={arena} --seed={seed}","Combat: --arena={arena} --seed={seed}"
-LOG_DATA_ERROR,Ошибка данных: {error},Data error: {error}
 ABIL_STR,Силы,Strength
 ABIL_DEX,Ловкости,Dexterity
 ABIL_CON,Телосложения,Constitution
@@ -195,7 +189,6 @@ LOG_ITEM_DRAW_SWAP,"{name} берёт в руку: {item}, {previous} — на �
 LOG_ITEM_DRAW_BAG,"{name} берёт в руку: {item}, {previous} — в мешок","{name} draws {item}, {previous} goes to the bag"
 LOG_ITEM_STOW,{name} убирает на пояс: {item},{name} stows {item}
 LOG_ITEM_FETCH,{name} достаёт из мешка: {item},{name} fetches {item} from the bag
-UI_EQUIPMENT,Снаряжение,Equipment
 UI_EQ_RESET,Сбросить,Reset
 UI_EQ_CLOSE,Готово,Done
 UI_EQ_RESTART_NOTE,"Бой идёт: если что-то поменять, он начнётся заново.","A fight is on: changing anything restarts it."
@@ -262,7 +255,6 @@ LOG_REST_SHORT_DONE,Короткий отдых окончен: умения к�
 LOG_REST_LONG_DONE,"Ночь прошла: хиты, кости и заряды восстановлены.","The night passed: HP, Hit Dice and charges recovered."
 LOG_REST_LONG_HUNGRY,"Ночь прошла. Без еды хиты не восстановили: {names}.","The night passed. Without food, no HP regained: {names}."
 LOG_REST_SAVED,Отдых окончен — партия сохранена.,Rest over — party saved.
-LOG_REST_NOT_NOW,Отдыхать можно после боя.,You can rest after the fight.
 err_rest_dead,Погибший не отдыхает.,The dead don't rest.
 err_rest_no_dice,Кости хитов кончились — до длинного отдыха.,No Hit Dice left until a long rest.
 err_rest_full_hp,Хиты и так полные.,HP already full.

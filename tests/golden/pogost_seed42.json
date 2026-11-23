@@ -1,5 +1,5 @@
 {
-  "arena": "res://modules/spike/arenas/pogost.json",
+  "arena": "res://tests/fixtures/arenas/pogost.json",
   "expected": {
     "actions_left": 0,
     "arena_id": "spike.pogost",

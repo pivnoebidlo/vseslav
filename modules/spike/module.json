@@ -1,7 +1,7 @@
 {
   "format": 1,
   "id": "vseslav.spike",
-  "title": "locale:ARENA_DOROGA",
+  "title": "locale:MODULE_SPIKE",
   "version": "0.1.0",
   "api_version": 1,
   "ruleset": "srd52@1",

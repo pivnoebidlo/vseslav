@@ -41,9 +41,15 @@ func test_matches_golden_replays() -> void:
 		assert_eq(actual, JsonRead.get_dict(golden, "expected"), arena)
 
 
+## Арены — тестовые фикстуры (tests/fixtures/arenas, ADR-0045): схема и сборка участников.
 func test_arenas_load_cleanly() -> void:
+	var schema_errors: Array[String] = []
+	var schema := JsonSchema.load_dir(ModuleLoader.SCHEMA_DIR, schema_errors)
 	for arena in CombatSim.GOLDEN_ARENAS:
 		var data := ArenaLoader.read_file(CombatSim.arena_path(arena))
+		var problems: Array[String] = []
+		schema.validate(data, "arena.schema.json", arena, problems)
+		assert_eq(problems, [] as Array[String], arena)
 		var errors: Array[String] = []
 		var state := ArenaLoader.new_combat(data, 1, CombatSim.rules(), errors)
 		assert_eq(errors, [] as Array[String], arena)

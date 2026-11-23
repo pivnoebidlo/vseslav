@@ -18,7 +18,7 @@ var bones: Dictionary[String, String] = {}
 ## Имена уже гуманоидные: переименование не нужно, только сопоставление.
 var identity: bool = false
 ## Роль анимации (idle, walk, melee, …) → имена анимаций этого рига по порядку
-## предпочтения. Используются фигурами боя (game/arena/unit_view.gd).
+## предпочтения. Используются фигурами боя (game/units/unit_view.gd).
 var animations: Dictionary[String, PackedStringArray] = {}
 ## Узлы-крепления (кости рук), на которых висит снаряжение модели. Фигура показывает
 ## только то снаряжение, что перечислено в её описании (modules/*/models/models.json).

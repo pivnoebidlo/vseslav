@@ -19,7 +19,6 @@ func test_all_builtin_modules_load_cleanly() -> void:
 	for m in _content.modules:
 		ids.append(m.id)
 	assert_eq(ids, ["vseslav.base", "vseslav.spike"] as Array[String])
-	assert_eq(_content.arena_ids(), ["doroga", "pogost", "polyana"] as Array[String])
 	assert_eq(_content.rules.errors, [] as Array[String])
 	var start := _content.start()
 	assert_eq(JsonRead.get_str(start, "area"), "derevnya")

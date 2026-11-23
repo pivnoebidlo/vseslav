@@ -44,9 +44,9 @@ tools/record_golden.sh   # перезапись golden-реплея — толь
 tools/export.sh [macOS|Windows|Linux]   # релизные сборки в build/
 
 # Запуск игры и дымовая проверка без участия человека:
-godot --path .                                   # обычный запуск: главное меню (деревня, арена)
-godot --path . -- --arena=pogost --autoplay --seed=42 --screenshot=/путь/shot.png   # ИИ за обе стороны, снимок и выход
-godot --headless -s res://tools/balance.gd -- --seeds=40   # прогон баланса по аренам (docs/balance.md)
+godot --path .                                   # обычный запуск: главное меню (новая игра, продолжить, редактор)
+godot --path . -- --smoke --seed=42 --screenshot=/путь/shot.png   # бой на карте деревни, ИИ за обе стороны, без записи сохранений, снимок и выход ([--fight=<id боя>])
+godot --headless -s res://tools/balance.gd -- --seeds=40   # прогон баланса по тестовым фикстурам арен tests/fixtures/arenas (docs/balance.md)
 godot --path . res://game/spikes/model_viewer.tscn -- --screenshot=/путь/shot.png   # просмотр моделей
 tools/fetch_sample_models.sh             # образцы моделей (KayKit CC0 + синтетический Mixamo-риг)
 ```

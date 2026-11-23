@@ -1,34 +1,27 @@
 class_name MainMenu
 extends Control
-## Главное меню: продолжить (последнее сохранение), новая игра, выход. Бой идёт прямо
-## на карте (ADR-0032). Тестовая арена — инструмент разработчика: открывается только
-## запуском с аргументами (--arena, --autoplay, --screenshot, …) для баланса и проверок.
+## Главное меню: продолжить (последнее сохранение), новая игра, редактор, выход. Бой идёт
+## прямо на карте (ADR-0032). Запуск с --smoke — дымовая проверка боя (SmokeRun, ADR-0045).
 
 const SCENE := "res://game/menu/main_menu.tscn"
-const ARENA_SCENE := "res://game/arena/arena.tscn"
 const EXPLORATION_SCENE := "res://game/exploration/exploration.tscn"
 const EDITOR_SCENE := "res://game/editor/editor_screen.tscn"
 const DEFAULT_LANG := "ru"
 
-## Меню уже открывалось: аргументы запуска ведут на арену только в первый раз,
-## а «В меню» с арены показывает меню.
+## Меню уже открывалось: дымовой запуск — только в первый раз.
 static var _visited := false
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var lang := DEFAULT_LANG
-	var direct := false
 	for arg in args:
 		if arg.begins_with("--lang="):
 			lang = arg.trim_prefix("--lang=")
-		else:
-			direct = true
 	TranslationServer.set_locale(lang)
 	var first := not _visited
 	_visited = true
-	if direct and first:
-		_open.call_deferred(ARENA_SCENE)
+	if first and SmokeRun.start_if_asked(get_tree(), args):
 		return
 	_build()
 

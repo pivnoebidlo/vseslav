@@ -1,15 +1,13 @@
 class_name ModuleRefs
 extends RefCounted
-## Проверка ссылок между файлами собранных модулей (ADR-0028, ADR-0029): участники арен,
-## товары купцов, облик, области и диалоги, начало игры, ключи строк. Ссылки внутри
-## правил проверяет RulesDb.validate.
+## Проверка ссылок между файлами собранных модулей (ADR-0028, ADR-0029): товары купцов,
+## облик, области и диалоги, начало игры, ключи строк. Ссылки внутри правил проверяет
+## RulesDb.validate.
 
 const NAME_KEYS: Array[String] = ["name_key", "title_key"]
 
 
 static func check(content: ModuleContent, errors: Array[String]) -> void:
-	for id in content.arena_ids():
-		_check_arena(content, id, errors)
 	var market_errors: Array[String] = []
 	Market.from_data(content.merchants_data(), content.rules, market_errors)
 	for e in market_errors:
@@ -29,31 +27,6 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 		_check_dialog(content, content.dialogs[id], "dialogs/%s.json" % id, errors)
 	_check_start(content, errors)
 	_check_name_keys(content, errors)
-
-
-static func _check_arena(content: ModuleContent, id: String, errors: Array[String]) -> void:
-	var where := "arenas/%s.json" % id
-	var data := content.arenas[id]
-	var rows := JsonRead.get_str_array(JsonRead.get_dict(data, "grid"), "map")
-	for i in rows.size():
-		if rows[i].length() != rows[0].length():
-			errors.append("%s: $.grid.map[%d]: rows must have equal length" % [where, i])
-	var list := JsonRead.get_array(data, "combatants")
-	for i in list.size():
-		var entry: Dictionary = list[i]
-		var at := "%s: $.combatants[%d]" % [where, i]
-		var sources := 0
-		for key: String in ["character", "creature", "sheet"]:
-			if entry.has(key):
-				sources += 1
-		if sources != 1:
-			errors.append("%s: needs exactly one of character, creature, sheet" % at)
-		var character := JsonRead.get_str(entry, "character")
-		if character != "" and not content.rules.characters.has(character):
-			errors.append("%s: unknown character '%s'" % [at, character])
-		var creature := JsonRead.get_str(entry, "creature")
-		if creature != "" and not content.rules.creatures.has(creature):
-			errors.append("%s: unknown creature '%s'" % [at, creature])
 
 
 static func _check_area(content: ModuleContent, id: String, errors: Array[String]) -> void:
@@ -360,7 +333,6 @@ static func _check_name_keys(content: ModuleContent, errors: Array[String]) -> v
 		content.rules.origins,
 		content.rules.characters,
 		content.rules.creatures,
-		content.arenas,
 		content.areas,
 		content.merchants,
 	]

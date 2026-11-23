@@ -53,7 +53,7 @@ var _journal: JournalPanel
 var _going_to := ""
 var _area: AreaMap
 var _figures: FigureCatalog
-var _camera := ArenaCamera.new()
+var _camera := MapCamera.new()
 var _world := Node3D.new()
 var _area_view := AreaView.new()
 var _path_preview := PathPreview.new()

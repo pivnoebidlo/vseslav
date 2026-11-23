@@ -2,7 +2,7 @@ class_name CombatSim
 extends RefCounted
 ## Прогон боя, где все стороны управляются CombatAi. Для тестов и golden-реплеев.
 
-const ARENA_PATH := "res://modules/spike/arenas/doroga.json"
+const ARENA_PATH := "res://tests/fixtures/arenas/doroga.json"
 const RULES_DIR := "res://modules/base/rules"
 const MAX_STEPS := 3000
 ## Арены с записанными golden-реплеями (tests/golden/<арена>_seed42.json).
@@ -12,7 +12,7 @@ static var _db: RulesDb = null
 
 
 static func arena_path(arena: String) -> String:
-	return "res://modules/spike/arenas/%s.json" % arena
+	return "res://tests/fixtures/arenas/%s.json" % arena
 
 
 static func golden_path(arena: String) -> String:

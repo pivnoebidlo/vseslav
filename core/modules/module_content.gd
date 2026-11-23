@@ -11,8 +11,6 @@ var failed: Array[String] = []
 var errors: Array[String] = []
 
 var rules := RulesDb.new()
-## Тестовые арены по id (имя файла в arenas/ без .json).
-var arenas: Dictionary[String, Dictionary] = {}
 ## Области для исследования и диалоги по id (имя файла без .json).
 var areas: Dictionary[String, Dictionary] = {}
 var dialogs: Dictionary[String, Dictionary] = {}
@@ -31,13 +29,6 @@ var surfaces: Dictionary[String, Dictionary] = {}
 var surface_dirs: Dictionary[String, String] = {}
 ## Строки: язык → ключ → текст. Поздний модуль заменяет строку раннего.
 var locales: Dictionary[String, Dictionary] = {}
-
-
-func arena_ids() -> Array[String]:
-	var ids: Array[String] = []
-	ids.assign(arenas.keys())
-	ids.sort()
-	return ids
 
 
 ## Купцы в формате merchants.json ({"merchants": [...]}) — для Market.from_data.

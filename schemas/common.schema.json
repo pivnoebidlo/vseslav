@@ -239,7 +239,10 @@
             "hp_per_level",
             "unarmored_defense",
             "heal_bonus",
-            "savage_attacker"
+            "savage_attacker",
+            "extra_attack",
+            "speed_bonus",
+            "uncanny_dodge"
           ]
         },
         "name_key": {

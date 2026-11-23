@@ -118,9 +118,16 @@ func _cost_row(
 	var label := TranslationServer.translate(ROW_KEYS[cost])
 	match cost:
 		ActionDef.COST_ACTION:
-			ready = state.actions_left > 0
+			ready = state.actions_left > 0 or state.extra_attacks > 0
 			if state.actions_left > 1:
 				label += " ×%d" % state.actions_left
+			elif state.actions_left == 0 and state.extra_attacks > 0:
+				label += (
+					" "
+					+ TranslationServer.translate("UI_EXTRA_ATTACK_LEFT").format(
+						{"n": state.extra_attacks}
+					)
+				)
 		ActionDef.COST_BONUS:
 			ready = not state.bonus_used
 	var chip := _chip(label, ready, UiStyle.cost_color(cost))

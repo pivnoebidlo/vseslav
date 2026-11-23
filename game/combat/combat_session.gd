@@ -280,6 +280,9 @@ func _ask_reaction(prompt: ReactionPrompt) -> bool:
 		var strike := MoveCommand.opportunity_action(reactor)
 		if strike != null:
 			detail = CombatHints.preview_text(state, reactor, strike, target)
+	elif prompt.kind == ReactionPrompt.UNCANNY_DODGE:
+		text = CombatLogFormat.tr_fmt("UI_REACT_UNCANNY", names)
+		yes = tr("UI_REACT_DODGE")
 	else:
 		text = CombatLogFormat.tr_fmt("UI_REACT_PROTECTION", names)
 		detail = tr("UI_REACT_PROTECTION_DETAIL")

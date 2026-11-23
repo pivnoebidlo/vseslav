@@ -573,3 +573,7 @@ UI_LEVEL_PLUS_TWO,+2 к одной характеристике,+2 to one abilit
 UI_LEVEL_PLUS_ONE,+1 к двум характеристикам,+1 to two abilities
 UI_LEVEL_FEATS,Черта вместо характеристик,A feat instead
 UI_LEVEL_ACCEPT,Принять,Accept
+LOG_REACTION_UNCANNY,{name} уворачивается — урон вдвое меньше,{name} dodges — half damage
+UI_REACT_UNCANNY,"Попадание: {source} → {target}. {reactor} может увернуться: урон вдвое меньше.","Hit: {source} → {target}. {reactor} can dodge: half damage."
+UI_REACT_DODGE,Увернуться (реакция),Dodge (reaction)
+UI_EXTRA_ATTACK_LEFT,(ещё атак: {n}),({n} more attacks)

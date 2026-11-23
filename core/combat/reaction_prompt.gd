@@ -4,6 +4,8 @@ extends RefCounted
 
 const OPPORTUNITY := "opportunity"
 const PROTECTION := "protection"
+## Увёртливость: [member reactor] — цель попавшей атаки [member source].
+const UNCANNY_DODGE := "uncanny_dodge"
 
 var reactor: String = ""
 ## OPPORTUNITY — ударить вдогонку [member target]; PROTECTION — прикрыть [member target]

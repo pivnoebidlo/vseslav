@@ -123,6 +123,8 @@ static func line(state: CombatState, e: CombatEvent) -> Line:
 			var key := "LOG_REACTION_PROTECTION"
 			if JsonRead.get_str(d, "kind") == "opportunity":
 				key = "LOG_REACTION_OPPORTUNITY"
+			elif JsonRead.get_str(d, "kind") == "uncanny_dodge":
+				key = "LOG_REACTION_UNCANNY"
 			return Line.new(
 				tr_fmt(key, {"name": who, "target": _name(state, JsonRead.get_str(d, "target"))}),
 				COLOR_INFO

@@ -105,5 +105,8 @@
   "FEAT_ARCHERY": "Fighting Style: Archery",
   "FEAT_ARCHERY_DESC": "+2 to ranged weapon attack rolls.",
   "FEAT_DEFENSE": "Fighting Style: Defense",
-  "FEAT_DEFENSE_DESC": "+1 AC while wearing armor."
+  "FEAT_DEFENSE_DESC": "+1 AC while wearing armor.",
+  "TRAIT_EXTRA_ATTACK": "Extra Attack",
+  "TRAIT_FAST_MOVEMENT": "Fast Movement",
+  "TRAIT_UNCANNY_DODGE": "Uncanny Dodge"
 }

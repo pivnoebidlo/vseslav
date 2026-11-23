@@ -30,6 +30,12 @@ const UNARMORED_DEFENSE := "unarmored_defense"
 const HEAL_BONUS := "heal_bonus"
 ## Лютый удар (черта SRD 5.2): раз в ход урон оружием бросается дважды, берётся больший.
 const SAVAGE_ATTACKER := "savage_attacker"
+## Вторая атака: действие «Атака» оружием даёт ещё [member value] атак оружием.
+const EXTRA_ATTACK := "extra_attack"
+## Прибавка к скорости в клетках, если нет тяжёлого доспеха (быстрое передвижение).
+const SPEED_BONUS := "speed_bonus"
+## Увёртливость: реакцией половина урона от попавшей атаки (сама, при первом попадании).
+const UNCANNY_DODGE := "uncanny_dodge"
 const TYPES: Array[String] = [
 	PACK_TACTICS,
 	BONUS_DAMAGE,
@@ -44,6 +50,9 @@ const TYPES: Array[String] = [
 	UNARMORED_DEFENSE,
 	HEAL_BONUS,
 	SAVAGE_ATTACKER,
+	EXTRA_ATTACK,
+	SPEED_BONUS,
+	UNCANNY_DODGE,
 ]
 
 const WHEN_ALWAYS := ""

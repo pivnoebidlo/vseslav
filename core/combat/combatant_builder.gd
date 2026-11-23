@@ -198,11 +198,13 @@ static func _equip(
 	var dex := c.abilities.modifier(Abilities.DEX)
 	var ac := 10 + dex
 	var armored := false
+	var heavy := false
 	c.speed = BASE_SPEED
 	var trained_armor := JsonRead.get_str_array(cls, "armor")
 	if inv.armor != "" and db.items.has(inv.armor):
 		var item: Dictionary = db.items[inv.armor]
 		var kind := JsonRead.get_str(item, "armor")
+		heavy = kind == "heavy"
 		if not trained_armor.has(kind):
 			errors.append("%s: not trained in %s armor" % [c.id, kind])
 		var cap := JsonRead.get_int(item, "dex_cap", -1)
@@ -212,6 +214,9 @@ static func _equip(
 		var str_req := JsonRead.get_int(item, "str_req")
 		if str_req > 0 and c.abilities.score(Abilities.STR) < str_req:
 			c.speed -= HEAVY_ARMOR_PENALTY
+	if not heavy:
+		for t in c.traits_of(TraitDef.SPEED_BONUS):
+			c.speed += t.value
 	if not armored:
 		for t in c.traits_of(TraitDef.UNARMORED_DEFENSE):
 			ac = maxi(ac, 10 + dex + c.abilities.modifier(t.ability))

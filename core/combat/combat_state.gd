@@ -21,6 +21,8 @@ var round_number: int = 1
 var movement_left: int = 0
 var actions_left: int = 1
 var bonus_used: bool = false
+## Сколько ещё атак оружием осталось от уже начатого действия «Атака» (вторая атака, ADR-0044).
+var extra_attacks: int = 0
 ## В этот ход было действие «Отход»: перемещение не провоцирует атак.
 var disengaged: bool = false
 ## Бесплатное действие с предметом в этом ходу уже сделано (ADR-0024).
@@ -251,6 +253,7 @@ func _next_index() -> void:
 func _begin_turn(c: Combatant, events: Array[CombatEvent]) -> void:
 	actions_left = 1
 	bonus_used = false
+	extra_attacks = 0
 	disengaged = false
 	free_interaction_used = false
 	turn_once.clear()
@@ -336,7 +339,7 @@ func to_dict() -> Dictionary:
 	var list: Array = []
 	for c in combatants:
 		list.append(c.to_dict())
-	return {
+	var data := {
 		"save_format": SAVE_FORMAT,
 		"arena_id": arena_id,
 		"rng": rng.to_dict(),
@@ -353,6 +356,10 @@ func to_dict() -> Dictionary:
 		"ended": ended,
 		"winner": winner,
 	}
+	# Пишется, только когда идёт вторая атака: старые сохранения и реплеи не меняются.
+	if extra_attacks > 0:
+		data["extra_attacks"] = extra_attacks
+	return data
 
 
 ## Восстанавливает состояние из сохранения; сетку передаёт вызывающий.
@@ -375,6 +382,7 @@ static func from_dict(data: Dictionary, p_grid: BattleGrid) -> CombatState:
 	state.actions_left = JsonRead.get_int(data, "actions_left", 1)
 	state.bonus_used = JsonRead.get_bool(data, "bonus_used")
 	state.disengaged = JsonRead.get_bool(data, "disengaged")
+	state.extra_attacks = maxi(JsonRead.get_int(data, "extra_attacks"), 0)
 	state.free_interaction_used = JsonRead.get_bool(data, "free_interaction_used")
 	state.turn_once = JsonRead.get_str_array(data, "turn_once")
 	state.ended = JsonRead.get_bool(data, "ended")

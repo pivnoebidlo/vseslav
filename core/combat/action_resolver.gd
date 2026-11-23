@@ -44,7 +44,10 @@ static func can_afford(state: CombatState, actor: Combatant, action: ActionDef) 
 		return ERR_INCAPACITATED
 	match action.cost:
 		ActionDef.COST_ACTION:
-			if state.actions_left <= 0:
+			if (
+				state.actions_left <= 0
+				and not (state.extra_attacks > 0 and is_weapon_attack(action))
+			):
 				return ERR_ACTION_USED
 		ActionDef.COST_BONUS:
 			if state.bonus_used:
@@ -175,10 +178,21 @@ static func ready_weapon(actor: Combatant, action: ActionDef, events: Array[Comb
 	)
 
 
+## Атака оружием в рамках действия «Атака» — её касается вторая атака.
+static func is_weapon_attack(action: ActionDef) -> bool:
+	return action.kind == ActionDef.KIND_ATTACK and action.tags.has("weapon")
+
+
 static func _pay(state: CombatState, actor: Combatant, action: ActionDef) -> void:
 	match action.cost:
 		ActionDef.COST_ACTION:
-			state.actions_left -= 1
+			if state.extra_attacks > 0 and is_weapon_attack(action):
+				state.extra_attacks -= 1
+			else:
+				state.actions_left -= 1
+				if is_weapon_attack(action):
+					for t in actor.traits_of(TraitDef.EXTRA_ATTACK):
+						state.extra_attacks += maxi(t.value, 1)
 		ActionDef.COST_BONUS:
 			state.bonus_used = true
 		ActionDef.COST_REACTION:
@@ -325,6 +339,7 @@ static func attack(
 	var wounded_before := target.hp < target.max_hp
 	var amounts := _weapon_damage(state, actor, action, vars, critical)
 	_bonus_damage(state, actor, action, target, wounded_before, critical, s.mods.mode(), amounts)
+	_uncanny_dodge(state, actor, target, amounts, events)
 	CombatRules.deal_damage(state, target, amounts, action.tags, critical, actor.id, events)
 	if not target.is_alive():
 		return
@@ -332,6 +347,32 @@ static func attack(
 	for e in action.effects:
 		if e.on == EffectDef.ON_HIT:
 			_apply_effect(state, actor, action, e, target, e.save_ability != "", events)
+
+
+## Увёртливость цели: реакцией половина урона попавшей атаки (вниз).
+static func _uncanny_dodge(
+	state: CombatState,
+	actor: Combatant,
+	target: Combatant,
+	amounts: Array[Array],
+	events: Array[CombatEvent]
+) -> void:
+	if target.traits_of(TraitDef.UNCANNY_DODGE).is_empty() or not target.reaction_ready:
+		return
+	if Conditions.incapacitated(target.conditions) or not target.is_standing():
+		return
+	if not state.reactions.decide(target, ReactionPrompt.UNCANNY_DODGE, target.id, actor.id):
+		return
+	target.reaction_ready = false
+	for pair in amounts:
+		var value: int = pair[1]
+		pair[1] = IntMath.floor_div(value, 2)
+	events.append(
+		CombatEvent.new(
+			CombatEvent.REACTION,
+			{"id": target.id, "kind": "uncanny_dodge", "target": target.id, "attacker": actor.id}
+		)
+	)
 
 
 ## Урон самого действия; «Лютый удар» — раз в ход оружием бросок дважды, больший.

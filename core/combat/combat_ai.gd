@@ -298,7 +298,7 @@ static func _ally_buff(state: CombatState, actor: Combatant, action: ActionDef) 
 
 ## Лучшее действие стоимостью «действие»: атака по цели или область по клетке.
 static func _best_action(state: CombatState, actor: Combatant) -> CombatCommand:
-	if state.actions_left <= 0:
+	if state.actions_left <= 0 and state.extra_attacks <= 0:
 		return null
 	var best: CombatCommand = null
 	var best_score := 0
@@ -310,6 +310,10 @@ static func _best_action(state: CombatState, actor: Combatant) -> CombatCommand:
 				if not _valid(state, actor, action, enemy.id):
 					continue
 				var score := _target_weight(enemy, attack_value(state, actor, action, enemy))
+				# Вторая атака: начатое действие «Атака» оружием стоит больше одного удара.
+				if state.extra_attacks == 0 and ActionResolver.is_weapon_attack(action):
+					for t in actor.traits_of(TraitDef.EXTRA_ATTACK):
+						score += score * maxi(t.value, 1)
 				# Ресурсы бережём: расходуемое оружие чуть хуже при равной пользе.
 				if action.resource != "" or action.consumes:
 					score -= SCALE
@@ -383,7 +387,7 @@ static func _best_area(state: CombatState, actor: Combatant, action: ActionDef) 
 
 
 static func _extra_action(state: CombatState, actor: Combatant) -> CombatCommand:
-	if state.actions_left > 0:
+	if state.actions_left > 0 or state.extra_attacks > 0:
 		return null
 	for action in actor.actions:
 		if action.special == ActionDef.SPECIAL_EXTRA_ACTION and _valid(state, actor, action, ""):
@@ -438,7 +442,7 @@ static func _prefers_ranged(actor: Combatant) -> bool:
 ## Перемещение: в клетку, откуда можно ударить (стрелок — подальше от врагов),
 ## иначе — ближе к врагу. Только если действие ещё не потрачено.
 static func _reposition(state: CombatState, actor: Combatant) -> CombatCommand:
-	if state.actions_left <= 0 or state.movement_left <= 0:
+	if (state.actions_left <= 0 and state.extra_attacks <= 0) or state.movement_left <= 0:
 		return null
 	var targets: Array[Combatant] = []
 	for e in _enemies(state, actor):

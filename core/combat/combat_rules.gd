@@ -216,6 +216,8 @@ static func end_concentration(
 		return
 	var action_id := caster.concentration
 	caster.concentration = ""
+	caster.concentration_level = 0
+	Zones.remove(state, caster.id, action_id)
 	events.append(
 		CombatEvent.new(CombatEvent.CONCENTRATION_ENDED, {"id": caster.id, "action": action_id})
 	)

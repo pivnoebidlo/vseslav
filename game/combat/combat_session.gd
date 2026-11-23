@@ -148,6 +148,7 @@ func stop() -> void:
 	_path_preview.clear()
 	if board != null:
 		board.clear()
+		board.paint_zones([] as Array[Vector2i])
 
 
 func is_active() -> bool:
@@ -712,6 +713,7 @@ func _refresh() -> void:
 	var player := _active and not _busy and not state.ended and _is_player_turn()
 	_actions.refresh(state, current, player, _selected.id if _selected != null else "", _slot)
 	board.clear()
+	board.paint_zones(Zones.all_cells(state))
 	if current == null:
 		return
 	var turn := CombatLogFormat.tr_fmt(

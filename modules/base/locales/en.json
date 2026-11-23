@@ -115,5 +115,7 @@
   "ACT_MOONBEAM": "Moon Pillar",
   "ACT_BLINDNESS": "Darkened Eyes",
   "ACT_CALL_LIGHTNING": "Perun's Arrow",
-  "ACT_MASS_HEALING_WORD": "Common Prayer for Health"
+  "ACT_MASS_HEALING_WORD": "Common Prayer for Health",
+  "ACT_MOONBEAM_MOVE": "Move the Moon Pillar",
+  "ACT_CALL_LIGHTNING_STRIKE": "Another Arrow"
 }

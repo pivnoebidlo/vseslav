@@ -115,5 +115,7 @@
   "ACT_MOONBEAM": "Лунный столп",
   "ACT_BLINDNESS": "Тьма в очах",
   "ACT_CALL_LIGHTNING": "Перунова стрела",
-  "ACT_MASS_HEALING_WORD": "Общая молитва о здравии"
+  "ACT_MASS_HEALING_WORD": "Общая молитва о здравии",
+  "ACT_MOONBEAM_MOVE": "Сдвинуть лунный столп",
+  "ACT_CALL_LIGHTNING_STRIKE": "Ещё одна стрела"
 }

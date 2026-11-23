@@ -4,7 +4,7 @@ extends Node3D
 ## досягаемости, дальности и области, попадание кликом в клетку, координаты в мире.
 ## Клетка (0, 0) сетки боя стоит в клетке [member origin] местности.
 
-enum Paint { NONE, REACH, RANGE, AREA }
+enum Paint { NONE, REACH, RANGE, AREA, ZONE }
 
 const CELL := BattleGrid.CELL_SIZE_M
 const LEVEL_HEIGHT := BattleGrid.LEVEL_HEIGHT_M
@@ -17,6 +17,8 @@ var origin := Vector2i.ZERO
 var _quads: Dictionary[Vector2i, MeshInstance3D] = {}
 var _paint: Dictionary[Vector2i, Paint] = {}
 var _area: Array[Vector2i] = []
+## Клетки длящихся зон заклинаний — под подсветкой хода (ADR-0046).
+var _zones: Array[Vector2i] = []
 var _mats: Dictionary[Paint, ShaderMaterial] = {}
 var _quad_mesh := PlaneMesh.new()
 
@@ -26,6 +28,7 @@ func _init() -> void:
 	_mats[Paint.REACH] = _glow(Color(0.55, 0.85, 0.45, 0.45))
 	_mats[Paint.RANGE] = _glow(Color(0.5, 0.6, 0.95, 0.4))
 	_mats[Paint.AREA] = _glow(Color(0.95, 0.45, 0.35, 0.55))
+	_mats[Paint.ZONE] = _glow(Color(0.85, 0.9, 1.0, 0.35))
 
 
 ## Строит клетки для сетки [param p_grid], смещённой на [param p_origin] клеток местности.
@@ -35,6 +38,7 @@ func build(p_grid: BattleGrid, p_origin: Vector2i = Vector2i.ZERO) -> void:
 	_quads.clear()
 	_paint.clear()
 	_area.clear()
+	_zones.clear()
 	grid = p_grid
 	origin = p_origin
 	for z in grid.depth:
@@ -73,6 +77,16 @@ func paint_area(cells: Array[Vector2i]) -> void:
 		_show(c)
 
 
+## Зоны заклинаний: держатся, пока их не заменят (clear их не трогает).
+func paint_zones(cells: Array[Vector2i]) -> void:
+	var old := _zones
+	_zones = cells.duplicate()
+	for c in old:
+		_show(c)
+	for c in _zones:
+		_show(c)
+
+
 func clear() -> void:
 	var cells: Array[Vector2i] = []
 	cells.assign(_paint.keys())
@@ -90,6 +104,8 @@ func _show(c: Vector2i) -> void:
 		kind = Paint.AREA
 	elif _paint.has(c):
 		kind = _paint[c]
+	elif _zones.has(c):
+		kind = Paint.ZONE
 	var quad := _quads[c]
 	quad.visible = kind != Paint.NONE
 	if kind != Paint.NONE:

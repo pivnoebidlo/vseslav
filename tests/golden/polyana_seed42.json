@@ -417,7 +417,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 22,
+        "hp": 25,
         "id": "ratnik",
         "initiative_bonus": 3,
         "inventory": {
@@ -451,7 +451,7 @@
         "name_key": "UNIT_RATNIK",
         "player": true,
         "proficiency": 2,
-        "reaction_ready": true,
+        "reaction_ready": false,
         "resources": {
           "action_surge": 0,
           "second_wind": 2
@@ -918,7 +918,18 @@
           9
         ],
         "concentration": "hunters_mark",
-        "conditions": [],
+        "conditions": [
+          {
+            "concentration": false,
+            "ends_count": 0,
+            "ends_on": "",
+            "id": "poisoned",
+            "rounds": 1,
+            "save_ability": "",
+            "save_dc": 0,
+            "source": "poludnitsa"
+          }
+        ],
         "creature_tags": [
           "humanoid"
         ],
@@ -928,7 +939,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 12,
+        "hp": 31,
         "id": "lovchiy",
         "initiative_bonus": 3,
         "inventory": {
@@ -945,14 +956,13 @@
             }
           ],
           "belt": [
-            "serebryany_nozh"
+            "serebryany_nozh",
+            "otvar"
           ],
           "main_hand": "luk",
           "purse": 15
         },
-        "last_damage_tags": [
-          "slashing"
-        ],
+        "last_damage_tags": [],
         "level": 3,
         "masteries": [
           "nick",
@@ -964,8 +974,8 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "favored_enemy": 0,
-          "slot_1": 2
+          "favored_enemy": 1,
+          "slot_1": 3
         },
         "resources_max": {
           "favored_enemy": 2,
@@ -1099,7 +1109,7 @@
           {
             "ability": "",
             "area": "burst",
-            "area_size": 2,
+            "area_size": 1,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "cast_level": 0,
@@ -1117,6 +1127,7 @@
             "id": "moonbeam",
             "item": "",
             "kind": "save",
+            "lasting": true,
             "long_range": 0,
             "mastery": "",
             "name_key": "ACT_MOONBEAM",
@@ -1137,6 +1148,46 @@
             "target": "point",
             "two_handed": false,
             "upcast": "1d10"
+          },
+          {
+            "ability": "",
+            "area": "burst",
+            "area_size": 1,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "concentration": false,
+            "consumes": false,
+            "cost": "action",
+            "damage": [
+              {
+                "formula": "2d10",
+                "type": "radiant"
+              }
+            ],
+            "effects": [],
+            "heal": "0",
+            "id": "moonbeam_move",
+            "item": "",
+            "kind": "save",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_MOONBEAM_MOVE",
+            "range": 12,
+            "resource": "",
+            "resource_cost": 1,
+            "save_ability": "con",
+            "save_dc": "8 + PROF + SPELL",
+            "save_half": true,
+            "special": "",
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic",
+              "radiant"
+            ],
+            "target": "point",
+            "two_handed": false,
+            "zone_of": "moonbeam"
           },
           {
             "ability": "",
@@ -1602,8 +1653,20 @@
           0,
           8
         ],
-        "concentration": "",
-        "conditions": [],
+        "concentration": "moonbeam",
+        "concentration_level": 2,
+        "conditions": [
+          {
+            "concentration": false,
+            "ends_count": 0,
+            "ends_on": "",
+            "id": "poisoned",
+            "rounds": 1,
+            "save_ability": "",
+            "save_dc": 0,
+            "source": "poludnitsa"
+          }
+        ],
         "creature_tags": [
           "humanoid"
         ],
@@ -1613,7 +1676,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": true,
-        "hp": 10,
+        "hp": 16,
         "id": "volkhv",
         "initiative_bonus": 1,
         "inventory": {
@@ -1631,7 +1694,7 @@
           "purse": 25
         },
         "last_damage_tags": [
-          "slashing"
+          "piercing"
         ],
         "level": 3,
         "masteries": [],
@@ -1641,7 +1704,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "slot_1": 0,
+          "slot_1": 1,
           "slot_2": 0
         },
         "resources_max": {
@@ -2540,7 +2603,7 @@
             "ends_count": 0,
             "ends_on": "",
             "id": "raging",
-            "rounds": 6,
+            "rounds": 5,
             "save_ability": "",
             "save_dc": 10,
             "source": "yaryy"
@@ -2554,16 +2617,6 @@
             "save_ability": "",
             "save_dc": 0,
             "source": "yaryy"
-          },
-          {
-            "concentration": false,
-            "ends_count": 0,
-            "ends_on": "",
-            "id": "poisoned",
-            "rounds": 1,
-            "save_ability": "",
-            "save_dc": 0,
-            "source": "poludnitsa_2"
           }
         ],
         "creature_tags": [
@@ -2575,7 +2628,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 21,
+        "hp": 6,
         "id": "yaryy",
         "initiative_bonus": 3,
         "inventory": {
@@ -3278,7 +3331,7 @@
         "resources": {
           "channel": 2,
           "slot_1": 0,
-          "slot_2": 0
+          "slot_2": 2
         },
         "resources_max": {
           "channel": 2,
@@ -3585,9 +3638,9 @@
         "initiative_bonus": 2,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "slashing"
+          "spell",
+          "magic",
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -3881,8 +3934,7 @@
         "last_damage_tags": [
           "spell",
           "magic",
-          "radiant",
-          "ignore_cover"
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -4155,8 +4207,8 @@
         ],
         "armor_class": 12,
         "at": [
-          1,
-          8
+          8,
+          5
         ],
         "concentration": "",
         "conditions": [],
@@ -4174,10 +4226,10 @@
         "initiative_bonus": 2,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "radiant",
-          "ignore_cover"
+          "weapon",
+          "iron",
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -4475,7 +4527,7 @@
         ],
         "armor_class": 13,
         "at": [
-          1,
+          2,
           7
         ],
         "concentration": "",
@@ -4505,10 +4557,9 @@
         "initiative_bonus": 3,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "radiant",
-          "ignore_cover"
+          "weapon",
+          "iron",
+          "slashing"
         ],
         "level": 1,
         "masteries": [],
@@ -4800,9 +4851,9 @@
         "initiative_bonus": 2,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "slashing"
+          "spell",
+          "magic",
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -5094,9 +5145,10 @@
         "initiative_bonus": 2,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "thunder"
+          "weapon",
+          "iron",
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -5663,8 +5715,8 @@
         ],
         "armor_class": 12,
         "at": [
-          2,
-          9
+          8,
+          6
         ],
         "concentration": "",
         "conditions": [],
@@ -5682,9 +5734,9 @@
         "initiative_bonus": 2,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "slashing"
+          "spell",
+          "magic",
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -5976,9 +6028,9 @@
         "initiative_bonus": 2,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "thunder"
+          "weapon",
+          "iron",
+          "slashing"
         ],
         "level": 1,
         "masteries": [],
@@ -6251,8 +6303,8 @@
         ],
         "armor_class": 12,
         "at": [
-          1,
-          8
+          2,
+          9
         ],
         "concentration": "",
         "conditions": [],
@@ -6545,7 +6597,7 @@
         ],
         "armor_class": 12,
         "at": [
-          2,
+          3,
           9
         ],
         "concentration": "",
@@ -6864,7 +6916,7 @@
         ],
         "armor_class": 13,
         "at": [
-          2,
+          4,
           9
         ],
         "concentration": "",
@@ -6894,9 +6946,10 @@
         "initiative_bonus": 3,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "radiant"
+          "weapon",
+          "iron",
+          "piercing",
+          "force"
         ],
         "level": 1,
         "masteries": [],
@@ -6960,14 +7013,29 @@
     ],
     "rng": {
       "seed": "42",
-      "state": "-5947261528453380037"
+      "state": "-1242506329546848264"
     },
-    "round": 7,
+    "round": 6,
     "save_format": 3,
-    "turn_index": 8,
-    "turn_once": [],
-    "winner": "party"
+    "turn_index": 16,
+    "turn_once": [
+      "trait_2"
+    ],
+    "winner": "party",
+    "zones": [
+      {
+        "action": "moonbeam",
+        "cell": [
+          5,
+          8
+        ],
+        "hit": [],
+        "level": 2,
+        "size": 1,
+        "source": "volkhv"
+      }
+    ]
   },
   "seed": 42,
-  "steps": 175
+  "steps": 147
 }

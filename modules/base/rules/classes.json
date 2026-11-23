@@ -49,9 +49,9 @@
       "levels": {
         "1": { "resources": { "slot_1": 2 } },
         "2": { "resources": { "slot_1": 3 } },
-        "3": { "actions": ["moonbeam", "barkskin"], "resources": { "slot_1": 4, "slot_2": 2 } },
+        "3": { "actions": ["moonbeam", "moonbeam_move", "barkskin"], "resources": { "slot_1": 4, "slot_2": 2 } },
         "4": { "choice": "feat", "actions": ["poison_spray"], "resources": { "slot_2": 3 } },
-        "5": { "actions": ["call_lightning"], "resources": { "slot_3": 2 } }
+        "5": { "actions": ["call_lightning", "call_lightning_strike"], "resources": { "slot_3": 2 } }
       },
       "paths": [
         { "id": "perunov", "name_key": "PATH_PERUNOV", "level": 3, "actions": ["thunderwave"] }

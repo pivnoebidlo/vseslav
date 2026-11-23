@@ -23,6 +23,8 @@ var actions_left: int = 1
 var bonus_used: bool = false
 ## Сколько ещё атак оружием осталось от уже начатого действия «Атака» (вторая атака, ADR-0044).
 var extra_attacks: int = 0
+## Длящиеся зоны заклинаний (Zones, ADR-0046).
+var zones: Array[Dictionary] = []
 ## В этот ход было действие «Отход»: перемещение не провоцирует атак.
 var disengaged: bool = false
 ## Бесплатное действие с предметом в этом ходу уже сделано (ADR-0024).
@@ -259,6 +261,7 @@ func _begin_turn(c: Combatant, events: Array[CombatEvent]) -> void:
 	disengaged = false
 	free_interaction_used = false
 	turn_once.clear()
+	Zones.new_turn(self)
 	c.reaction_ready = true
 	events.append(CombatEvent.new(CombatEvent.TURN_STARTED, {"id": c.id, "round": round_number}))
 	_expire_source_conditions(c, ConditionState.SOURCE_TURN_START, events)
@@ -272,6 +275,7 @@ func _begin_turn(c: Combatant, events: Array[CombatEvent]) -> void:
 
 
 func _end_turn(c: Combatant, events: Array[CombatEvent]) -> void:
+	Zones.end_turn(self, c, events)
 	var kept: Array[ConditionState] = []
 	for cond in c.conditions:
 		var remove := false
@@ -361,6 +365,8 @@ func to_dict() -> Dictionary:
 	# Пишется, только когда идёт вторая атака: старые сохранения и реплеи не меняются.
 	if extra_attacks > 0:
 		data["extra_attacks"] = extra_attacks
+	if not zones.is_empty():
+		data["zones"] = zones.duplicate(true)
 	return data
 
 
@@ -385,6 +391,10 @@ static func from_dict(data: Dictionary, p_grid: BattleGrid) -> CombatState:
 	state.bonus_used = JsonRead.get_bool(data, "bonus_used")
 	state.disengaged = JsonRead.get_bool(data, "disengaged")
 	state.extra_attacks = maxi(JsonRead.get_int(data, "extra_attacks"), 0)
+	for z: Variant in JsonRead.get_array(data, "zones"):
+		if typeof(z) == TYPE_DICTIONARY:
+			var zone: Dictionary = z
+			state.zones.append(Zones.from_dict(zone))
 	state.free_interaction_used = JsonRead.get_bool(data, "free_interaction_used")
 	state.turn_once = JsonRead.get_str_array(data, "turn_once")
 	state.ended = JsonRead.get_bool(data, "ended")

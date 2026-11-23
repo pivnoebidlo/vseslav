@@ -572,3 +572,4 @@ UI_EXTRA_ATTACK_LEFT,(ещё атак: {n}),({n} more attacks)
 COND_BARKSKIN,дубовая кожа (КД не ниже 17),oak skin (AC at least 17)
 UI_SLOT_LEVEL,Ячейка,Spell slot
 UI_SLOT_N,{n} круг (×{left}),Level {n} (×{left})
+err_no_zone,Сначала нужно сотворить это заклинание и держать на нём сосредоточение,Cast the spell first and keep concentrating on it

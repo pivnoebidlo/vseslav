@@ -67,6 +67,17 @@ func apply(state: CombatState) -> Array[CombatEvent]:
 		actor.column = next
 		walked.append([cell.x, cell.y, cell.z])
 		spent = path.costs[i]
+		if Zones.entering(state, prev, next):
+			# Вошёл в зону заклинания: срабатывает посреди пути, затем идёт дальше.
+			events.append(_moved_event(actor, from, walked, spent - segment_start))
+			from = next
+			walked = []
+			segment_start = spent
+			Zones.entered(state, actor, prev, next, events)
+			if not actor.is_alive():
+				state.movement_left -= spent
+				events.append_array(state.check_end())
+				return events
 		if state.grid.is_fall(prev, next):
 			events.append(_moved_event(actor, from, walked, spent - segment_start))
 			state.movement_left -= spent

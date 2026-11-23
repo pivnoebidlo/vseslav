@@ -47,6 +47,8 @@ var reviving: bool = false
 var last_damage_tags: Array[String] = []
 ## Id действия, на котором держится концентрация; пусто — нет.
 var concentration: String = ""
+## Круг ячейки заклинания, на котором сосредоточен (для повторных ударов, ADR-0046).
+var concentration_level: int = 0
 ## Реакция доступна (восстанавливается в начале своего хода).
 var reaction_ready: bool = true
 ## Колонка на сетке (x, z); уровень берётся из сетки.
@@ -166,7 +168,7 @@ func to_dict() -> Dictionary:
 	var cond_list: Array = []
 	for c in conditions:
 		cond_list.append(c.to_dict())
-	return {
+	var data := {
 		"id": id,
 		"template": template,
 		"name_key": name_key,
@@ -203,6 +205,9 @@ func to_dict() -> Dictionary:
 		"at": [column.x, column.y],
 		"inventory": inventory.to_dict() if inventory != null else null,
 	}
+	if concentration_level > 0:
+		data["concentration_level"] = concentration_level
+	return data
 
 
 static func from_dict(data: Dictionary, errors: Array[String] = []) -> Combatant:
@@ -247,6 +252,7 @@ static func from_dict(data: Dictionary, errors: Array[String] = []) -> Combatant
 	c.reviving = JsonRead.get_bool(data, "reviving")
 	c.last_damage_tags = JsonRead.get_str_array(data, "last_damage_tags")
 	c.concentration = JsonRead.get_str(data, "concentration")
+	c.concentration_level = JsonRead.get_int(data, "concentration_level")
 	c.reaction_ready = JsonRead.get_bool(data, "reaction_ready", true)
 	c.column = JsonRead.to_vec2i(data.get("at", [0, 0]))
 	var inv: Variant = data.get("inventory")

@@ -391,6 +391,14 @@
         "concentration": {
           "type": "boolean"
         },
+        "lasting": {
+          "type": "boolean",
+          "description": "Длящаяся зона (ADR-0046): область остаётся, пока держится концентрация."
+        },
+        "zone_of": {
+          "$ref": "common.schema.json#/$defs/id",
+          "description": "Действие для сотворённого заклинания: сдвинуть зону или ударить снова (ADR-0046)."
+        },
         "spell_level": {
           "type": "integer",
           "minimum": 1,

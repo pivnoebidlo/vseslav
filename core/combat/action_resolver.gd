@@ -7,6 +7,8 @@ const ERR_UNKNOWN_ACTION := "err_unknown_action"
 const ERR_INCAPACITATED := "err_incapacitated"
 ## Лечение по области — не больше шести союзников (SRD: «до шести существ»).
 const MAX_AREA_HEAL := 6
+## Действие для сотворённого заклинания, а заклинатель на нём не сосредоточен.
+const ERR_NO_ZONE := "err_no_zone"
 const ERR_ACTION_USED := "err_action_used"
 const ERR_BONUS_USED := "err_bonus_used"
 const ERR_REACTION_ONLY := "err_reaction_only"
@@ -66,6 +68,8 @@ static func can_afford(
 			return ERR_REACTION_ONLY
 	if action.resource != "" and slot_for(actor, action, slot) == "":
 		return ERR_NO_RESOURCE
+	if action.zone_of != "" and actor.concentration != action.zone_of:
+		return ERR_NO_ZONE
 	if not actor.item_ready(action):
 		return ERR_ITEM_NOT_READY
 	if action.item != "" and action.kind == ActionDef.KIND_ATTACK:
@@ -144,10 +148,13 @@ static func apply(
 		action = action.cast_with(level)
 		if level > action.spell_level:
 			data["slot"] = level
+	elif action.zone_of != "":
+		action = _zone_strike(actor, action)
 	events.append(CombatEvent.new(CombatEvent.ACTION, data))
 	if action.concentration:
 		CombatRules.end_concentration(state, actor, events)
 		actor.concentration = action.id
+		actor.concentration_level = maxi(action.cast_level, action.spell_level)
 	var target := state.get_combatant(target_id)
 	if action.target == ActionDef.TARGET_SELF:
 		target = actor
@@ -619,6 +626,18 @@ static func save_dc(actor: Combatant, action: ActionDef) -> int:
 	return action.save_dc.value_range(actor.formula_vars(action)).x
 
 
+## Повторный удар или сдвиг зоны сотворённого заклинания: сила — по кругу ячейки,
+## которой оно сотворено (ADR-0046).
+static func _zone_strike(actor: Combatant, action: ActionDef) -> ActionDef:
+	var source := actor.get_action(action.zone_of)
+	if source == null or source.upcast == "":
+		return action
+	var copy := ActionDef.from_dict(action.to_dict())
+	copy.spell_level = source.spell_level
+	copy.upcast = source.upcast
+	return copy.cast_with(maxi(actor.concentration_level, source.spell_level))
+
+
 static func _save_action(
 	state: CombatState,
 	actor: Combatant,
@@ -627,11 +646,30 @@ static func _save_action(
 	cell: Vector2i,
 	events: Array[CombatEvent]
 ) -> void:
+	if action.zone_of != "":
+		var zone := Zones.find(state, actor.id, action.zone_of)
+		if not zone.is_empty():
+			Zones.move(state, zone, cell, events)
+			return
 	var targets: Array[Combatant] = []
 	if action.area != "":
 		targets = targets_in_area(state, actor, action, cell)
 	elif target != null:
 		targets = [target]
+	save_on(state, actor, action, targets, cell, events)
+	if action.lasting:
+		Zones.create(state, actor, action, cell, targets)
+
+
+## Спасбросок и урон заклинания по целям [param targets] (урон один бросок на всех, SRD).
+static func save_on(
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	targets: Array[Combatant],
+	cell: Vector2i,
+	events: Array[CombatEvent]
+) -> void:
 	var dc := save_dc(actor, action)
 	# Урон области бросается один раз для всех целей (SRD).
 	var vars := actor.formula_vars(action)

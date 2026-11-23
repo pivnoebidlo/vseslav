@@ -3,7 +3,7 @@
   "expected": {
     "actions_left": 0,
     "arena_id": "spike.pogost",
-    "bonus_used": false,
+    "bonus_used": true,
     "combatants": [
       {
         "abilities": {
@@ -404,7 +404,7 @@
         "armor_class": 19,
         "at": [
           6,
-          4
+          5
         ],
         "concentration": "",
         "conditions": [],
@@ -925,7 +925,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 26,
+        "hp": 25,
         "id": "lovchiy",
         "initiative_bonus": 3,
         "inventory": {
@@ -964,7 +964,7 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "favored_enemy": 1,
+          "favored_enemy": 0,
           "slot_1": 3
         },
         "resources_max": {
@@ -1099,7 +1099,7 @@
           {
             "ability": "",
             "area": "burst",
-            "area_size": 2,
+            "area_size": 1,
             "attack_bonus": "MOD + PROF",
             "attack_type": "melee",
             "cast_level": 0,
@@ -1117,6 +1117,7 @@
             "id": "moonbeam",
             "item": "",
             "kind": "save",
+            "lasting": true,
             "long_range": 0,
             "mastery": "",
             "name_key": "ACT_MOONBEAM",
@@ -1137,6 +1138,46 @@
             "target": "point",
             "two_handed": false,
             "upcast": "1d10"
+          },
+          {
+            "ability": "",
+            "area": "burst",
+            "area_size": 1,
+            "attack_bonus": "MOD + PROF",
+            "attack_type": "melee",
+            "concentration": false,
+            "consumes": false,
+            "cost": "action",
+            "damage": [
+              {
+                "formula": "2d10",
+                "type": "radiant"
+              }
+            ],
+            "effects": [],
+            "heal": "0",
+            "id": "moonbeam_move",
+            "item": "",
+            "kind": "save",
+            "long_range": 0,
+            "mastery": "",
+            "name_key": "ACT_MOONBEAM_MOVE",
+            "range": 12,
+            "resource": "",
+            "resource_cost": 1,
+            "save_ability": "con",
+            "save_dc": "8 + PROF + SPELL",
+            "save_half": true,
+            "special": "",
+            "sub_actions": [],
+            "tags": [
+              "spell",
+              "magic",
+              "radiant"
+            ],
+            "target": "point",
+            "two_handed": false,
+            "zone_of": "moonbeam"
           },
           {
             "ability": "",
@@ -1603,6 +1644,7 @@
           7
         ],
         "concentration": "moonbeam",
+        "concentration_level": 2,
         "conditions": [],
         "creature_tags": [
           "humanoid"
@@ -1639,8 +1681,8 @@
         "proficiency": 2,
         "reaction_ready": true,
         "resources": {
-          "slot_1": 0,
-          "slot_2": 0
+          "slot_1": 1,
+          "slot_2": 1
         },
         "resources_max": {
           "slot_1": 4,
@@ -2050,7 +2092,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 13,
+        "hp": 18,
         "id": "tat",
         "initiative_bonus": 5,
         "inventory": {
@@ -2527,7 +2569,7 @@
         "armor_class": 14,
         "at": [
           6,
-          5
+          1
         ],
         "concentration": "",
         "conditions": [
@@ -2536,9 +2578,19 @@
             "ends_count": 0,
             "ends_on": "",
             "id": "raging",
-            "rounds": 5,
+            "rounds": 6,
             "save_ability": "",
             "save_dc": 10,
+            "source": "yaryy"
+          },
+          {
+            "concentration": false,
+            "ends_count": 1,
+            "ends_on": "source_turn_start",
+            "id": "reckless",
+            "rounds": 0,
+            "save_ability": "",
+            "save_dc": 0,
             "source": "yaryy"
           }
         ],
@@ -2551,7 +2603,7 @@
         "death_successes": 0,
         "defenses": [],
         "has_shield": false,
-        "hp": 35,
+        "hp": 31,
         "id": "yaryy",
         "initiative_bonus": 3,
         "inventory": {
@@ -2568,7 +2620,11 @@
           "main_hand": "sekira",
           "purse": 10
         },
-        "last_damage_tags": [],
+        "last_damage_tags": [
+          "spell",
+          "magic",
+          "radiant"
+        ],
         "level": 3,
         "masteries": [
           "cleave",
@@ -4249,9 +4305,9 @@
         "initiative_bonus": 1,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing"
+          "spell",
+          "magic",
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -4559,9 +4615,9 @@
         "initiative_bonus": 1,
         "inventory": null,
         "last_damage_tags": [
-          "spell",
-          "magic",
-          "radiant"
+          "weapon",
+          "iron",
+          "piercing"
         ],
         "level": 1,
         "masteries": [],
@@ -5841,7 +5897,7 @@
         "last_damage_tags": [
           "weapon",
           "iron",
-          "piercing"
+          "slashing"
         ],
         "level": 1,
         "masteries": [],
@@ -6149,10 +6205,9 @@
         "initiative_bonus": 1,
         "inventory": null,
         "last_damage_tags": [
-          "weapon",
-          "iron",
-          "piercing",
-          "force"
+          "spell",
+          "magic",
+          "radiant"
         ],
         "level": 1,
         "masteries": [],
@@ -6196,13 +6251,26 @@
     ],
     "rng": {
       "seed": "42",
-      "state": "6868897438018121749"
+      "state": "-1437984752574806931"
     },
-    "round": 5,
+    "round": 4,
     "save_format": 3,
-    "turn_index": 8,
+    "turn_index": 9,
     "turn_once": [],
-    "winner": "party"
+    "winner": "party",
+    "zones": [
+      {
+        "action": "moonbeam",
+        "cell": [
+          7,
+          3
+        ],
+        "hit": [],
+        "level": 2,
+        "size": 1,
+        "source": "volkhv"
+      }
+    ]
   },
   "seed": 42,
   "steps": 104

@@ -108,6 +108,12 @@ var spell_level: int = 0
 var upcast: String = ""
 ## Круг ячейки, которой заклинание сотворено сейчас (копия действия при сотворении).
 var cast_level: int = 0
+## Длящаяся зона (ADR-0046): после сотворения область остаётся на поле, пока держится
+## концентрация, и срабатывает на входящих и заканчивающих в ней ход.
+var lasting: bool = false
+## Действие для уже сотворённого заклинания [member zone_of] (пока заклинатель на нём
+## сосредоточен): передвинуть его зону или ударить снова — без новой ячейки.
+var zone_of: String = ""
 
 
 func is_attack() -> bool:
@@ -161,6 +167,10 @@ func to_dict() -> Dictionary:
 		"two_handed": two_handed,
 	}
 	# Только у заклинаний с ячейками: прочие действия (и старые сохранения) не меняются.
+	if lasting:
+		data["lasting"] = true
+	if zone_of != "":
+		data["zone_of"] = zone_of
 	if spell_level > 0:
 		data["spell_level"] = spell_level
 		data["upcast"] = upcast
@@ -215,6 +225,8 @@ static func from_dict(data: Dictionary, errors: Array[String] = []) -> ActionDef
 	a.spell_level = clampi(JsonRead.get_int(data, "spell_level"), 0, 9)
 	a.upcast = JsonRead.get_str(data, "upcast")
 	a.cast_level = JsonRead.get_int(data, "cast_level")
+	a.lasting = JsonRead.get_bool(data, "lasting")
+	a.zone_of = JsonRead.get_str(data, "zone_of")
 	if a.spell_level > 0 and a.resource == "":
 		a.resource = "slot_%d" % a.spell_level
 	if a.upcast != "" and not _is_dice(a.upcast):

@@ -13,6 +13,8 @@ var dead: bool = false
 var level: int = 0
 ## Накопленный опыт, всего.
 var xp: int = 0
+## Выборы при повышении уровня (ADR-0044): уровень → {"asi": {...}} | {"feat": id}.
+var picks: Dictionary[String, Dictionary] = {}
 
 
 ## Переносит состояние на собранного бойца: хиты, заряды, гибель.
@@ -56,7 +58,17 @@ func to_dict() -> Dictionary:
 		"dead": dead,
 		"level": level,
 		"xp": xp,
+		"picks": _sorted_picks(),
 	}
+
+
+func _sorted_picks() -> Dictionary:
+	var keys := picks.keys()
+	keys.sort()
+	var out := {}
+	for key: Variant in keys:
+		out[str(key)] = picks[key].duplicate(true)
+	return out
 
 
 static func from_dict(data: Dictionary) -> HeroState:
@@ -69,4 +81,10 @@ static func from_dict(data: Dictionary) -> HeroState:
 	s.dead = JsonRead.get_bool(data, "dead")
 	s.level = clampi(JsonRead.get_int(data, "level"), 0, Progression.LEVEL_CAP)
 	s.xp = maxi(JsonRead.get_int(data, "xp"), 0)
+	var picks := JsonRead.get_dict(data, "picks")
+	for key: Variant in picks:
+		var raw: Variant = picks[key]
+		if typeof(raw) == TYPE_DICTIONARY:
+			var pick: Dictionary = raw
+			s.picks[str(key)] = pick.duplicate(true)
 	return s

@@ -323,9 +323,7 @@ static func attack(
 			CombatRules.deal_damage(state, target, graze, action.tags, false, actor.id, events)
 		return
 	var wounded_before := target.hp < target.max_hp
-	var amounts: Array[Array] = []
-	for part in action.damage:
-		amounts.append([part.damage_type, maxi(part.formula.roll(state.rng, vars, critical), 0)])
+	var amounts := _weapon_damage(state, actor, action, vars, critical)
 	_bonus_damage(state, actor, action, target, wounded_before, critical, s.mods.mode(), amounts)
 	CombatRules.deal_damage(state, target, amounts, action.tags, critical, actor.id, events)
 	if not target.is_alive():
@@ -334,6 +332,40 @@ static func attack(
 	for e in action.effects:
 		if e.on == EffectDef.ON_HIT:
 			_apply_effect(state, actor, action, e, target, e.save_ability != "", events)
+
+
+## Урон самого действия; «Лютый удар» — раз в ход оружием бросок дважды, больший.
+static func _weapon_damage(
+	state: CombatState,
+	actor: Combatant,
+	action: ActionDef,
+	vars: Dictionary[String, int],
+	critical: bool
+) -> Array[Array]:
+	var amounts := _roll_parts(state, action, vars, critical)
+	var savage := not actor.traits_of(TraitDef.SAVAGE_ATTACKER).is_empty()
+	if not savage or not action.tags.has("weapon") or state.turn_once.has("savage"):
+		return amounts
+	state.turn_once.append("savage")
+	var again := _roll_parts(state, action, vars, critical)
+	return again if _total(again) > _total(amounts) else amounts
+
+
+static func _roll_parts(
+	state: CombatState, action: ActionDef, vars: Dictionary[String, int], critical: bool
+) -> Array[Array]:
+	var amounts: Array[Array] = []
+	for part in action.damage:
+		amounts.append([part.damage_type, maxi(part.formula.roll(state.rng, vars, critical), 0)])
+	return amounts
+
+
+static func _total(amounts: Array[Array]) -> int:
+	var sum := 0
+	for a in amounts:
+		var value: int = a[1]
+		sum += value
+	return sum
 
 
 static func _bonus_damage(

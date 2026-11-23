@@ -97,5 +97,13 @@
   "ACT_BLESS": "Bless",
   "ITEM_SKRAMASAKS": "Seax",
   "ITEM_SEKIRA": "Greataxe",
-  "ITEM_BULAVA": "Mace"
+  "ITEM_BULAVA": "Mace",
+  "FEAT_ALERT": "Alert",
+  "FEAT_ALERT_DESC": "Add your Proficiency Bonus to Initiative.",
+  "FEAT_SAVAGE_ATTACKER": "Savage Attacker",
+  "FEAT_SAVAGE_ATTACKER_DESC": "Once per turn when you hit with a weapon, roll its damage twice and use the higher roll.",
+  "FEAT_ARCHERY": "Fighting Style: Archery",
+  "FEAT_ARCHERY_DESC": "+2 to ranged weapon attack rolls.",
+  "FEAT_DEFENSE": "Fighting Style: Defense",
+  "FEAT_DEFENSE_DESC": "+1 AC while wearing armor."
 }

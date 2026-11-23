@@ -7,7 +7,8 @@
       "levels": {
         "1": { "actions": ["second_wind"], "resources": { "second_wind": 2 },
                "traits": [ { "type": "ac_bonus", "value": 1, "when": "armored", "name_key": "TRAIT_STYLE_DEFENSE" } ] },
-        "2": { "actions": ["action_surge"], "resources": { "action_surge": 1 } }
+        "2": { "actions": ["action_surge"], "resources": { "action_surge": 1 } },
+        "4": { "choice": "feat" }
       },
       "paths": [
         { "id": "druzhinnik", "name_key": "PATH_DRUZHINNIK", "level": 3,
@@ -27,7 +28,8 @@
                              "when": "target_marked", "name_key": "TRAIT_HUNTERS_MARK" } ] },
         "2": { "traits": [ { "type": "attack_bonus", "value": 2, "attack_type": "ranged",
                              "name_key": "TRAIT_STYLE_ARCHERY" } ] },
-        "3": { "resources": { "slot_1": 3 } }
+        "3": { "resources": { "slot_1": 3 } },
+        "4": { "choice": "feat" }
       },
       "paths": [
         { "id": "ohotnik", "name_key": "PATH_OHOTNIK", "level": 3,
@@ -43,7 +45,8 @@
       "levels": {
         "1": { "resources": { "slot_1": 2 } },
         "2": { "resources": { "slot_1": 3 } },
-        "3": { "resources": { "slot_1": 4 } }
+        "3": { "resources": { "slot_1": 4 } },
+        "4": { "choice": "feat" }
       },
       "paths": [
         { "id": "perunov", "name_key": "PATH_PERUNOV", "level": 3, "actions": ["thunderwave"] }
@@ -57,7 +60,8 @@
           "name_key": "TRAIT_SNEAK_ATTACK" } ] },
         "2": { "actions": ["cunning_dash", "cunning_disengage"] },
         "3": { "traits": [ { "type": "bonus_damage", "formula": "1d6", "when": "sneak", "once_per_turn": true,
-          "name_key": "TRAIT_SNEAK_ATTACK" } ] }
+          "name_key": "TRAIT_SNEAK_ATTACK" } ] },
+        "4": { "choice": "feat" }
       },
       "paths": [
         { "id": "razboynik", "name_key": "PATH_RAZBOYNIK", "level": 3,
@@ -72,7 +76,8 @@
           "traits": [ { "type": "unarmored_defense", "ability": "con", "name_key": "TRAIT_UNARMORED_DEFENSE" },
             { "type": "bonus_damage", "formula": "2", "when": "raging", "name_key": "TRAIT_RAGE_DAMAGE" } ] },
         "2": { "actions": ["reckless_attack"] },
-        "3": { "resources": { "rage": 3 } }
+        "3": { "resources": { "rage": 3 } },
+        "4": { "choice": "feat" }
       },
       "paths": [
         { "id": "berserk", "name_key": "PATH_BERSERK", "level": 3,
@@ -88,7 +93,8 @@
       "levels": {
         "1": { "resources": { "slot_1": 2 } },
         "2": { "actions": ["divine_spark"], "resources": { "slot_1": 3, "channel": 2 } },
-        "3": { "resources": { "slot_1": 4 } }
+        "3": { "resources": { "slot_1": 4 } },
+        "4": { "choice": "feat" }
       },
       "paths": [
         { "id": "tselitel", "name_key": "PATH_TSELITEL", "level": 3,

@@ -1,0 +1,13 @@
+{
+  "_comment": "Черты на выбор при повышении уровня (ADR-0044) — только из SRD 5.2. «Увеличение характеристик» — не черта в данных, а выбор asi.",
+  "feats": [
+    { "id": "alert", "name_key": "FEAT_ALERT", "desc_key": "FEAT_ALERT_DESC",
+      "traits": [ { "type": "initiative", "formula": "PROF", "name_key": "FEAT_ALERT" } ] },
+    { "id": "savage_attacker", "name_key": "FEAT_SAVAGE_ATTACKER", "desc_key": "FEAT_SAVAGE_ATTACKER_DESC",
+      "traits": [ { "type": "savage_attacker", "name_key": "FEAT_SAVAGE_ATTACKER" } ] },
+    { "id": "archery", "name_key": "FEAT_ARCHERY", "desc_key": "FEAT_ARCHERY_DESC", "classes": ["ratnik"],
+      "traits": [ { "type": "attack_bonus", "value": 2, "attack_type": "ranged", "name_key": "TRAIT_STYLE_ARCHERY" } ] },
+    { "id": "defense", "name_key": "FEAT_DEFENSE", "desc_key": "FEAT_DEFENSE_DESC", "classes": ["lovchiy"],
+      "traits": [ { "type": "ac_bonus", "value": 1, "when": "armored", "name_key": "TRAIT_STYLE_DEFENSE" } ] }
+  ]
+}

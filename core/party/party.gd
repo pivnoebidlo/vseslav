@@ -94,15 +94,38 @@ func take_from_combat(state: CombatState) -> void:
 		var after := HeroState.from_combatant(c, before.hit_dice_spent, true)
 		after.level = before.level
 		after.xp = before.xp
+		after.picks = before.picks
 		states[c.template] = after
 
 
 ## Данные персонажа с его нынешним уровнем (для сборки бойца).
 func character_data(db: RulesDb, character_id: String) -> Dictionary:
 	var data: Dictionary = db.characters[character_id].duplicate()
-	if state_of(character_id).level > 0:
-		data["level"] = state_of(character_id).level
+	var state := state_of(character_id)
+	if state.level > 0:
+		data["level"] = state.level
+	if not state.picks.is_empty():
+		var picks := {}
+		for key: String in state.picks:
+			picks[key] = state.picks[key].duplicate(true)
+		data["picks"] = picks
 	return data
+
+
+## Нужен ли выбор (характеристики или черта) для следующего уровня.
+func choice_needed(db: RulesDb, character_id: String) -> bool:
+	var data := character_data(db, character_id)
+	return LevelChoice.needed(db, data, level_of(db, character_id) + 1)
+
+
+## Пусто — уровень можно повысить с выбором [param pick] (если он нужен).
+func level_up_problem(db: RulesDb, character_id: String, pick: Dictionary = {}) -> String:
+	if not inventories.has(character_id) or not can_level_up(db, character_id):
+		return "err_level_no_xp"
+	if not choice_needed(db, character_id):
+		return ""
+	var hero := build_hero(db, character_id)
+	return LevelChoice.problem(db, character_data(db, character_id), pick, hero.abilities)
 
 
 ## Уровень героя: повышенный или из данных.
@@ -127,13 +150,16 @@ func can_level_up(db: RulesDb, character_id: String) -> bool:
 	return Progression.can_level_up(db, level_of(db, character_id), state.xp)
 
 
-## Повышает уровень на один; false — опыта не хватает или предел. Новые хиты
-## приходят сразу (раны остаются ранами), кость хитов — тоже.
-func level_up(db: RulesDb, character_id: String) -> bool:
-	if not inventories.has(character_id) or not can_level_up(db, character_id):
+## Повышает уровень на один; false — опыта не хватает, предел или выбор [param pick]
+## не годится. Новые хиты приходят сразу (раны остаются ранами), кость хитов — тоже.
+func level_up(db: RulesDb, character_id: String, pick: Dictionary = {}) -> bool:
+	if level_up_problem(db, character_id, pick) != "":
 		return false
+	var next := level_of(db, character_id) + 1
 	var state := state_of(character_id)
-	state.level = level_of(db, character_id) + 1
+	if choice_needed(db, character_id):
+		state.picks[str(next)] = pick.duplicate(true)
+	state.level = next
 	return true
 
 

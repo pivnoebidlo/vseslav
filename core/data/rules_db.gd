@@ -4,7 +4,9 @@ extends RefCounted
 ## готовые персонажи и существа. Хранит исходные словари по id; собирает из них
 ## участников боя CombatantBuilder. Модули собирает ModuleLoader (ADR-0028).
 
-const FILES: Array[String] = ["actions", "items", "classes", "origins", "characters", "creatures"]
+const FILES: Array[String] = [
+	"actions", "items", "classes", "origins", "characters", "creatures", "feats"
+]
 
 var actions: Dictionary[String, Dictionary] = {}
 ## Действия, которые есть у всех (рывок, отход, уклонение).
@@ -14,6 +16,8 @@ var classes: Dictionary[String, Dictionary] = {}
 var origins: Dictionary[String, Dictionary] = {}
 var characters: Dictionary[String, Dictionary] = {}
 var creatures: Dictionary[String, Dictionary] = {}
+## Черты на выбор при повышении уровня (ADR-0044).
+var feats: Dictionary[String, Dictionary] = {}
 ## Таблица опыта по уровням (classes.json → xp_levels, ADR-0043); пусто — уровни не растут.
 var xp_levels: Array[int] = []
 var errors: Array[String] = []
@@ -63,6 +67,8 @@ func add(file: String, data: Dictionary) -> void:
 			_index(data, "characters", characters)
 		"creatures":
 			_index(data, "creatures", creatures)
+		"feats":
+			_index(data, "feats", feats)
 
 
 ## Действие по id (новый объект). Ошибки — в [param out_errors].
@@ -81,6 +87,11 @@ func validate() -> void:
 		if not actions.has(id):
 			errors.append("common action '%s' is not defined" % id)
 	Progression.validate(xp_levels, errors)
+	for id: String in _sorted(feats):
+		for t: Variant in JsonRead.get_array(feats[id], "traits"):
+			if typeof(t) == TYPE_DICTIONARY:
+				var entry: Dictionary = t
+				TraitDef.from_dict(entry, errors)
 	for id: String in _sorted(classes):
 		Rest.validate_class(classes[id], errors)
 	for id: String in _sorted(characters):

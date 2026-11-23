@@ -53,8 +53,8 @@ func test_xp_goes_to_members_and_level_up_adds_hp() -> void:
 	assert_eq(party.state_of("volkhv").xp, 900, "не в отряде — без опыта")
 	var before := party.build_hero(_db, "ratnik")
 	assert_true(party.can_level_up(_db, "ratnik"))
-	assert_true(party.level_up(_db, "ratnik"))
-	assert_false(party.level_up(_db, "ratnik"), "до 5 уровня опыта не хватает")
+	assert_true(party.level_up(_db, "ratnik", {"feat": "alert"}))
+	assert_false(party.level_up(_db, "ratnik", {"feat": "alert"}), "до 5 уровня опыта не хватает")
 	var after := party.build_hero(_db, "ratnik")
 	assert_eq(after.level, 4)
 	# Ратник: к10, Тел +2 → 10 / 2 + 1 + 2 = 8 хитов за уровень.
@@ -65,7 +65,7 @@ func test_xp_goes_to_members_and_level_up_adds_hp() -> void:
 func test_level_and_xp_survive_save_and_combat() -> void:
 	var party := Party.from_db(_db)
 	party.give_xp(5000)
-	party.level_up(_db, "lovchiy")
+	party.level_up(_db, "lovchiy", {"feat": "alert"})
 	var loaded := Party.from_dict(party.to_dict(), _db)
 	assert_eq(loaded.level_of(_db, "lovchiy"), 4)
 	assert_eq(loaded.state_of("lovchiy").xp, 5900)

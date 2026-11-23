@@ -97,5 +97,13 @@
   "ACT_BLESS": "Благословение",
   "ITEM_SKRAMASAKS": "Скрамасакс",
   "ITEM_SEKIRA": "Секира",
-  "ITEM_BULAVA": "Булава"
+  "ITEM_BULAVA": "Булава",
+  "FEAT_ALERT": "Чуткий",
+  "FEAT_ALERT_DESC": "К инициативе прибавляется бонус мастерства.",
+  "FEAT_SAVAGE_ATTACKER": "Лютый удар",
+  "FEAT_SAVAGE_ATTACKER_DESC": "Раз в ход при попадании оружием урон бросается дважды — берётся больший.",
+  "FEAT_ARCHERY": "Боевой стиль: стрельба",
+  "FEAT_ARCHERY_DESC": "+2 к броскам дальних атак оружием.",
+  "FEAT_DEFENSE": "Боевой стиль: оборона",
+  "FEAT_DEFENSE_DESC": "+1 к КД, пока на герое доспех."
 }

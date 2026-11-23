@@ -70,6 +70,7 @@ static func from_character(
 	c.proficiency = IntMath.proficiency_bonus(c.level)
 	c.abilities = Abilities.from_dict(JsonRead.get_dict(data, "abilities"))
 	_apply_origin_bonus(c, origin, JsonRead.get_dict(data, "origin_bonus"), errors)
+	LevelChoice.apply(db, data, c, errors)
 	c.save_proficiencies = JsonRead.get_str_array(cls, "saves")
 	c.spell_ability = JsonRead.get_str(cls, "spell_ability")
 

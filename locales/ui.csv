@@ -568,3 +568,8 @@ LOG_HERO_SAVED,Уровень повышен — сохранено.,Level raise
 LOG_EV_XP,Опыт: +{amount} каждому,XP: +{amount} each
 LOG_COMBAT_XP,За победу: +{amount} опыта каждому,Victory: +{amount} XP each
 UI_EV_ACT_GIVE_XP,опыт,experience
+UI_LEVEL_CHOICE,"{level} уровень: выбери увеличение характеристик или черту","Level {level}: choose an ability increase or a feat"
+UI_LEVEL_PLUS_TWO,+2 к одной характеристике,+2 to one ability
+UI_LEVEL_PLUS_ONE,+1 к двум характеристикам,+1 to two abilities
+UI_LEVEL_FEATS,Черта вместо характеристик,A feat instead
+UI_LEVEL_ACCEPT,Принять,Accept

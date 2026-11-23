@@ -16,6 +16,8 @@ var _party: Party
 var _heroes: Array[String] = []
 var _current := ""
 var _changed := false
+## Идёт выбор для следующего уровня (вместо листа — панель выбора).
+var _choosing := false
 
 var _tabs := HBoxContainer.new()
 var _body := VBoxContainer.new()
@@ -69,6 +71,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	if key.keycode == KEY_TAB:
 		_current = _heroes[(_heroes.find(_current) + 1) % _heroes.size()]
+		_choosing = false
 		_rebuild()
 		get_viewport().set_input_as_handled()
 	elif key.keycode == KEY_ESCAPE or key.keycode == KEY_C:
@@ -98,6 +101,18 @@ func _rebuild() -> void:
 	if hero == null:
 		return
 	_body.add_child(_card(hero))
+	if _choosing:
+		var panel := LevelChoicePanel.new()
+		panel.setup(_db, _party.character_data(_db, _current), hero.abilities, hero.level + 1)
+		panel.chosen.connect(_on_choice)
+		panel.cancelled.connect(
+			func() -> void:
+				_choosing = false
+				_rebuild()
+		)
+		_body.add_child(panel)
+		_recenter.call_deferred()
+		return
 	var columns := HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 14)
 	var left := VBoxContainer.new()
@@ -455,13 +470,24 @@ static func _fmt(key: String, values: Dictionary) -> String:
 
 func _on_tab(id: String) -> void:
 	_current = id
+	_choosing = false
 	_rebuild()
 
 
 func _on_level_up() -> void:
-	if _party.level_up(_db, _current):
+	if _party.choice_needed(_db, _current):
+		_choosing = true
+		_rebuild()
+	elif _party.level_up(_db, _current):
 		_changed = true
 		_rebuild()
+
+
+func _on_choice(pick: Dictionary) -> void:
+	if _party.level_up(_db, _current, pick):
+		_changed = true
+	_choosing = false
+	_rebuild()
 
 
 func _on_close() -> void:

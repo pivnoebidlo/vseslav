@@ -238,7 +238,8 @@
             "initiative",
             "hp_per_level",
             "unarmored_defense",
-            "heal_bonus"
+            "heal_bonus",
+            "savage_attacker"
           ]
         },
         "name_key": {

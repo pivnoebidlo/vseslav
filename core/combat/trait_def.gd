@@ -28,6 +28,8 @@ const HP_PER_LEVEL := "hp_per_level"
 const UNARMORED_DEFENSE := "unarmored_defense"
 ## Прибавка [member value] к лечению заклинаниями (путь Целителя).
 const HEAL_BONUS := "heal_bonus"
+## Лютый удар (черта SRD 5.2): раз в ход урон оружием бросается дважды, берётся больший.
+const SAVAGE_ATTACKER := "savage_attacker"
 const TYPES: Array[String] = [
 	PACK_TACTICS,
 	BONUS_DAMAGE,
@@ -41,6 +43,7 @@ const TYPES: Array[String] = [
 	HP_PER_LEVEL,
 	UNARMORED_DEFENSE,
 	HEAL_BONUS,
+	SAVAGE_ATTACKER,
 ]
 
 const WHEN_ALWAYS := ""

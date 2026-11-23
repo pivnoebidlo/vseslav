@@ -102,6 +102,12 @@
                   "items": {
                     "$ref": "common.schema.json#/$defs/trait"
                   }
+                },
+                "choice": {
+                  "enum": [
+                    "feat"
+                  ],
+                  "description": "Выбор при повышении (ADR-0044): feat — «Увеличение характеристик» или черта."
                 }
               },
               "additionalProperties": false

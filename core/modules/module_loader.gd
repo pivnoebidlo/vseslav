@@ -16,6 +16,7 @@ const RULES_FILES: Array[String] = RulesDb.FILES
 const FIXED_FILES: Dictionary[String, String] = {
 	"module.json": "module.schema.json",
 	"merchants.json": "merchants.schema.json",
+	"world/world.json": "world.schema.json",
 	"models/models.json": "models.schema.json",
 	"props/props.json": "props.schema.json",
 	"surfaces/surfaces.json": "surfaces.schema.json",
@@ -342,6 +343,9 @@ func _add_entries(
 			var strings: Dictionary = content.locales.get(lang, {})
 			strings.merge(data, true)
 			content.locales[lang] = strings
+		elif rel == "world/world.json":
+			if owners.claim("world", "world", errs):
+				content.world = data
 		elif rel == "merchants.json":
 			for raw: Variant in JsonRead.get_array(data, "merchants"):
 				var m: Dictionary = raw

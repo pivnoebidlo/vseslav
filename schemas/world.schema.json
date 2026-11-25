@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "world.schema.json",
+  "title": "Глобальная карта (world/world.json, ADR-0051)",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Комментарий автора, игрой не читается."
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name_key": {
+            "$ref": "common.schema.json#/$defs/locale_key"
+          },
+          "area": {
+            "$ref": "common.schema.json#/$defs/id",
+            "description": "Область, где стоит город (areas/<id>.json)."
+          },
+          "spawn": {
+            "$ref": "common.schema.json#/$defs/id",
+            "description": "Точка появления в этой области, куда приходит отряд."
+          },
+          "at": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Место на схеме карты [x, y] от 0 до 1000; только для показа."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name_key",
+          "area",
+          "spawn",
+          "at"
+        ]
+      },
+      "minItems": 1
+    },
+    "roads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "to": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60,
+            "description": "Дней пути в одну сторону."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to",
+          "days"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "nodes",
+    "roads"
+  ]
+}

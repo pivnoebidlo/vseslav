@@ -17,6 +17,8 @@ var dialogs: Dictionary[String, Dictionary] = {}
 ## Квесты по id (ADR-0034).
 var quests: Dictionary[String, Dictionary] = {}
 var merchants: Dictionary[String, Dictionary] = {}
+## Глобальная карта — сырые данные world/world.json (ADR-0051); пусто — карты нет.
+var world: Dictionary = {}
 ## Облик участников из models/models.json: id → описание.
 var figures: Dictionary[String, Dictionary] = {}
 ## Папка models/ модуля, откуда взято описание облика.
@@ -40,6 +42,13 @@ func merchants_data() -> Dictionary:
 	for id in ids:
 		list.append(merchants[id])
 	return {"merchants": list}
+
+
+## Глобальная карта (ADR-0051); null — карты в модулях нет. Ошибки графа — в [param errors].
+func world_map(errors: Array[String]) -> WorldMap:
+	if world.is_empty():
+		return null
+	return WorldMap.from_dict(world, errors)
 
 
 ## Начало игры — "start" последнего загруженного модуля, где оно есть:

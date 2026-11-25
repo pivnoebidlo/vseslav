@@ -30,6 +30,7 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	for id in dialog_ids:
 		_check_dialog(content, content.dialogs[id], "dialogs/%s.json" % id, errors)
 	_check_start(content, errors)
+	_check_world(content, errors)
 	_check_name_keys(content, errors)
 
 
@@ -309,6 +310,25 @@ static func _check_start(content: ModuleContent, errors: Array[String]) -> void:
 		for who in JsonRead.get_str_array(m.start, "party"):
 			if content.rules != null and not content.rules.characters.has(who):
 				errors.append("module.json: $.start.party: unknown character '%s'" % who)
+
+
+## Глобальная карта (ADR-0051): граф из world.json и существующие области и точки
+## появления у городов.
+static func _check_world(content: ModuleContent, errors: Array[String]) -> void:
+	var graph_errors: Array[String] = []
+	var map := content.world_map(graph_errors)
+	for e in graph_errors:
+		errors.append("world/world.json: " + e)
+	if map == null:
+		return
+	for id in map.sorted_ids():
+		var city := map.city(id)
+		var where := "world/world.json: city '%s'" % id
+		var area := content.area(city.area)
+		if area == null:
+			errors.append("%s: unknown area '%s'" % [where, city.area])
+		elif not area.spawns.has(city.spawn):
+			errors.append("%s: no spawn '%s' in %s" % [where, city.spawn, city.area])
 
 
 static func _check_props(content: ModuleContent, errors: Array[String]) -> void:

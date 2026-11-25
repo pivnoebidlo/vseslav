@@ -155,3 +155,37 @@ func test_area_events_from_the_editor_load_in_the_game() -> void:
 	assert_eq(area.events.size(), 2)
 	assert_eq(area.events[0].on, AreaMap.AreaEvent.ON_ENTER_ZONE)
 	assert_eq(area.events[1].on, AreaMap.AreaEvent.ON_ENTER_AREA)
+
+
+func test_triggers_from_the_editor_load_in_the_game() -> void:
+	var doc := _doc()
+	var undo := UndoStack.new()
+	undo.push(doc, AreaOps.new_area(doc, "les", "Лес", Vector2i(12, 8)))
+	undo.push(doc, AreaOps.add_trigger(doc, "les", "grove", Rect2i(3, 2, 4, 3)))
+	undo.push(doc, AreaOps.add_event(doc, "les", "omen", Rect2i()))
+	var list := AreaOps.list_of(doc, "les", "events")
+	var ev: Dictionary = list[0]
+	ev["on"] = "trigger_entered"
+	ev["source"] = "grove"
+	ev["then"] = [{"action": "set_flag", "flag": "omen_seen"}]
+	undo.push(doc, AreaOps.set_field(doc, "les", "events", list))
+	var errors: Array[String] = []
+	doc.save(errors)
+	var content := ModuleLoader.load_all(["res://modules", ModuleFixture.ROOT] as Array[String])
+	var mine: Array[String] = []
+	for err in content.errors:
+		if err.contains("t.map"):
+			mine.append(err)
+	assert_eq(mine, [] as Array[String], "module loads with the trigger event")
+	var area := content.area("les")
+	assert_eq(area.triggers.size(), 1)
+	assert_eq(area.triggers[0].id, "grove")
+	assert_eq(area.triggers[0].zone, Rect2i(Vector2i(3, 2), Vector2i(4, 3)))
+	var flags := WorldFlags.new()
+	var due := AreaEvents.due(area, "trigger_entered", Vector2i(4, 3), flags)
+	assert_eq(due.size(), 1, "the game fires the editor-made trigger event")
+	assert_eq(due[0].source, "grove")
+	AreaEvents.fire(
+		area, due[0], EventContext.new(flags, Party.from_db(content.rules), content.rules)
+	)
+	assert_eq(str(flags.get_flag("omen_seen")), "true")

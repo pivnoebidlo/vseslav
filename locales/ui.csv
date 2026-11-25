@@ -515,12 +515,20 @@ UI_MAP_EVENT,Событие,Event
 UI_MAP_EVENT_ON,Когда:,When:
 UI_MAP_EVENT_ENTER_AREA,при входе в область,on entering the area
 UI_MAP_EVENT_ENTER_ZONE,при входе в зону,on entering the zone
+UI_MAP_EVENT_TRIGGER_ENTERED,по триггеру,on trigger
 UI_MAP_EVENT_ONCE,Один раз,Once
 UI_MAP_EVENT_IF,Если:,If:
 UI_MAP_EVENT_THEN,Тогда:,Then:
+UI_MAP_EVENT_SOURCE,Триггер:,Trigger:
 UI_MAP_EVENTS,События области,Area events
 UI_MAP_EVENTS_HINT,Пока нет. «Событие» на панели — зона на карте; кнопка ниже — при входе в область.,None yet. The Event tool places a zone; the button below adds one on entering the area.
 UI_MAP_ADD_AREA_EVENT,+ событие при входе в область,+ event on entering the area
+UI_MAP_TOOL_TRIGGER,Триггер,Trigger
+UI_MAP_NEW_TRIGGER,Новый триггер,New trigger
+UI_MAP_TRIGGER,Триггер,Trigger
+UI_MAP_TRIGGER_HINT,На зону ссылаются события «по триггеру».,Events with "on trigger" reference this zone.
+UI_MAP_TRIGGERS,Триггеры области,Area triggers
+UI_MAP_TRIGGERS_HINT,Пока нет. Инструмент «Триггер» ставит именованную зону на карте.,None yet. The Trigger tool places a named zone on the map.
 UI_ED_NPC_IF,Когда на месте:,Present when:
 UI_SIDE_HERO,Герой,Hero
 UI_HERO_LINE,"{class} · {level} уровень · {origin}","{class} · level {level} · {origin}"

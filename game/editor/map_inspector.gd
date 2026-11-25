@@ -62,6 +62,8 @@ func show_selection(
 			_encounter(index)
 		MapCanvas.KIND_EVENT:
 			_event(index)
+		MapCanvas.KIND_TRIGGER:
+			_trigger(index)
 		MapCanvas.KIND_NPC:
 			_box.add_child(_heading(tr("UI_MAP_NPC_HINT")))
 		_:
@@ -379,15 +381,22 @@ func _event(index: int) -> void:
 	if e.is_empty():
 		return
 	_header(tr("UI_MAP_EVENT") + " " + JsonRead.get_str(e, "id"), MapCanvas.KIND_EVENT, index)
-	var kinds: Array[String] = ["enter_area", "enter_zone"]
+	var kinds: Array[String] = ["enter_area", "enter_zone", "trigger_entered"]
 	var on := JsonRead.get_str(e, "on", "enter_area")
+	var trigger_ids := _trigger_ids()
 	var set_on := func(v: String) -> void:
 		var changed := e.duplicate(true)
 		changed["on"] = v
 		if v == "enter_zone" and not changed.has("zone"):
 			changed["zone"] = [0, 0, 4, 4]
-		elif v == "enter_area":
+		if v != "enter_zone":
 			changed.erase("zone")
+		if v == "trigger_entered":
+			var source := JsonRead.get_str(changed, "source")
+			if source == "" or not trigger_ids.has(source):
+				changed["source"] = trigger_ids[0] if not trigger_ids.is_empty() else ""
+		else:
+			changed.erase("source")
 		_put(MapCanvas.KIND_EVENT, index, changed)
 	_box.add_child(_pick(tr("UI_MAP_EVENT_ON"), kinds, on, set_on))
 	if on == "enter_zone":
@@ -398,6 +407,20 @@ func _event(index: int) -> void:
 			_set_field(MapCanvas.KIND_EVENT, index, "zone", [r.position.x, r.position.y, v.x, v.y])
 		_box.add_child(_cell_row(tr("UI_ED_CELL"), r.position, move))
 		_box.add_child(_cell_row(tr("UI_MAP_SIZE"), r.size, grow, 1, AreaOps.MAX_SIDE))
+	if on == "trigger_entered":
+		if trigger_ids.is_empty():
+			_box.add_child(_caption(tr("UI_MAP_TRIGGERS_HINT")))
+		else:
+			var set_source := func(v: String) -> void:
+				_set_field(MapCanvas.KIND_EVENT, index, "source", v)
+			_box.add_child(
+				_pick(
+					tr("UI_MAP_EVENT_SOURCE"),
+					trigger_ids,
+					JsonRead.get_str(e, "source"),
+					set_source
+				)
+			)
 	var once := CheckBox.new()
 	once.text = tr("UI_MAP_EVENT_ONCE")
 	once.button_pressed = JsonRead.get_bool(e, "once", true)
@@ -425,6 +448,30 @@ func _put_then(index: int, list: Array) -> void:
 	var e := _entry(MapCanvas.KIND_EVENT, index)
 	e["then"] = list
 	_put(MapCanvas.KIND_EVENT, index, e)
+
+
+func _trigger(index: int) -> void:
+	var t := _entry(MapCanvas.KIND_TRIGGER, index)
+	if t.is_empty():
+		return
+	_header(tr("UI_MAP_TRIGGER") + " " + JsonRead.get_str(t, "id"), MapCanvas.KIND_TRIGGER, index)
+	_box.add_child(_caption(tr("UI_MAP_TRIGGER_HINT")))
+	var r := Encounter.rect_of(JsonRead.get_array(t, "zone"))
+	var move := func(v: Vector2i) -> void:
+		_set_field(MapCanvas.KIND_TRIGGER, index, "zone", [v.x, v.y, r.size.x, r.size.y])
+	var grow := func(v: Vector2i) -> void:
+		_set_field(MapCanvas.KIND_TRIGGER, index, "zone", [r.position.x, r.position.y, v.x, v.y])
+	_box.add_child(_cell_row(tr("UI_ED_CELL"), r.position, move))
+	_box.add_child(_cell_row(tr("UI_MAP_SIZE"), r.size, grow, 1, AreaOps.MAX_SIDE))
+
+
+## id триггеров области — для выбора источника у события.
+func _trigger_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for raw: Variant in AreaOps.list_of(_doc, _area, MapCanvas.KIND_TRIGGER):
+		var t: Dictionary = raw
+		ids.append(JsonRead.get_str(t, "id"))
+	return ids
 
 
 func _settings() -> void:
@@ -493,6 +540,14 @@ func _settings() -> void:
 			var id := "event_%d" % (events.size() + 1)
 			edited.emit(AreaOps.add_event(_doc, _area, id, Rect2i()))
 		_box.add_child(_small(tr("UI_MAP_ADD_AREA_EVENT"), add_area_event))
+	_box.add_child(_heading(tr("UI_MAP_TRIGGERS")))
+	var triggers := AreaOps.list_of(_doc, _area, MapCanvas.KIND_TRIGGER)
+	if triggers.is_empty():
+		_box.add_child(_caption(tr("UI_MAP_TRIGGERS_HINT")))
+	for i in triggers.size():
+		var t: Dictionary = triggers[i]
+		var pick_trigger := func() -> void: select_requested.emit(MapCanvas.KIND_TRIGGER, i)
+		_box.add_child(_small(JsonRead.get_str(t, "id"), pick_trigger))
 	_box.add_child(_heading(tr("UI_MAP_STYLE")))
 	_box.add_child(_caption(tr("UI_MAP_STYLE_HINT")))
 	var style := AreaOps.dict_of(_doc, _area, "style")

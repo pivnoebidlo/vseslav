@@ -1,6 +1,6 @@
 # Техническое задание: Vseslav (рабочее название)
 
-Статус: **черновик v0.3** · Обновлено: 2026-11-22
+Статус: **черновик v0.4** · Обновлено: 2026-11-25
 
 Этот документ описывает, *как* мы строим игру. *Что за игра* (сеттинг, тон, классы, бестиарий) — в [GAME_DESIGN](GAME_DESIGN.md).
 
@@ -174,7 +174,7 @@ tests/     unit (core), integration (загрузка модулей, сохра
 - Каждый тип файла имеет JSON Schema в `schemas/`; модуль валидируется при загрузке и при сохранении в редакторе. Валидатор — свой, подмножество JSON Schema 2020-12 ([ADR-0028](adr/0028-module-loader-and-schemas.md)).
 - Модули ищутся в `res://modules` и `user://modules`; зависимости загружаются раньше. Запись модуля с тем же id, что у записи его зависимости, целиком её заменяет; совпадение id с независимым модулем — ошибка.
 - Модуль с любой ошибкой (схема, ссылка, лишний файл, несовместимая версия) не загружается вместе с зависящими от него; игрок видит ошибки с файлом и путём внутри JSON.
-- Сейчас в формате: `module.json` (с `start`), `rules/*.json`, `areas/*.json`, `dialogs/*.json` ([ADR-0029](adr/0029-exploration-sketch.md)), `merchants.json`, `models/models.json`, `props/props.json` (модели окружения, [ADR-0033](adr/0033-environment-props.md)), `surfaces/surfaces.json` (текстуры земли, дорог, стен и обрывов, [ADR-0036](adr/0036-surfaces-and-lighting.md)), рельеф областей `heights` ([ADR-0037](adr/0037-heights.md)), `quests/*.json`, `locales/*.json`; в области — выходы, сундуки, помещения ([ADR-0034](adr/0034-areas-exits-quests.md)); декларативные события — со своим пунктом этапа 2.
+- Сейчас в формате: `module.json` (с `start`), `rules/*.json`, `areas/*.json`, `dialogs/*.json` ([ADR-0029](adr/0029-exploration-sketch.md)), `merchants.json`, `models/models.json`, `props/props.json` (модели окружения, [ADR-0033](adr/0033-environment-props.md)), `surfaces/surfaces.json` (текстуры земли, дорог, стен и обрывов, [ADR-0036](adr/0036-surfaces-and-lighting.md)), рельеф областей `heights` ([ADR-0037](adr/0037-heights.md)), `quests/*.json`, `locales/*.json`; в области — выходы, сундуки, помещения ([ADR-0034](adr/0034-areas-exits-quests.md)), именованные триггеры и события `trigger_entered` ([ADR-0048](adr/0048-area-triggers.md)); декларативные события — со своим пунктом этапа 2.
 - Версии: semver для модуля, `format` для структуры пакета, `api_version` для событий (и будущего Lua API).
 - Импорт zip: проверка путей (zip-slip), лимиты на число и размер файлов, распаковка в `user://modules/<id>/<version>/`.
 
@@ -200,7 +200,7 @@ tests/     unit (core), integration (загрузка модулей, сохра
 ```
 
 - Типы триггеров (`on`), условий и действий — закрытый список, каждый описан в схеме и документации API; расширение списка — через изменение кода игры и повышение `api_version`.
-- Сейчас ([ADR-0042](adr/0042-events-v1.md), справочник — [docs/events.md](events.md)): действия `set_flag`, `set_quest`, `give_item`, `take_item`, `give_money`, `give_xp`, `join_party`, `leave_party`, `message`, `start_dialog`, `start_combat`, `teleport` — в диалогах, победах, сундуках и событиях области (`enter_area`, `enter_zone`); условия — флаги; состав отряда — `Party.members`, начальный — `start.party`.
+- Сейчас ([ADR-0042](adr/0042-events-v1.md), справочник — [docs/events.md](events.md)): действия `set_flag`, `set_quest`, `give_item`, `take_item`, `give_money`, `give_xp`, `join_party`, `leave_party`, `message`, `start_dialog`, `start_combat`, `teleport` — в диалогах, победах, сундуках и событиях области (`enter_area`, `enter_zone`, `trigger_entered` — вход в именованный триггер, [ADR-0048](adr/0048-area-triggers.md)); условия — флаги; состав отряда — `Party.members`, начальный — `start.party`.
 - Начальный набор действий: флаги/переменные, диалоги, квесты/журнал, выдача/удаление предметов, опыт, перемещение/телепорт, появление/удаление существ, начало боя, смена отношения фракции, открыть/закрыть/заблокировать, сообщение/звук.
 
 **Версия 2 (отдельный этап): Lua 5.4 в песочнице.** Требования, которые фиксируем уже сейчас, чтобы формат был готов:

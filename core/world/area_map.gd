@@ -31,15 +31,25 @@ class Npc:
 	var conditions: Array = []
 
 
-## Событие области (ADR-0042): при входе в область или в зону, с условиями;
+## Именованная зона-триггер (SPEC §8): событие trigger_entered ссылается на неё по id.
+class Trigger:
+	extends RefCounted
+	var id: String = ""
+	var zone: Rect2i = Rect2i()
+
+
+## Событие области (ADR-0042): при входе в область, в зону или в триггер, с условиями;
 ## по умолчанию срабатывает один раз (флаг event.<область>.<id>).
 class AreaEvent:
 	extends RefCounted
 	const ON_ENTER_AREA := "enter_area"
 	const ON_ENTER_ZONE := "enter_zone"
+	const ON_TRIGGER_ENTERED := "trigger_entered"
 	var id: String = ""
 	var on: String = ON_ENTER_AREA
 	var zone: Rect2i = Rect2i()
+	## Для trigger_entered: id триггера этой области.
+	var source: String = ""
 	var conditions: Array = []
 	var actions: Array = []
 	var once: bool = true
@@ -75,6 +85,8 @@ var grid: BattleGrid = BattleGrid.new()
 var spawns: Dictionary[String, Vector2i] = {}
 var npcs: Array[Npc] = []
 var events: Array[AreaEvent] = []
+## Именованные зоны-триггеры (SPEC §8): на них ссылается source событий.
+var triggers: Array[Trigger] = []
 var encounters: Array[Encounter] = []
 ## Выходы в другие области (ADR-0034): клетка → область и точка появления.
 var exits: Array[Exit] = []
@@ -136,10 +148,17 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		ev.id = JsonRead.get_str(d, "id")
 		ev.on = JsonRead.get_str(d, "on", AreaEvent.ON_ENTER_AREA)
 		ev.zone = Encounter.rect_of(JsonRead.get_array(d, "zone"))
+		ev.source = JsonRead.get_str(d, "source")
 		ev.conditions = JsonRead.get_array(d, "if")
 		ev.actions = JsonRead.get_array(d, "then")
 		ev.once = JsonRead.get_bool(d, "once", true)
 		a.events.append(ev)
+	for raw: Variant in JsonRead.get_array(data, "triggers"):
+		var d: Dictionary = raw
+		var t := Trigger.new()
+		t.id = JsonRead.get_str(d, "id")
+		t.zone = Encounter.rect_of(JsonRead.get_array(d, "zone"))
+		a.triggers.append(t)
 	a.style = JsonRead.get_dict(data, "style")
 	a.surfaces = JsonRead.get_dict(data, "surfaces")
 	a.interior = JsonRead.get_bool(data, "interior")
@@ -193,6 +212,13 @@ func get_encounter(encounter_id: String) -> Encounter:
 	for e in encounters:
 		if e.id == encounter_id:
 			return e
+	return null
+
+
+func get_trigger(trigger_id: String) -> Trigger:
+	for t in triggers:
+		if t.id == trigger_id:
+			return t
 	return null
 
 

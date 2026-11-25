@@ -336,3 +336,37 @@ func test_event_action_refs_are_checked() -> void:
 	assert_true(_has_error(content, at + "unknown encounter 'ghosts'"))
 	assert_true(_has_error(content, at + "no spawn 'moon' in pole"))
 	assert_true(_has_error(content, "areas/pole.json: $.events[0].zone: must be inside the map"))
+
+
+func test_trigger_refs_are_checked() -> void:
+	var area := {
+		"title_key": "t.area",
+		"map": ["....", "...."],
+		"spawns": {"start": [0, 0]},
+		"triggers":
+		[
+			{"id": "gate", "zone": [1, 0, 2, 2]},
+			{"id": "gate", "zone": [9, 9, 2, 2]},
+		],
+		"events":
+		[
+			{
+				"id": "intro",
+				"on": "trigger_entered",
+				"source": "gate_missing",
+				"then": [{"action": "message", "text": "t.area"}]
+			}
+		],
+	}
+	var files := {
+		"areas/pole.json": area,
+		"locales/ru.json": _strings(["t.trig.title", "t.area"]),
+	}
+	ModuleFixture.write("t.trig", ["vseslav.base"] as Array[String], files)
+	var roots: Array[String] = ["res://modules", ModuleFixture.ROOT]
+	var content := ModuleLoader.load_all(roots)
+	assert_true(
+		_has_error(content, "areas/pole.json: $.events[0].source: unknown trigger 'gate_missing'")
+	)
+	assert_true(_has_error(content, "areas/pole.json: $.triggers[1]: duplicate trigger id 'gate'"))
+	assert_true(_has_error(content, "areas/pole.json: $.triggers[1].zone: must be inside the map"))

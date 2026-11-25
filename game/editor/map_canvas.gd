@@ -17,7 +17,9 @@ const KIND_SPAWN := "spawns"
 const KIND_NPC := "npcs"
 const KIND_ENCOUNTER := "encounters"
 const KIND_EVENT := "events"
+const KIND_TRIGGER := "triggers"
 const EVENT_COLOR := Color(0.75, 0.45, 1.0)
+const TRIGGER_COLOR := Color(0.35, 0.9, 0.8)
 const MIN_ZOOM := 3.0
 const MAX_ZOOM := 40.0
 const GRID_FROM_ZOOM := 10.0
@@ -196,7 +198,7 @@ func _entity_at(cell: Vector2i) -> Array:
 	for i in names.size():
 		if JsonRead.to_vec2i(spawns[names[i]]) == cell:
 			return [KIND_SPAWN, i]
-	for kind: String in [KIND_EVENT, KIND_ENCOUNTER]:
+	for kind: String in [KIND_EVENT, KIND_ENCOUNTER, KIND_TRIGGER]:
 		var list := JsonRead.get_array(_data, kind)
 		for i in list.size():
 			var e: Dictionary = list[i]
@@ -216,7 +218,7 @@ func _entity_cell(kind: String, index: int) -> Vector2i:
 	if index < 0 or index >= list.size():
 		return Vector2i(-1, -1)
 	var e: Dictionary = list[index]
-	if kind == KIND_ENCOUNTER or kind == KIND_EVENT:
+	if kind == KIND_ENCOUNTER or kind == KIND_EVENT or kind == KIND_TRIGGER:
 		return Encounter.rect_of(JsonRead.get_array(e, "zone")).position
 	return JsonRead.to_vec2i(e.get("at", [0, 0]))
 
@@ -241,6 +243,7 @@ func _draw() -> void:
 		_draw_grid()
 	_draw_encounters()
 	_draw_events()
+	_draw_triggers()
 	_draw_list(KIND_OBJECT, Color(0.85, 0.85, 0.95, 0.9))
 	_draw_list(KIND_EXIT, Color(1.0, 0.8, 0.3))
 	_draw_list(KIND_CHEST, Color(0.95, 0.6, 0.25))
@@ -320,6 +323,28 @@ func _draw_events() -> void:
 				get_theme_default_font(),
 				rect.position + Vector2(2, 12),
 				JsonRead.get_str(e, "id"),
+				0,
+				-1,
+				11,
+				color
+			)
+
+
+func _draw_triggers() -> void:
+	var list := JsonRead.get_array(_data, KIND_TRIGGER)
+	for i in list.size():
+		var t: Dictionary = list[i]
+		var zone := Encounter.rect_of(JsonRead.get_array(t, "zone"))
+		var picked := selected_kind == KIND_TRIGGER and i == selected_index
+		var color := SELECT_COLOR if picked else TRIGGER_COLOR
+		var rect := _cell_rect(zone.position, zone.size)
+		draw_rect(rect, Color(color, 0.12))
+		draw_rect(rect, color, false, 2.0)
+		if zoom >= GRID_FROM_ZOOM:
+			draw_string(
+				get_theme_default_font(),
+				rect.position + Vector2(2, rect.size.y - 4),
+				JsonRead.get_str(t, "id"),
 				0,
 				-1,
 				11,

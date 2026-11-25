@@ -1,6 +1,7 @@
 extends GutTest
 ## События v1 (ADR-0042): действия с вещами, деньгами и составом отряда, запросы
-## к игре, события области (вход в область и в зону, однократность), жители по условию.
+## к игре, события области (вход в область, в зону и в триггер, однократность),
+## жители по условию.
 
 var _db: RulesDb
 
@@ -134,8 +135,28 @@ func _area() -> AreaMap:
 						"zone": [4, 0, 2, 3],
 						"once": false,
 						"then": [{"action": "set_flag", "flag": "drank"}]
+					},
+					{
+						"id": "omen",
+						"on": "trigger_entered",
+						"source": "grove",
+						"then": [{"action": "set_flag", "flag": "heard_omen"}]
+					},
+					{
+						"id": "grove_echo",
+						"on": "trigger_entered",
+						"source": "grove",
+						"once": false,
+						"then": [{"action": "message", "text": "M2"}]
+					},
+					{
+						"id": "broken",
+						"on": "trigger_entered",
+						"source": "no_such",
+						"then": [{"action": "message", "text": "M3"}]
 					}
 				],
+				"triggers": [{"id": "grove", "zone": [1, 0, 2, 2]}],
 			}
 		)
 	)
@@ -156,6 +177,24 @@ func test_area_events_fire_once_by_zone_and_condition() -> void:
 	assert_eq(AreaEvents.due(area, "enter_zone", Vector2i(4, 1), ctx.flags).size(), 1, "repeats")
 	ctx.flags.set_flag("warned", true)
 	assert_eq(AreaEvents.due(area, "enter_zone", Vector2i(5, 2), ctx.flags).size(), 2)
+
+
+func test_trigger_events_fire_when_the_leader_enters() -> void:
+	var area := _area()
+	var ctx := _ctx()
+	assert_eq(
+		AreaEvents.due(area, "trigger_entered", Vector2i(4, 1), ctx.flags).size(), 0, "outside"
+	)
+	var due := AreaEvents.due(area, "trigger_entered", Vector2i(1, 0), ctx.flags)
+	assert_eq(due.size(), 2, "two events share the trigger; broken source is skipped")
+	assert_eq(due[0].id, "omen")
+	assert_eq(due[1].id, "grove_echo")
+	AreaEvents.fire(area, due[0], ctx)
+	assert_eq(str(ctx.flags.get_flag("heard_omen")), "true")
+	var again := AreaEvents.due(area, "trigger_entered", Vector2i(2, 1), ctx.flags)
+	assert_eq(again.size(), 1, "once is done, the echo repeats")
+	assert_eq(again[0].id, "grove_echo")
+	assert_eq(area.get_trigger("grove").zone, Rect2i(Vector2i(1, 0), Vector2i(2, 2)))
 
 
 func test_npcs_present_by_condition() -> void:

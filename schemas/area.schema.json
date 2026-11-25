@@ -343,6 +343,33 @@
       },
       "description": "Модели в заданных клетках; проходимость по-прежнему задаёт карта."
     },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "zone": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "[x, z, ширина, глубина] в клетках области."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "zone"
+        ]
+      },
+      "description": "Именованные зоны-триггеры (SPEC §8): события trigger_entered ссылаются на них по source."
+    },
     "events": {
       "type": "array",
       "items": {
@@ -354,7 +381,8 @@
           "on": {
             "enum": [
               "enter_area",
-              "enter_zone"
+              "enter_zone",
+              "trigger_entered"
             ]
           },
           "zone": {
@@ -366,6 +394,10 @@
             "minItems": 4,
             "maxItems": 4,
             "description": "[x, z, ширина, глубина] — для enter_zone."
+          },
+          "source": {
+            "$ref": "common.schema.json#/$defs/id",
+            "description": "Для trigger_entered: id триггера этой области."
           },
           "if": {
             "$ref": "common.schema.json#/$defs/flag_conditions"
@@ -385,7 +417,7 @@
           "then"
         ]
       },
-      "description": "События области (ADR-0042): при входе в область или в зону."
+      "description": "События области (ADR-0042): при входе в область, в зону или в триггер (SPEC §8)."
     }
   },
   "additionalProperties": false,

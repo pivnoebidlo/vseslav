@@ -221,6 +221,23 @@ static func add_event(doc: ModuleDoc, area_id: String, event_id: String, zone: R
 	return set_field(doc, area_id, "events", list)
 
 
+## Триггер (SPEC §8): именованная зона, на неё ссылается событие trigger_entered.
+static func add_trigger(
+	doc: ModuleDoc, area_id: String, trigger_id: String, zone: Rect2i
+) -> DocEdit:
+	var list := list_of(doc, area_id, "triggers")
+	(
+		list
+		. append(
+			{
+				"id": trigger_id,
+				"zone": [zone.position.x, zone.position.y, zone.size.x, zone.size.y],
+			}
+		)
+	)
+	return set_field(doc, area_id, "triggers", list)
+
+
 ## Клетки кисти: квадрат со стороной [param size] с центром в [param center].
 static func brush(center: Vector2i, size: int) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []

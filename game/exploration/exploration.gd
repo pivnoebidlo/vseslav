@@ -674,6 +674,7 @@ func _check_encounters() -> void:
 		return
 	_hero_cells = cells
 	_fire_events(AreaMap.AreaEvent.ON_ENTER_ZONE, _leader_cell())
+	_fire_events(AreaMap.AreaEvent.ON_TRIGGER_ENTERED, _leader_cell())
 	if _in_combat():
 		return
 	for e in _area.encounters:

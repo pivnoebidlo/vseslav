@@ -9,8 +9,9 @@ static func fired_flag(area_id: String, event_id: String) -> String:
 	return "event.%s.%s" % [area_id, event_id]
 
 
-## События [param on] (enter_area или enter_zone), условия которых выполнены, а
-## однократные ещё не срабатывали. Для зон — если [param cell] внутри зоны.
+## События [param on] (enter_area, enter_zone или trigger_entered), условия которых
+## выполнены, а однократные ещё не срабатывали. Для зон — если [param cell] внутри
+## зоны события; для триггеров — внутри зоны триггера [member AreaMap.AreaEvent.source].
 ## Порядок — как в файле области.
 static func due(
 	area: AreaMap, on: String, cell: Vector2i, flags: WorldFlags
@@ -21,6 +22,10 @@ static func due(
 			continue
 		if on == AreaMap.AreaEvent.ON_ENTER_ZONE and not ev.zone.has_point(cell):
 			continue
+		if on == AreaMap.AreaEvent.ON_TRIGGER_ENTERED:
+			var trigger := area.get_trigger(ev.source)
+			if trigger == null or not trigger.zone.has_point(cell):
+				continue
 		if ev.once and flags.get_flag(fired_flag(area.id, ev.id)) == true:
 			continue
 		if not flags.all_match(ev.conditions):

@@ -16,6 +16,7 @@ const TOOL_CHEST := "chest"
 const TOOL_SPAWN := "spawn"
 const TOOL_ENCOUNTER := "encounter"
 const TOOL_EVENT := "event"
+const TOOL_TRIGGER := "trigger"
 const EVENT_ZONE := 4
 const TOOLS: Array[String] = [
 	TOOL_SELECT,
@@ -27,6 +28,7 @@ const TOOLS: Array[String] = [
 	TOOL_SPAWN,
 	TOOL_ENCOUNTER,
 	TOOL_EVENT,
+	TOOL_TRIGGER,
 ]
 const TILES: Array[String] = [".", ",", "#", "T", "=", "+"]
 const ROTATIONS: Array[int] = [0, 90, 180, 270]
@@ -246,6 +248,8 @@ func _on_click(cell: Vector2i) -> void:
 			_ask_and_add(MapCanvas.KIND_ENCOUNTER, "UI_MAP_NEW_ENCOUNTER", cell)
 		TOOL_EVENT:
 			_ask_and_add(MapCanvas.KIND_EVENT, "UI_MAP_NEW_EVENT", cell)
+		TOOL_TRIGGER:
+			_ask_and_add(MapCanvas.KIND_TRIGGER, "UI_MAP_NEW_TRIGGER", cell)
 		_:
 			_show_inspector()
 
@@ -275,10 +279,17 @@ func _ask_and_add(kind: String, title_key: String, cell: Vector2i) -> void:
 				var h := EVENT_ZONE / 2
 				var r := Rect2i(cell - Vector2i(h, h), Vector2i(EVENT_ZONE, EVENT_ZONE))
 				edited.emit(AreaOps.add_event(_doc, _area, id, _clip(r)))
+			MapCanvas.KIND_TRIGGER:
+				var h := EVENT_ZONE / 2
+				var r := Rect2i(cell - Vector2i(h, h), Vector2i(EVENT_ZONE, EVENT_ZONE))
+				edited.emit(AreaOps.add_trigger(_doc, _area, id, _clip(r)))
 		_select_new(kind)
 	var taken := func(id: String) -> bool: return _id_taken(kind, id)
 	var nameless: Array[String] = [
-		MapCanvas.KIND_SPAWN, MapCanvas.KIND_ENCOUNTER, MapCanvas.KIND_EVENT
+		MapCanvas.KIND_SPAWN,
+		MapCanvas.KIND_ENCOUNTER,
+		MapCanvas.KIND_EVENT,
+		MapCanvas.KIND_TRIGGER,
 	]
 	var hint := "" if nameless.has(kind) else tr("UI_ED_NAME_RU")
 	ask_id.call(tr(title_key), hint, add, taken)
@@ -325,6 +336,9 @@ func _on_drag(kind: String, index: int, to: Vector2i) -> void:
 	if kind == MapCanvas.KIND_EVENT:
 		var ezone := Encounter.rect_of(JsonRead.get_array(e, "zone"))
 		e["zone"] = _moved_rect(JsonRead.get_array(e, "zone"), to - ezone.position)
+	elif kind == MapCanvas.KIND_TRIGGER:
+		var tzone := Encounter.rect_of(JsonRead.get_array(e, "zone"))
+		e["zone"] = _moved_rect(JsonRead.get_array(e, "zone"), to - tzone.position)
 	elif kind == MapCanvas.KIND_ENCOUNTER:
 		var zone := Encounter.rect_of(JsonRead.get_array(e, "zone"))
 		var shift := to - zone.position

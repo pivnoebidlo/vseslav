@@ -55,6 +55,7 @@ static func _check_area(content: ModuleContent, id: String, errors: Array[String
 	_check_area_props(content, area, where, errors)
 	_check_exits(content, area, where, errors)
 	_check_chests(content, area, where, errors)
+	_check_triggers(area, where, errors)
 	for i in area.encounters.size():
 		_check_encounter(
 			content, area, area.encounters[i], "%s: $.encounters[%d]" % [where, i], errors
@@ -137,6 +138,22 @@ static func _check_chests(
 		var map := Rect2i(0, 0, area.width(), area.depth())
 		if ev.on == AreaMap.AreaEvent.ON_ENTER_ZONE and not map.encloses(ev.zone):
 			errors.append("%s: $.events[%d].zone: must be inside the map" % [where, i])
+		if ev.on == AreaMap.AreaEvent.ON_TRIGGER_ENTERED and area.get_trigger(ev.source) == null:
+			errors.append("%s: $.events[%d].source: unknown trigger '%s'" % [where, i, ev.source])
+
+
+## Триггеры (SPEC §8): id уникальны, зоны внутри карты.
+static func _check_triggers(area: AreaMap, where: String, errors: Array[String]) -> void:
+	var seen: Array[String] = []
+	var map := Rect2i(0, 0, area.width(), area.depth())
+	for i in area.triggers.size():
+		var t := area.triggers[i]
+		var at := "%s: $.triggers[%d]" % [where, i]
+		if seen.has(t.id):
+			errors.append("%s: duplicate trigger id '%s'" % [at, t.id])
+		seen.append(t.id)
+		if not map.encloses(t.zone):
+			errors.append("%s.zone: must be inside the map" % at)
 
 
 ## Ссылки действий (ADR-0034, ADR-0042): квест и стадия, предмет, персонаж, диалог,

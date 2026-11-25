@@ -463,7 +463,7 @@ func _arrived() -> void:
 		return
 	_set_hovered("")
 	_path_preview.clear()
-	_talk(npc.dialog, tr(npc.name_key), npc_id if _screens.market.order.has(npc_id) else "")
+	_talk(npc.dialog, tr(npc.name_key), npc.id if npc.merchant else "")
 
 
 ## Разговор: контекст событий (ADR-0042); [param merchant_id] — купец, кнопка «Торг» (ADR-0049).

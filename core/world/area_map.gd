@@ -26,6 +26,9 @@ class Npc:
 	## Облик — id из models/models.json.
 	var look: String = ""
 	var dialog: String = ""
+	## Торговец (ADR-0050): нужна запись с тем же id в merchants.json;
+	## у такого жителя в разговоре есть кнопка «Торг».
+	var merchant := false
 	## Когда житель на месте (флаги); пусто — всегда (ADR-0042). Например, будущий
 	## спутник стоит в деревне, пока не принят в отряд.
 	var conditions: Array = []
@@ -140,6 +143,7 @@ static func from_dict(p_id: String, data: Dictionary) -> AreaMap:
 		npc.at = JsonRead.to_vec2i(d.get("at", []))
 		npc.look = JsonRead.get_str(d, "look")
 		npc.dialog = JsonRead.get_str(d, "dialog")
+		npc.merchant = JsonRead.get_bool(d, "merchant")
 		npc.conditions = JsonRead.get_array(d, "if")
 		a.npcs.append(npc)
 	for raw: Variant in JsonRead.get_array(data, "events"):

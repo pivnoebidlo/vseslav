@@ -165,6 +165,7 @@ func test_area_and_dialog_references_are_checked() -> void:
 		[
 			{"id": "ded", "name_key": "t.ded", "at": [3, 0], "dialog": "nobody"},
 			{"id": "ded", "name_key": "t.ded", "at": [0, 2], "look": "ghost"},
+			{"id": "torgash", "name_key": "t.ded", "at": [2, 2], "merchant": true},
 		],
 	}
 	var dialog := {
@@ -182,6 +183,7 @@ func test_area_and_dialog_references_are_checked() -> void:
 	assert_true(_has_error(content, "areas/selo.json: $.npcs[0]: unknown dialog 'nobody'"))
 	assert_true(_has_error(content, "areas/selo.json: $.npcs[1]: duplicate npc id 'ded'"))
 	assert_true(_has_error(content, "areas/selo.json: $.npcs[1]: unknown look 'ghost'"))
+	assert_true(_has_error(content, "areas/selo.json: $.npcs[2]: unknown merchant 'torgash'"))
 	assert_true(_has_error(content, "dialogs/ded.json: $.start: unknown node 'lost'"))
 	assert_true(
 		_has_error(content, "dialogs/ded.json: $.nodes.hello.options[0].next: unknown node 'gone'")

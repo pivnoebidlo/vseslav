@@ -1,7 +1,7 @@
 class_name NpcPanel
 extends HBoxContainer
-## Жители области в редакторе (ADR-0039): имя, клетка, облик, диалог. Слева — карта
-## области символами: жители — буквы, выбранный — подсвечен; клетка видна сразу.
+## Жители области в редакторе (ADR-0039): имя, клетка, облик, диалог, торговец.
+## Слева — карта области символами: жители — буквы, выбранный — подсвечен; клетка видна сразу.
 
 signal edited(edit: DocEdit)
 signal add_requested
@@ -135,6 +135,20 @@ func _npc_panel(index: int, npc: Dictionary) -> PanelContainer:
 	z.value_changed.connect(commit_cell)
 	box.add_child(_picker(tr("UI_ED_LOOK"), _looks, index, npc, "look"))
 	box.add_child(_picker(tr("UI_ED_DIALOG"), _dialogs, index, npc, "dialog"))
+	var trade := CheckBox.new()
+	trade.text = tr("UI_ED_NPC_MERCHANT")
+	trade.button_pressed = JsonRead.get_bool(npc, "merchant")
+	trade.disabled = not _editable
+	trade.toggled.connect(
+		func(on: bool) -> void:
+			var changed := npc.duplicate(true)
+			if on:
+				changed["merchant"] = true
+			else:
+				changed.erase("merchant")
+			edited.emit(NpcOps.set_npc(_doc, _area, index, changed))
+	)
+	box.add_child(trade)
 	var caption := Label.new()
 	caption.text = tr("UI_ED_NPC_IF")
 	caption.add_theme_font_size_override("font_size", 12)

@@ -1,6 +1,7 @@
 class_name TradeScreen
 extends PanelContainer
-## Торг (ADR-0025): выбрать купца и героя; слева товар купца с ценой покупки,
+## Торг (ADR-0025): купца выбирают на карте, подходя к нему (ADR-0049, ADR-0050),
+## здесь — только герой, который торгует; слева товар купца с ценой покупки,
 ## справа мешок героя с ценой продажи. Деньги — из кошелька выбранного героя.
 
 signal closed(changed: bool)
@@ -14,7 +15,6 @@ var _merchant := ""
 var _changed := false
 var _note := ""
 
-var _merchant_tabs := HBoxContainer.new()
 var _hero_tabs := HBoxContainer.new()
 var _body := HBoxContainer.new()
 var _note_label := Label.new()
@@ -36,7 +36,6 @@ func _init() -> void:
 	title.text = TranslationServer.translate("UI_TRADE")
 	title.add_theme_font_size_override("font_size", 18)
 	header.add_child(title)
-	header.add_child(_merchant_tabs)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(spacer)
@@ -63,8 +62,8 @@ func _init() -> void:
 	visible = false
 
 
-## [param merchant_id] — купец, чьи товары открыть (по умолчанию — выбранный раньше
-## или первый). Экран торга теперь открывают из разговора с купцом (ADR-0049).
+## [param merchant_id] — купец, к которому подошли (ADR-0050); торговать можно
+## только с ним. Пусто — первый из списка (запасной путь, данных без купца нет).
 func open(
 	db: RulesDb,
 	party: Party,
@@ -93,7 +92,6 @@ func open(
 func _rebuild() -> void:
 	_note_label.text = _note
 	_note_label.visible = _note != ""
-	_fill_tabs(_merchant_tabs, _market.order, _merchant, _on_merchant, true)
 	_fill_tabs(_hero_tabs, _heroes, _hero, _on_hero, false)
 	for child in _body.get_children():
 		_body.remove_child(child)
@@ -196,12 +194,6 @@ func _apply(err: String) -> void:
 		_status.text = ""
 	else:
 		_status.text = TranslationServer.translate(err)
-	_rebuild()
-
-
-func _on_merchant(id: String) -> void:
-	_merchant = id
-	_status.text = ""
 	_rebuild()
 
 

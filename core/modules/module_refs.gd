@@ -1,8 +1,8 @@
 class_name ModuleRefs
 extends RefCounted
 ## Проверка ссылок между файлами собранных модулей (ADR-0028, ADR-0029): товары купцов,
-## облик, области и диалоги, начало игры, ключи строк. Ссылки внутри правил проверяет
-## RulesDb.validate.
+## облик, области и диалоги, торговцы у жителей (ADR-0050), начало игры, ключи строк.
+## Ссылки внутри правил проверяет RulesDb.validate.
 
 const NAME_KEYS: Array[String] = ["name_key", "title_key"]
 
@@ -12,6 +12,10 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	Market.from_data(content.merchants_data(), content.rules, market_errors)
 	for e in market_errors:
 		errors.append("merchants: " + e)
+	var merchant_ids: Array[String] = []
+	for raw: Variant in JsonRead.get_array(content.merchants_data(), "merchants"):
+		var m: Dictionary = raw
+		merchant_ids.append(JsonRead.get_str(m, "id"))
 	_check_figures(content, errors)
 	_check_props(content, errors)
 	_check_surfaces(content, errors)
@@ -19,7 +23,7 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	area_ids.assign(content.areas.keys())
 	area_ids.sort()
 	for id in area_ids:
-		_check_area(content, id, errors)
+		_check_area(content, id, merchant_ids, errors)
 	var dialog_ids: Array[String] = []
 	dialog_ids.assign(content.dialogs.keys())
 	dialog_ids.sort()
@@ -29,7 +33,9 @@ static func check(content: ModuleContent, errors: Array[String]) -> void:
 	_check_name_keys(content, errors)
 
 
-static func _check_area(content: ModuleContent, id: String, errors: Array[String]) -> void:
+static func _check_area(
+	content: ModuleContent, id: String, merchant_ids: Array[String], errors: Array[String]
+) -> void:
 	var where := "areas/%s.json" % id
 	var area := content.area(id)
 	for row in area.rows:
@@ -52,6 +58,8 @@ static func _check_area(content: ModuleContent, id: String, errors: Array[String
 			errors.append("%s: unknown dialog '%s'" % [at, npc.dialog])
 		if npc.look != "" and not content.figures.has(npc.look):
 			errors.append("%s: unknown look '%s'" % [at, npc.look])
+		if npc.merchant and not merchant_ids.has(npc.id):
+			errors.append("%s: unknown merchant '%s'" % [at, npc.id])
 	_check_area_props(content, area, where, errors)
 	_check_exits(content, area, where, errors)
 	_check_chests(content, area, where, errors)

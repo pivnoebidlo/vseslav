@@ -51,6 +51,10 @@
           "dialog": {
             "$ref": "common.schema.json#/$defs/id"
           },
+          "merchant": {
+            "type": "boolean",
+            "description": "Торговец (ADR-0050): нужна запись с тем же id в merchants.json; в разговоре появится кнопка «Торг»."
+          },
           "if": {
             "$ref": "common.schema.json#/$defs/flag_conditions",
             "description": "Когда житель на месте (ADR-0042); пусто — всегда."

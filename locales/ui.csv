@@ -530,6 +530,7 @@ UI_MAP_TRIGGER_HINT,На зону ссылаются события «по тр�
 UI_MAP_TRIGGERS,Триггеры области,Area triggers
 UI_MAP_TRIGGERS_HINT,Пока нет. Инструмент «Триггер» ставит именованную зону на карте.,None yet. The Trigger tool places a named zone on the map.
 UI_ED_NPC_IF,Когда на месте:,Present when:
+UI_ED_NPC_MERCHANT,Торговец,Merchant
 UI_SIDE_HERO,Герой,Hero
 UI_HERO_LINE,"{class} · {level} уровень · {origin}","{class} · level {level} · {origin}"
 UI_HERO_LINE_PATH,"{class} · путь: {path} · {level} уровень · {origin}","{class} · path: {path} · level {level} · {origin}"

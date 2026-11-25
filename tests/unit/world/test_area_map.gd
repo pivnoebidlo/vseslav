@@ -56,7 +56,24 @@ func test_npc_fields() -> void:
 	assert_eq(npc.at, Vector2i(4, 2))
 	assert_eq(npc.dialog, "ded")
 	assert_eq(npc.look, "x")
+	assert_false(npc.merchant, "not a merchant by default")
 	assert_eq(_area().npc_cells().keys(), [Vector2i(4, 2)])
+
+
+func test_merchant_flag_parses() -> void:
+	var a := (
+		AreaMap
+		. from_dict(
+			"t",
+			{
+				"title_key": "T",
+				"map": ["...."],
+				"spawns": {"start": [0, 0]},
+				"npcs": [{"id": "torgash", "name_key": "D", "at": [1, 0], "merchant": true}],
+			}
+		)
+	)
+	assert_true(a.get_npc("torgash").merchant)
 
 
 func test_heights_set_levels_and_reach_the_battle_grid() -> void:

@@ -107,6 +107,21 @@ func is_open() -> bool:
 	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible or _hero.visible
 
 
+## Закрывает одно открытое окно (Esc на карте, ADR-0035). Видимое окно одно: открытие
+## любого прячет остальные.
+func close_top() -> void:
+	if _hero.visible:
+		_hero.close()
+	elif _trade.visible:
+		_trade.close()
+	elif _equipment.visible:
+		_equipment.close()
+	elif _rest.visible:
+		_rest.close()
+	elif _loot.visible:
+		_loot.close()
+
+
 ## После боя: опыт за победу, добыча, затем потраченное списывается из снаряжения.
 ## Добыча считается отдельным генератором — копией генератора боя, — состояние
 ## боя не меняется. В дымовом прогоне окно добычи не открывается.

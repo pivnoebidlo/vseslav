@@ -42,6 +42,17 @@ static func on_trade_closed(x: Exploration) -> void:
 		x._dialog.visible = true
 
 
+static func escape(x: Exploration) -> void:
+	# Esc закрывает верхнее открытое, а не открывает меню поверх него: сначала меню,
+	# потом окна партии; разговор Esc не закрывает — он кончается ответом.
+	if x._menu.is_open():
+		toggle_menu(x)
+	elif x._screens.is_open():
+		x._screens.close_top()
+	elif not x._dialog.is_open():
+		toggle_menu(x)
+
+
 static func toggle_menu(x: Exploration) -> void:
 	if x._menu.is_open():
 		x._menu.close()

@@ -203,6 +203,10 @@ func _on_hero(id: String) -> void:
 	_rebuild()
 
 
+func close() -> void:
+	_on_close()
+
+
 func _on_close() -> void:
 	visible = false
 	closed.emit(_changed)

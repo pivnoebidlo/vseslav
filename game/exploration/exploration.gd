@@ -153,7 +153,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	var pressed := key != null and key.pressed and not key.echo
 	if pressed and key.keycode == KEY_ESCAPE and not _in_combat():
-		_toggle_menu()
+		ExplorationUi.escape(self)
 		return
 	if _input_blocked():
 		return
@@ -990,10 +990,6 @@ func _notify(text: String) -> void:
 
 func _open_window(id: String) -> void:
 	ExplorationUi.open_window(self, id)
-
-
-func _toggle_menu() -> void:
-	ExplorationUi.toggle_menu(self)
 
 
 func _set_combat_ui(on: bool) -> void:

@@ -6,6 +6,8 @@ extends PanelContainer
 signal finished
 ## После ответа сменилась стадия квестов [param quests].
 signal quests_changed(quests: Array[String])
+## Нажата кнопка «Торг»: сцена открывает экран торга с купцом [param merchant].
+signal trade_pressed(merchant: String)
 
 var _runner: DialogRunner
 var _dice: DiceRoll
@@ -16,6 +18,9 @@ var _busy := false
 var _name := Label.new()
 var _text := Label.new()
 var _options := VBoxContainer.new()
+## Кто из купцов перед нами; пусто — кнопка «Торг» не показывается (ADR-0049).
+var _merchant := ""
+var _trade_button := Button.new()
 
 
 func _init() -> void:
@@ -35,9 +40,22 @@ func _init() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	add_child(box)
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 12)
+	box.add_child(header)
 	_name.add_theme_font_size_override("font_size", 18)
 	_name.add_theme_color_override("font_color", UiStyle.ACTIVE)
-	box.add_child(_name)
+	_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(_name)
+	_trade_button.text = tr("UI_TRADE")
+	_trade_button.focus_mode = Control.FOCUS_NONE
+	_trade_button.visible = false
+	_trade_button.pressed.connect(
+		func() -> void:
+			if not _busy:
+				trade_pressed.emit(_merchant)
+	)
+	header.add_child(_trade_button)
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.add_theme_font_size_override("font_size", 16)
 	box.add_child(_text)
@@ -54,11 +72,20 @@ func setup(dice: DiceRoll, rng: Rng) -> void:
 	_rng = rng
 
 
-func open(npc_name: String, runner: DialogRunner, hero_name: String, abilities: Abilities) -> void:
+## [param merchant_id] — купец: покажет кнопку «Торг» (ADR-0049).
+func open(
+	npc_name: String,
+	runner: DialogRunner,
+	hero_name: String,
+	abilities: Abilities,
+	merchant_id: String = ""
+) -> void:
 	_runner = runner
 	_speaker = abilities
 	_speaker_name = hero_name
 	_name.text = npc_name
+	_merchant = merchant_id
+	_trade_button.visible = merchant_id != ""
 	visible = true
 	_show()
 

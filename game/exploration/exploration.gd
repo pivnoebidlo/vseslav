@@ -205,8 +205,6 @@ func _on_key(keycode: Key) -> void:
 			_open_window("items")
 		KEY_J:
 			_open_window("journal")
-		KEY_T:
-			_open_window("trade")
 		KEY_R:
 			_open_window("rest")
 
@@ -465,16 +463,18 @@ func _arrived() -> void:
 		return
 	_set_hovered("")
 	_path_preview.clear()
-	_talk(npc.dialog, tr(npc.name_key))
+	_talk(npc.dialog, tr(npc.name_key), npc_id if _screens.market.order.has(npc_id) else "")
 
 
-## Разговор: действия ответов идут через контекст событий (вещи, отряд, ADR-0042).
-func _talk(dialog_id: String, speaker: String) -> void:
+## Разговор: контекст событий (ADR-0042); [param merchant_id] — купец, кнопка «Торг» (ADR-0049).
+func _talk(dialog_id: String, speaker: String, merchant_id: String = "") -> void:
 	if not _content.dialogs.has(dialog_id):
 		_events.resume()
 		return
 	_runner = DialogRunner.start(dialog_id, _content.dialogs[dialog_id], flags, _event_ctx())
-	_dialog.open(speaker, _runner, _names[_group.selected], _abilities(_group.selected))
+	_dialog.open(
+		speaker, _runner, _names[_group.selected], _abilities(_group.selected), merchant_id
+	)
 
 
 func _event_ctx() -> EventContext:

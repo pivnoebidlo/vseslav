@@ -5,8 +5,9 @@ extends RefCounted
 ## работает с её полями напрямую.
 
 
-## Окна из колонки слева и по клавишам: вещи, торг, отдых — только вне боя
+## Окна из колонки слева и по клавишам: вещи, отдых — только вне боя
 ## и разговора; журнал — всегда, кроме разговора; меню — всегда.
+## Торг — не здесь: он открывается у купца из разговора (ADR-0049).
 static func open_window(x: Exploration, id: String) -> void:
 	if id == "menu":
 		toggle_menu(x)
@@ -24,10 +25,21 @@ static func open_window(x: Exploration, id: String) -> void:
 			x._screens.open_hero_for(x._group.ids)
 		"items":
 			x._screens.open_equipment_for(x._group.ids)
-		"trade":
-			x._screens.open_trade_for(x._group.ids)
 		"rest":
 			x._screens.open_rest_for(x._group.ids)
+
+
+## Кнопка «Торг» в разговоре (ADR-0049): экран торга с этим купцом; разговор
+## прячется до конца торга.
+static func trade_with(x: Exploration, merchant_id: String) -> void:
+	x._dialog.visible = false
+	x._screens.open_trade_for(x._group.ids, "", merchant_id)
+
+
+## Экран торга закрыли — вернуть спрятанный разговор, если он не кончился.
+static func on_trade_closed(x: Exploration) -> void:
+	if x._runner != null and not x._runner.ended():
+		x._dialog.visible = true
 
 
 static func toggle_menu(x: Exploration) -> void:
@@ -46,7 +58,7 @@ static func apply_options(x: Exploration) -> void:
 
 ## Бой: окна партии гаснут, портреты показывают хиты бойцов.
 static func set_combat_ui(x: Exploration, on: bool) -> void:
-	for id: String in ["hero", "items", "trade", "rest"]:
+	for id: String in ["hero", "items", "rest"]:
 		x._side.set_item_enabled(id, not on)
 	x._refresh_bar()
 
@@ -76,7 +88,6 @@ static func setup(x: Exploration) -> void:
 	x._side.add_item("hero", "C", "UI_SIDE_HERO")
 	x._side.add_item("items", "I", "UI_SIDE_ITEMS")
 	x._side.add_item("journal", "J", "UI_SIDE_JOURNAL")
-	x._side.add_item("trade", "T", "UI_TRADE")
 	x._side.add_item("rest", "R", "UI_REST")
 	x._side.add_item("menu", "Esc", "UI_SIDE_MENU")
 	x._side.chosen.connect(func(id: String) -> void: open_window(x, id))
@@ -116,6 +127,8 @@ static func setup(x: Exploration) -> void:
 	x._dialog.quests_changed.connect(x._quests_updated)
 	x._dialog.setup(x._dice, Exploration.rng)
 	x._dialog.finished.connect(x._on_dialog_finished)
+	x._dialog.trade_pressed.connect(func(m: String) -> void: trade_with(x, m))
+	x._screens.trade_closed.connect(func() -> void: on_trade_closed(x))
 	x._events.setup()
 	layer.add_child(x._events)
 	x._events.notice.connect(x._notify)

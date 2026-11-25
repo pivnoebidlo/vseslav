@@ -10,6 +10,8 @@ signal message(text: String)
 signal loot_finished
 ## Отряд получил опыт за победу (каждому по [param amount]).
 signal xp_gained(amount: int)
+## Экран торга закрыт (разговор с купцом продолжает сцена, ADR-0049).
+signal trade_closed
 
 var party: Party
 var market: Market
@@ -46,7 +48,7 @@ func setup(db: RulesDb, merchants: Dictionary) -> void:
 		screen.grow_vertical = Control.GROW_DIRECTION_BOTH
 		add_child(screen)
 	_equipment.closed.connect(_on_closed)
-	_trade.closed.connect(_on_closed)
+	_trade.closed.connect(_on_trade_closed)
 	_loot.closed.connect(_on_loot_closed)
 	_rest.closed.connect(_on_rest_closed)
 	_hero.closed.connect(_on_hero_closed)
@@ -76,10 +78,12 @@ func open_equipment_for(heroes: Array[String], note: String = "") -> void:
 	_equipment.open(_db, party, heroes, note)
 
 
-func open_trade_for(heroes: Array[String], note: String = "") -> void:
+## Вне боя (на карте): героев называет сцена. [param merchant_id] — купец, к
+## которому подошли (ADR-0049); пусто — выбранный раньше или первый.
+func open_trade_for(heroes: Array[String], note: String = "", merchant_id: String = "") -> void:
 	_equipment.visible = false
 	_rest.visible = false
-	_trade.open(_db, party, market, heroes, note)
+	_trade.open(_db, party, market, heroes, note, merchant_id)
 
 
 ## Окно «Герой» (ADR-0043): лист персонажа, опыт, повышение уровня.
@@ -181,3 +185,12 @@ func _on_closed(was_changed: bool) -> void:
 	save()
 	message.emit(TranslationServer.translate("LOG_EQUIPMENT_SAVED"))
 	changed.emit()
+
+
+## Торг закрыт: сохранить, сообщить и вернуть сцене разговор с купцом.
+func _on_trade_closed(was_changed: bool) -> void:
+	if was_changed:
+		save()
+		message.emit(TranslationServer.translate("LOG_EQUIPMENT_SAVED"))
+		changed.emit()
+	trade_closed.emit()

@@ -63,13 +63,24 @@ func _init() -> void:
 	visible = false
 
 
-func open(db: RulesDb, party: Party, market: Market, heroes: Array[String], note: String) -> void:
+## [param merchant_id] — купец, чьи товары открыть (по умолчанию — выбранный раньше
+## или первый). Экран торга теперь открывают из разговора с купцом (ADR-0049).
+func open(
+	db: RulesDb,
+	party: Party,
+	market: Market,
+	heroes: Array[String],
+	note: String,
+	merchant_id: String = ""
+) -> void:
 	_db = db
 	_party = party
 	_market = market
 	_heroes = heroes
 	if not _heroes.has(_hero):
 		_hero = _heroes[0] if not _heroes.is_empty() else ""
+	if merchant_id != "" and _market.order.has(merchant_id):
+		_merchant = merchant_id
 	if not _market.order.has(_merchant):
 		_merchant = _market.order[0] if not _market.order.is_empty() else ""
 	_changed = false

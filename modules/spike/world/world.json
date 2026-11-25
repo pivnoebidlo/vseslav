@@ -1,0 +1,32 @@
+{
+  "_comment": "Глобальная карта (ADR-0051): Полоцк и Минск, два дня пути. Координаты — только для схемы.",
+  "nodes": [
+    {
+      "id": "polotsk",
+      "name_key": "CITY_POLOTSK",
+      "area": "polotsk",
+      "spawn": "gate",
+      "at": [
+        250,
+        300
+      ]
+    },
+    {
+      "id": "minsk",
+      "name_key": "CITY_MINSK",
+      "area": "minsk",
+      "spawn": "gate",
+      "at": [
+        720,
+        620
+      ]
+    }
+  ],
+  "roads": [
+    {
+      "from": "polotsk",
+      "to": "minsk",
+      "days": 2
+    }
+  ]
+}

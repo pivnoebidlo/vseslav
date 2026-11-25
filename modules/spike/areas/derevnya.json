@@ -51,6 +51,10 @@
     "from_izba": [
       29,
       23
+    ],
+    "from_polotsk": [
+      7,
+      18
     ]
   },
   "npcs": [
@@ -449,6 +453,18 @@
       "to": {
         "area": "izba",
         "spawn": "door"
+      }
+    },
+    {
+      "id": "polotsk_road",
+      "name_key": "EXIT_POLOTSK_ROAD",
+      "at": [
+        6,
+        18
+      ],
+      "to": {
+        "area": "polotsk",
+        "spawn": "gate"
       }
     }
   ]

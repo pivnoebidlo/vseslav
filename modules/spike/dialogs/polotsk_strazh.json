@@ -1,0 +1,29 @@
+{
+  "start": [
+    {
+      "node": "hello"
+    }
+  ],
+  "nodes": {
+    "hello": {
+      "text": "DLG_STRAZH_HELLO",
+      "options": [
+        {
+          "text": "DLG_STRAZH_ASK_NEWS",
+          "next": "news"
+        },
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    },
+    "news": {
+      "text": "DLG_STRAZH_NEWS",
+      "options": [
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    }
+  }
+}

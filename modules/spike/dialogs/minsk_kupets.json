@@ -1,0 +1,17 @@
+{
+  "start": [
+    {
+      "node": "hello"
+    }
+  ],
+  "nodes": {
+    "hello": {
+      "text": "DLG_KUPETS_HELLO",
+      "options": [
+        {
+          "text": "DLG_BYE"
+        }
+      ]
+    }
+  }
+}

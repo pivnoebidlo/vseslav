@@ -27,6 +27,9 @@ func test_all_builtin_modules_load_cleanly() -> void:
 	)
 	assert_eq(_content.area("derevnya").npcs.size(), 6, "3 villagers + 3 future companions")
 	assert_eq(_content.area("derevnya").encounters.size(), 2)
+	var world := _content.world_map([] as Array[String])
+	assert_eq(world.sorted_ids(), ["minsk", "polotsk"] as Array[String])
+	assert_eq(world.days_between("polotsk", "minsk"), 2)
 	assert_gte(_content.props.size(), 20, "KayKit props")
 
 

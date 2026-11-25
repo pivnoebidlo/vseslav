@@ -64,5 +64,18 @@
   "DLG_PRIEST_ASK_EVIL": "What do you fear, father?",
   "DLG_PRIEST_EVIL": "They say a midday spirit walks the graveyard, and a restless dead man with her. The old faith is strong here — the demons are glad of it.",
   "DLG_PRIEST_JOINED": "God bless you. I'll bind your wounds, and with God's help we'll drive off the unclean.",
-  "MSG_WEST_HUSH": "Westward, where the road runs into the woods, the birds fall quiet."
+  "MSG_WEST_HUSH": "Westward, where the road runs into the woods, the birds fall quiet.",
+  "AREA_POLOTSK": "Polotsk",
+  "AREA_MINSK": "Minsk",
+  "CITY_POLOTSK": "Polotsk",
+  "CITY_MINSK": "Minsk",
+  "EXIT_TO_DEREVNYA": "West gate, to the road to the village",
+  "EXIT_POLOTSK_ROAD": "West road to Polotsk",
+  "NPC_STRAZHNIK_POLOTSK": "Guard Ivashko",
+  "NPC_KUPETS_MINSK": "Merchant Tikhomir",
+  "MERCHANT_KUPETS_MINSK": "Merchant Tikhomir",
+  "DLG_STRAZH_HELLO": "Halt, who goes there? Polotsk is Prince Vseslav's town, we bar the gates at night.",
+  "DLG_STRAZH_ASK_NEWS": "What's heard in town?",
+  "DLG_STRAZH_NEWS": "They say the Novgorodians won't give back the bells, and riders come from Minsk with bad news. Go on your way.",
+  "DLG_KUPETS_HELLO": "Come in, my goods are good: flint, herbs and knives. I come from Polotsk, two days on the road, not a dull one."
 }

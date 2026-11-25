@@ -1,0 +1,60 @@
+{
+  "title_key": "AREA_POLOTSK",
+  "map": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    ".............................T",
+    ".............................T",
+    "....####..........####.......T",
+    "....####..........####.......T",
+    "....####..........####.......T",
+    ".............................T",
+    ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ".............................T",
+    "....###...............####...T",
+    "....###...............####...T",
+    "....###...............####...T",
+    "..............TT.............T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "spawns": {
+    "gate": [
+      1,
+      7
+    ]
+  },
+  "npcs": [
+    {
+      "id": "strazhnik_polotsk",
+      "name_key": "NPC_STRAZHNIK_POLOTSK",
+      "at": [
+        12,
+        6
+      ],
+      "look": "starik",
+      "dialog": "polotsk_strazh"
+    }
+  ],
+  "style": {
+    "house": [
+      "house_a",
+      "house_b"
+    ],
+    "tree": [
+      "tree_a"
+    ]
+  },
+  "exits": [
+    {
+      "id": "to_derevnya",
+      "name_key": "EXIT_TO_DEREVNYA",
+      "at": [
+        0,
+        7
+      ],
+      "to": {
+        "area": "derevnya",
+        "spawn": "from_polotsk"
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 class_name WorldFlags
 extends RefCounted
 ## Флаги мира (SPEC §8): имя → значение (bool, целое или строка). Не заданный флаг
-## равен false. Ставят их диалоги, позже — события и квесты.
+## равен false. Ставят их диалоги, события областей и квесты (ADR-0034, ADR-0042).
 
 var values: Dictionary[String, Variant] = {}
 

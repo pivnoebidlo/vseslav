@@ -29,7 +29,7 @@ class Walker:
 	var walking := false
 
 
-## Флаги мира и включённая сетка живут, пока запущена игра (сохранение — позже).
+## Состояние мира между сценами: флаги, RNG вне боя и сундуки; см. GameSave.
 static var flags := WorldFlags.new()
 ## Броски вне боя (проверки в диалогах) — через Rng ядра; seed на сессию.
 static var rng := Rng.new(randi())

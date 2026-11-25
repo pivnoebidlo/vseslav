@@ -2,7 +2,7 @@ class_name PartyScreens
 extends Control
 ## Снаряжение и торг партии между боями (ADR-0024, ADR-0025): держит партию
 ## и купцов, открывает их экраны, сохраняет изменения. Сигнал [signal changed] —
-## снаряжение изменилось (арена начинает бой заново, если он идёт).
+## снаряжение изменилось.
 
 signal changed
 signal message(text: String)
@@ -63,15 +63,6 @@ static func heroes_of(state: CombatState, p: Party) -> Array[String]:
 	return heroes
 
 
-func open_equipment(state: CombatState) -> void:
-	open_equipment_for(heroes_of(state, party), _note(state))
-
-
-func open_trade(state: CombatState) -> void:
-	open_trade_for(heroes_of(state, party), _note(state))
-
-
-## Вне боя (на карте): героев называет сцена.
 func open_equipment_for(heroes: Array[String], note: String = "") -> void:
 	_trade.visible = false
 	_rest.visible = false
@@ -116,20 +107,12 @@ func is_open() -> bool:
 	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible or _hero.visible
 
 
-## Отдых — только между боями; false — бой ещё идёт.
-func open_rest(state: CombatState) -> bool:
-	if not state.ended:
-		return false
-	open_rest_for(heroes_of(state, party))
-	return true
-
-
 ## После боя: опыт за победу, добыча, затем потраченное списывается из снаряжения.
 ## Добыча считается отдельным генератором — копией генератора боя, — состояние
 ## боя не меняется. В дымовом прогоне окно добычи не открывается.
 ## Возвращает, сколько опыта получил каждый в отряде.
 func after_combat(state: CombatState) -> int:
-	# Поражение на арене не сохраняется: партия остаётся такой, как перед боем.
+	# Поражение не сохраняется: партия остаётся такой, как перед боем.
 	if not Loot.heroes_won(state):
 		return 0
 	var xp := Party.combat_xp(_db, state)
@@ -153,10 +136,6 @@ func save() -> void:
 		return
 	PartyStore.save_party(party)
 	MarketStore.save_market(market)
-
-
-func _note(state: CombatState) -> String:
-	return "" if state.ended else TranslationServer.translate("UI_EQ_RESTART_NOTE")
 
 
 func _on_rest_closed(was_changed: bool) -> void:

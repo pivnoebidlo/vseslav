@@ -191,7 +191,6 @@ LOG_ITEM_STOW,{name} убирает на пояс: {item},{name} stows {item}
 LOG_ITEM_FETCH,{name} достаёт из мешка: {item},{name} fetches {item} from the bag
 UI_EQ_RESET,Сбросить,Reset
 UI_EQ_CLOSE,Готово,Done
-UI_EQ_RESTART_NOTE,"Бой идёт: если что-то поменять, он начнётся заново.","A fight is on: changing anything restarts it."
 UI_EQ_WORN,Надето,Worn
 UI_SLOT_ARMOR,Доспех,Armor
 UI_SLOT_MAIN_HAND,Правая рука,Main hand

@@ -1,7 +1,7 @@
 class_name DiceSpec
 extends RefCounted
-## Кости вида NdM±K, например "1d8+2".
-## Полноценный парсер формул с переменными появится позже (ADR-0008).
+## Кости вида NdM±K, например "1d8+2": урон атаки оружия.
+## Формулы с переменными — Formula (ADR-0008).
 
 var count: int = 1
 var sides: int = 6

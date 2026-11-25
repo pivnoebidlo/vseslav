@@ -27,7 +27,7 @@ static func rules() -> RulesDb:
 
 
 static func new_arena_combat(seed_value: int, arena_path: String = ARENA_PATH) -> CombatState:
-	var state := ArenaLoader.new_combat(ArenaLoader.read_file(arena_path), seed_value, rules())
+	var state := CombatLoader.new_combat(CombatLoader.read_file(arena_path), seed_value, rules())
 	state.start()
 	return state
 

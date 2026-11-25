@@ -94,7 +94,7 @@ func test_combat_from_battle_data() -> void:
 	var area := _area(_bandits("zone"))
 	var heroes: Dictionary[String, Vector2i] = {"ratnik": Vector2i(3, 3)}
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(
+	var state := CombatLoader.new_combat(
 		area.get_encounter("les").arena_data(area, heroes), 7, db, errors
 	)
 	assert_eq(errors, [] as Array[String])

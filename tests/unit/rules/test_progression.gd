@@ -80,7 +80,7 @@ func test_level_and_xp_survive_save_and_combat() -> void:
 		]
 	}
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(arena, 1, _db, errors, loaded)
+	var state := CombatLoader.new_combat(arena, 1, _db, errors, loaded)
 	assert_eq(state.get_combatant("lovchiy").level, 4, "в бой — с повышенным уровнем")
 	loaded.take_from_combat(state)
 	assert_eq(loaded.level_of(_db, "lovchiy"), 4)

@@ -10,8 +10,8 @@ var _state: CombatState
 func _won(arena: String) -> void:
 	_db = CombatSim.rules()
 	_party = Party.from_db(_db)
-	var data := ArenaLoader.read_file(CombatSim.arena_path(arena))
-	_state = ArenaLoader.new_combat(data, 42, _db, [], _party)
+	var data := CombatLoader.read_file(CombatSim.arena_path(arena))
+	_state = CombatLoader.new_combat(data, 42, _db, [], _party)
 	for c in _state.combatants:
 		if c.team != "party":
 			c.hp = 0

@@ -92,7 +92,7 @@ func test_market_state_round_trip() -> void:
 
 func test_module_merchants_are_valid() -> void:
 	var errors: Array[String] = []
-	var data := ArenaLoader.read_file("res://modules/spike/merchants.json")
+	var data := CombatLoader.read_file("res://modules/spike/merchants.json")
 	var market := Market.from_data(data, _db, errors)
 	assert_eq(errors, [] as Array[String])
 	assert_gt(market.order.size(), 0)

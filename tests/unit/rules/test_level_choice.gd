@@ -72,7 +72,7 @@ func test_savage_attacker_keeps_the_higher_roll() -> void:
 		]
 	}
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(arena, 7, _db, errors, party)
+	var state := CombatLoader.new_combat(arena, 7, _db, errors, party)
 	var hero := state.get_combatant("ratnik")
 	assert_false(hero.traits_of(TraitDef.SAVAGE_ATTACKER).is_empty())
 	var action := hero.get_action("mech")

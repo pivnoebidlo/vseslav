@@ -101,7 +101,7 @@ func test_heights_set_levels_and_reach_the_battle_grid() -> void:
 	assert_eq(a.grid.level_at(Vector2i(2, 0)), 2)
 	assert_eq(a.grid.level_at(Vector2i(1, 1)), 1, "a fence on a slope keeps its level")
 	var heroes: Dictionary[String, Vector2i] = {"h": Vector2i(1, 0)}
-	var grid := ArenaLoader.grid_from(a.get_encounter("e").arena_data(a, heroes))
+	var grid := CombatLoader.grid_from(a.get_encounter("e").arena_data(a, heroes))
 	assert_eq(grid.level_at(Vector2i(0, 0)), 1)
 	assert_eq(grid.level_at(Vector2i(2, 0)), 2)
 	assert_true(grid.is_low_obstacle(Vector2i(0, 1)))

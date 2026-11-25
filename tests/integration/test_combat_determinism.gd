@@ -46,12 +46,12 @@ func test_arenas_load_cleanly() -> void:
 	var schema_errors: Array[String] = []
 	var schema := JsonSchema.load_dir(ModuleLoader.SCHEMA_DIR, schema_errors)
 	for arena in CombatSim.GOLDEN_ARENAS:
-		var data := ArenaLoader.read_file(CombatSim.arena_path(arena))
+		var data := CombatLoader.read_file(CombatSim.arena_path(arena))
 		var problems: Array[String] = []
 		schema.validate(data, "arena.schema.json", arena, problems)
 		assert_eq(problems, [] as Array[String], arena)
 		var errors: Array[String] = []
-		var state := ArenaLoader.new_combat(data, 1, CombatSim.rules(), errors)
+		var state := CombatLoader.new_combat(data, 1, CombatSim.rules(), errors)
 		assert_eq(errors, [] as Array[String], arena)
 		assert_gt(state.combatants.size(), 3, arena)
 		var party := 0

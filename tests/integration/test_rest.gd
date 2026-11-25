@@ -11,8 +11,8 @@ func before_each() -> void:
 
 
 func _fight() -> CombatState:
-	var data := ArenaLoader.read_file(CombatSim.arena_path("pogost"))
-	return ArenaLoader.new_combat(data, 42, _db, [], _party)
+	var data := CombatLoader.read_file(CombatSim.arena_path("pogost"))
+	return CombatLoader.new_combat(data, 42, _db, [], _party)
 
 
 func test_wounds_and_spent_charges_carry_over_after_victory() -> void:

@@ -41,8 +41,8 @@ func test_exploration_round_trip() -> void:
 
 func test_combat_round_trip_keeps_the_fight() -> void:
 	var db := RulesDb.load_dir(CombatSim.RULES_DIR)
-	var data := ArenaLoader.read_file(CombatSim.arena_path("doroga"))
-	var state := ArenaLoader.new_combat(data, 5, db)
+	var data := CombatLoader.read_file(CombatSim.arena_path("doroga"))
+	var state := CombatLoader.new_combat(data, 5, db)
 	state.start()
 	var s := _save()
 	s.mode = GameSave.MODE_COMBAT

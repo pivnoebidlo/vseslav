@@ -76,7 +76,7 @@ func triggered(area: AreaMap, hero_cells: Array[Vector2i]) -> bool:
 	return false
 
 
-## Данные боя в формате арены (для ArenaLoader.new_combat): сетка — участок
+## Данные боя в формате арены (для CombatLoader.new_combat): сетка — участок
 ## [member battle], герои [param heroes] (id → клетка области) встают в ближайшие
 ## свободные клетки участка. Координаты участников — клетки сетки боя.
 func arena_data(area: AreaMap, heroes: Dictionary[String, Vector2i]) -> Dictionary:

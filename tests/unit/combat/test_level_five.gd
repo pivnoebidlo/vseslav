@@ -32,7 +32,7 @@ func _fight(party: Party, hero: String, foe: String) -> CombatState:
 		]
 	}
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(arena, 3, _db, errors, party)
+	var state := CombatLoader.new_combat(arena, 3, _db, errors, party)
 	assert_eq(errors, [] as Array[String])
 	state.start()
 	return state

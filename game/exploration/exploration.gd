@@ -698,7 +698,7 @@ func _start_combat(e: Encounter) -> void:
 	for id in _group.ids:
 		heroes[id] = _cell_of(_heroes[id].view.position)
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(
+	var state := CombatLoader.new_combat(
 		e.arena_data(_area, heroes), randi(), _content.rules, errors, _screens.party
 	)
 	for err in errors:
@@ -745,7 +745,7 @@ func _resume_combat(save: GameSave) -> void:
 	if e == null:
 		return
 	var none: Dictionary[String, Vector2i] = {}
-	var grid := ArenaLoader.grid_from(e.arena_data(_area, none))
+	var grid := CombatLoader.grid_from(e.arena_data(_area, none))
 	var state := CombatState.from_dict(save.combat, grid)
 	if state == null:
 		return

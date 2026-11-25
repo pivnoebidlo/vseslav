@@ -76,7 +76,7 @@ func test_mass_heal_and_barkskin_in_combat() -> void:
 	)
 	assert_true(party.level_up(_db, "svyashchennik"))
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(arena, 5, _db, errors, party)
+	var state := CombatLoader.new_combat(arena, 5, _db, errors, party)
 	state.start()
 	var guard := 0
 	while state.current().id != "svyashchennik" and guard < 10:
@@ -127,7 +127,7 @@ func test_chosen_slot_is_spent_and_upcasts() -> void:
 	}
 	var party := Party.from_db(_db)
 	var errors: Array[String] = []
-	var state := ArenaLoader.new_combat(arena, 9, _db, errors, party)
+	var state := CombatLoader.new_combat(arena, 9, _db, errors, party)
 	state.start()
 	var guard := 0
 	while state.current().id != "volkhv" and guard < 10:

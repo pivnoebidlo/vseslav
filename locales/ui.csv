@@ -594,3 +594,19 @@ UI_MAP_DAY,День {day}. Отряд в городе {city}.,Day {day}. The par
 UI_MAP_TRAVEL_TO,{city} — {days} дн. пути,{city} — {days} day(s) away
 UI_MAP_NONE,В модуле нет глобальной карты.,The module has no world map.
 LOG_TRAVEL,Отряд идёт в {city}: {days} дн. пути. Теперь день {day}.,The party travels to {city}: {days} day(s). Now day {day}.
+UI_ED_WORLD,Карта мира,World map
+UI_WORLD_MODE_SELECT,Выбор,Select
+UI_WORLD_MODE_CITY,Город,City
+UI_WORLD_MODE_ROAD,Дорога,Road
+UI_WORLD_HINT_SELECT,"Нажмите город или дорогу, город можно перетащить.",Click a city or a road; drag a city to move it.
+UI_WORLD_HINT_CITY,Клик по пустому месту ставит город.,Click an empty spot to place a city.
+UI_WORLD_HINT_ROAD_FROM,Выберите первый город дороги.,Pick the first city of the road.
+UI_WORLD_HINT_ROAD_TO,Выберите второй город.,Pick the second city.
+UI_WORLD_NO_AREAS,Сначала создайте хотя бы одну область: город стоит в области.,Create an area first: a city stands in an area.
+UI_WORLD_NEW_CITY,Новый город,New city
+UI_WORLD_NEW_CITY_HINT,"Идентификатор города (латиница, цифры, _).","City id (latin letters, digits, _)."
+UI_WORLD_NOTHING_SELECTED,"Ничего не выбрано: город, дорога или ничего.","Nothing selected: a city, a road, or nothing."
+UI_WORLD_CITY,Город,City
+UI_WORLD_AREA,Область:,Area:
+UI_WORLD_SPAWN,Точка:,Spawn:
+UI_WORLD_DAYS,Дней пути:,Days:

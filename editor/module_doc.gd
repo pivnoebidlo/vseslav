@@ -14,8 +14,18 @@ const KIND_PROPS := "props"
 const KIND_SURFACES := "surfaces"
 ## Облик персонажей: models/models.json.
 const KIND_MODELS := "models"
+## Глобальная карта: world/world.json — одна запись с id world (ADR-0051).
+const KIND_WORLD := "world"
+const WORLD_ID := "world"
 const KINDS: Array[String] = [
-	KIND_DIALOG, KIND_QUEST, KIND_LOCALE, KIND_AREA, KIND_PROPS, KIND_SURFACES, KIND_MODELS
+	KIND_DIALOG,
+	KIND_QUEST,
+	KIND_LOCALE,
+	KIND_AREA,
+	KIND_PROPS,
+	KIND_SURFACES,
+	KIND_MODELS,
+	KIND_WORLD,
 ]
 const LANGS: Array[String] = ["ru", "en"]
 const ID_PATTERN := "^[a-z0-9_.]+$"

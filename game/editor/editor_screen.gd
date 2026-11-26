@@ -37,6 +37,9 @@ var _assets := false
 var _graph := DialogGraph.new()
 var _inspector := DialogInspector.new()
 var _quest_panel := QuestPanel.new()
+## Глобальная карта (ADR-0051): вкладка «Карта мира» в списке.
+var _world_panel := WorldPanel.new()
+var _world_open := false
 var _errors := ItemList.new()
 var _prompt := NamePrompt.new()
 var _undo_button := Button.new()
@@ -248,6 +251,13 @@ func _select(area_id: String) -> void:
 	_dialog = ""
 	_quest = ""
 	_node = ""
+	_world_open = false
+
+
+func _open_world() -> void:
+	_select("")
+	_world_open = true
+	_refresh()
 
 
 func _map_panel_ask(title: String, hint: String, ok: Callable, taken: Callable) -> void:
@@ -401,6 +411,10 @@ func _refresh() -> void:
 	_graph.visible = showing_dialog
 	_inspector.visible = showing_dialog
 	_quest_panel.visible = showing_quest
+	var showing_world := _world_open and _doc != null
+	_world_panel.visible = showing_world
+	if showing_world:
+		_world_panel.show_world(_doc, _content, _editable)
 	var showing_area := _area != "" and _doc != null and _doc.has(ModuleDoc.KIND_AREA, _area)
 	var showing_assets := _assets and _doc != null
 	_assets_panel.visible = showing_assets
@@ -467,6 +481,11 @@ func _build() -> void:
 	center.add_child(_graph)
 	_quest_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.add_child(_quest_panel)
+	_world_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_world_panel.visible = false
+	center.add_child(_world_panel)
+	_world_panel.edited.connect(_apply)
+	_world_panel.ask_id = _map_panel_ask
 	_area_tabs.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.add_child(_area_tabs)
 	_assets_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -584,6 +603,7 @@ func _lists() -> VBoxContainer:
 			_refresh()
 	)
 	box.add_child(_areas)
+	box.add_child(_button("UI_ED_WORLD", _open_world))
 	box.add_child(_button("UI_ED_DELETE_SELECTED", _delete_selected))
 	return box
 

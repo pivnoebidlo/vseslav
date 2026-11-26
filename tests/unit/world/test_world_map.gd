@@ -71,3 +71,9 @@ func test_graph_errors_are_reported() -> void:
 
 func test_empty_map_is_connected() -> void:
 	assert_true(_map([], []).connected())
+
+
+func test_city_in_area() -> void:
+	var map := _map([_city("a"), _city("b")], [_road("a", "b", 1)])
+	assert_eq(map.city_in_area("a"), "a", "the city stands in its area")
+	assert_eq(map.city_in_area("izba"), "", "an area with no city on the map")

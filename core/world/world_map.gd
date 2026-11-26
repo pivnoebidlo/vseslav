@@ -69,6 +69,14 @@ func city(id: String) -> City:
 	return cities[id]
 
 
+## Город карты, который стоит в области [param area_id]; пусто — такой нет.
+func city_in_area(area_id: String) -> String:
+	for id in sorted_ids():
+		if cities[id].area == area_id:
+			return id
+	return ""
+
+
 func has_road(x: String, y: String) -> bool:
 	for road in roads:
 		if (road.a == x and road.b == y) or (road.a == y and road.b == x):

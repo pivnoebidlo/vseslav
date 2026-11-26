@@ -166,7 +166,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _in_combat():
 		return
 	if pressed:
-		_on_key(key.keycode)
+		ExplorationUi.on_key(self, key.keycode)
 		return
 	var motion := event as InputEventMouseMotion
 	if motion != null:
@@ -191,22 +191,6 @@ func _input_blocked() -> bool:
 	if _menu.is_open() or _dialog.is_open() or _screens.is_open():
 		return true
 	return _heroes.is_empty() or _events.is_busy()
-
-
-func _on_key(keycode: Key) -> void:
-	match keycode:
-		KEY_G:
-			_set_grid(not _area_view.is_grid_visible())
-		KEY_TAB:
-			_select(_group.next_id())
-		KEY_C:
-			_open_window("hero")
-		KEY_I:
-			_open_window("items")
-		KEY_J:
-			_open_window("journal")
-		KEY_R:
-			_open_window("rest")
 
 
 func _on_hover(screen_pos: Vector2) -> void:
@@ -955,7 +939,7 @@ func _make_save() -> GameSave:
 	s.party = _screens.party.to_dict()
 	s.rng = rng.to_dict()
 	s.containers = chests.duplicate(true)
-	TravelState.fill_save(s)
+	TravelState.fill_save(s, ExplorationUi.city_here(self))
 	if _in_combat():
 		s.mode = GameSave.MODE_COMBAT
 		s.encounter = _encounter.id

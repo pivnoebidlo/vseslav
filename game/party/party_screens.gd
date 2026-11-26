@@ -12,6 +12,8 @@ signal loot_finished
 signal xp_gained(amount: int)
 ## Экран торга закрыт (разговор с купцом продолжает сцена, ADR-0049).
 signal trade_closed
+## Выбран город на глобальной карте (ADR-0051); экран карты уже закрыт.
+signal travel_chosen(city_id: String)
 
 var party: Party
 var market: Market
@@ -24,6 +26,7 @@ var _trade: TradeScreen
 var _loot: LootScreen
 var _rest: RestScreen
 var _hero: HeroScreen
+var _world: WorldMapScreen
 
 
 ## [param merchants] — купцы из модулей (ModuleContent.merchants_data).
@@ -42,7 +45,9 @@ func setup(db: RulesDb, merchants: Dictionary) -> void:
 	_loot = LootScreen.new()
 	_rest = RestScreen.new()
 	_hero = HeroScreen.new()
-	for screen: PanelContainer in [_equipment, _trade, _loot, _rest, _hero]:
+	_world = WorldMapScreen.new()
+	_world.travel_chosen.connect(_on_travel_chosen)
+	for screen: PanelContainer in [_equipment, _trade, _loot, _rest, _hero, _world]:
 		screen.set_anchors_preset(Control.PRESET_CENTER)
 		screen.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		screen.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -78,13 +83,24 @@ func open_trade_for(heroes: Array[String], note: String = "", merchant_id: Strin
 
 
 ## Окно «Герой» (ADR-0043): лист персонажа, опыт, повышение уровня.
+## Глобальная карта (ADR-0051): [param map] — схема, [param here] — город или пусто.
+func open_map(map: WorldMap, here: String, day: int) -> void:
+	_hide_all()
+	_world.open(map, here, day)
+
+
+func _on_travel_chosen(city_id: String) -> void:
+	_world.close()
+	travel_chosen.emit(city_id)
+
+
 func open_hero_for(heroes: Array[String]) -> void:
 	_hide_all()
 	_hero.open(_db, party, heroes)
 
 
 func _hide_all() -> void:
-	for screen: Control in [_equipment, _trade, _rest, _loot, _hero]:
+	for screen: Control in [_equipment, _trade, _rest, _loot, _hero, _world]:
 		screen.visible = false
 
 
@@ -104,13 +120,22 @@ func open_chest(title: String, pile: Inventory, heroes: Array[String]) -> void:
 
 
 func is_open() -> bool:
-	return _equipment.visible or _trade.visible or _rest.visible or _loot.visible or _hero.visible
+	return (
+		_equipment.visible
+		or _trade.visible
+		or _rest.visible
+		or _loot.visible
+		or _hero.visible
+		or _world.visible
+	)
 
 
 ## Закрывает одно открытое окно (Esc на карте, ADR-0035). Видимое окно одно: открытие
 ## любого прячет остальные.
 func close_top() -> void:
-	if _hero.visible:
+	if _world.visible:
+		_world.close()
+	elif _hero.visible:
 		_hero.close()
 	elif _trade.visible:
 		_trade.close()

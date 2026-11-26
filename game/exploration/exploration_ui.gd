@@ -25,6 +25,8 @@ static func open_window(x: Exploration, id: String) -> void:
 			x._screens.open_hero_for(x._group.ids)
 		"items":
 			x._screens.open_equipment_for(x._group.ids)
+		"map":
+			_open_map(x)
 		"rest":
 			x._screens.open_rest_for(x._group.ids)
 
@@ -67,9 +69,78 @@ static func apply_options(x: Exploration) -> void:
 		x._area_view.set_grid_visible(GameSettings.show_grid)
 
 
+## Глобальная карта (ADR-0051): окно со схемой; без карты в модуле — пояснение.
+static func _open_map(x: Exploration) -> void:
+	var errors: Array[String] = []
+	var map := x._content.world_map(errors)
+	if map == null:
+		x._notify(x.tr("UI_MAP_NONE"))
+		return
+	x._screens.open_map(map, city_here(x), TravelState.day)
+
+
+## Город карты, где стоит отряд; пусто — отряд вне городов карты.
+static func city_here(x: Exploration) -> String:
+	var errors: Array[String] = []
+	var map := x._content.world_map(errors)
+	if map == null or x._area == null:
+		return ""
+	return map.city_in_area(x._area.id)
+
+
+## Путь в город [param city_id]: дни идут, отряд переходит к воротам города.
+static func travel(x: Exploration, city_id: String) -> void:
+	var errors: Array[String] = []
+	var map := x._content.world_map(errors)
+	var here := city_here(x)
+	if map == null or here == "":
+		return
+	var days := map.days_between(here, city_id)
+	if days < 1:
+		return
+	TravelState.day += days
+	var target := map.city(city_id)
+	x._teleport(target.area, target.spawn)
+	(
+		x
+		. _notify(
+			(
+				CombatLogFormat
+				. tr_fmt(
+					"LOG_TRAVEL",
+					{
+						"city": TranslationServer.translate(target.name_key),
+						"days": days,
+						"day": TravelState.day,
+					}
+				)
+			)
+		)
+	)
+
+
+## Клавиши карты: G — сетка, Tab — герой, C/I/J/M/R — окна (ADR-0035, ADR-0051).
+static func on_key(x: Exploration, keycode: Key) -> void:
+	match keycode:
+		KEY_G:
+			x._set_grid(not x._area_view.is_grid_visible())
+		KEY_TAB:
+			x._select(x._group.next_id())
+		KEY_C:
+			open_window(x, "hero")
+		KEY_I:
+			open_window(x, "items")
+		KEY_J:
+			open_window(x, "journal")
+		KEY_M:
+			open_window(x, "map")
+		KEY_R:
+			open_window(x, "rest")
+
+
 ## Бой: окна партии гаснут, портреты показывают хиты бойцов.
 static func set_combat_ui(x: Exploration, on: bool) -> void:
-	for id: String in ["hero", "items", "rest"]:
+	for id: String in ["hero", "items", "map", "rest"]:
 		x._side.set_item_enabled(id, not on)
 	x._refresh_bar()
 
@@ -99,6 +170,7 @@ static func setup(x: Exploration) -> void:
 	x._side.add_item("hero", "C", "UI_SIDE_HERO")
 	x._side.add_item("items", "I", "UI_SIDE_ITEMS")
 	x._side.add_item("journal", "J", "UI_SIDE_JOURNAL")
+	x._side.add_item("map", "M", "UI_SIDE_MAP")
 	x._side.add_item("rest", "R", "UI_REST")
 	x._side.add_item("menu", "Esc", "UI_SIDE_MENU")
 	x._side.chosen.connect(func(id: String) -> void: open_window(x, id))
@@ -138,6 +210,7 @@ static func setup(x: Exploration) -> void:
 	x._dialog.quests_changed.connect(x._quests_updated)
 	x._dialog.setup(x._dice, Exploration.rng)
 	x._dialog.finished.connect(x._on_dialog_finished)
+	x._screens.travel_chosen.connect(func(c: String) -> void: travel(x, c))
 	x._dialog.trade_pressed.connect(func(m: String) -> void: trade_with(x, m))
 	x._screens.trade_closed.connect(func() -> void: on_trade_closed(x))
 	x._events.setup()

@@ -5,7 +5,7 @@ extends RefCounted
 ## энкаунтер и CombatState. JSON из простых типов; [constant SAVE_FORMAT] растёт при
 ## изменении формата, старые версии читаются миграцией.
 
-const SAVE_FORMAT := 1
+const SAVE_FORMAT := 2
 const GAME_VERSION := "0.1.0"
 const MODE_EXPLORATION := "exploration"
 const MODE_COMBAT := "combat"
@@ -18,6 +18,10 @@ var module_id: String = ""
 var module_version: String = ""
 var mode: String = MODE_EXPLORATION
 var area: String = ""
+## Глобальная карта (ADR-0051): сколько дней прошло и в каком городе отряд; пустой city —
+## отряд не в городе карты. Сохранения формата 1 читаются с day = 1 и city = "".
+var day: int = 1
+var city: String = ""
 ## Клетка каждого героя на карте; пусто — герои встают у точки появления [member spawn]
 ## (переход в другую область).
 var heroes: Dictionary[String, Vector2i] = {}
@@ -52,6 +56,8 @@ func to_dict() -> Dictionary:
 		"game_state":
 		{
 			"area": area,
+			"day": day,
+			"city": city,
 			"heroes": hero_cells,
 			"spawn": spawn,
 			"containers": containers,
@@ -79,6 +85,8 @@ static func from_dict(data: Dictionary, errors: Array[String]) -> GameSave:
 	s.mode = JsonRead.get_str(data, "mode", MODE_EXPLORATION)
 	var state := JsonRead.get_dict(data, "game_state")
 	s.area = JsonRead.get_str(state, "area")
+	s.day = JsonRead.get_int(state, "day", 1)
+	s.city = JsonRead.get_str(state, "city")
 	var cells := JsonRead.get_dict(state, "heroes")
 	var chain := JsonRead.get_dict(state, "chained")
 	for key: Variant in cells:
@@ -97,7 +105,7 @@ static func from_dict(data: Dictionary, errors: Array[String]) -> GameSave:
 		if s.encounter == "" or s.combat.is_empty():
 			errors.append(ERR_DATA)
 			return null
-	if s.area == "" or (s.heroes.is_empty() and s.spawn == ""):
+	if s.area == "" or (s.heroes.is_empty() and s.spawn == "") or s.day < 1:
 		errors.append(ERR_DATA)
 		return null
 	return s

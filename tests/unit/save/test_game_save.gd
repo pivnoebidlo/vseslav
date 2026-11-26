@@ -78,3 +78,38 @@ func test_check_against_loaded_modules() -> void:
 	other.module_id = "someone.else"
 	other.check(content, errors)
 	assert_eq(errors, [GameSave.ERR_MODULE] as Array[String])
+
+
+func test_day_and_city_round_trip() -> void:
+	var s := _save()
+	s.day = 4
+	s.city = "polotsk"
+	var errors: Array[String] = []
+	var back := _through_json(s, errors)
+	assert_eq(errors, [] as Array[String])
+	assert_eq(back.day, 4)
+	assert_eq(back.city, "polotsk")
+
+
+func test_format_one_saves_still_load() -> void:
+	# Сохранение до глобальной карты: нет дня и города — день 1, отряд не в городе.
+	var d := _save().to_dict()
+	d["save_format"] = 1
+	var state: Dictionary = d["game_state"]
+	state.erase("day")
+	state.erase("city")
+	var errors: Array[String] = []
+	var back := GameSave.from_dict(d, errors)
+	assert_eq(errors, [] as Array[String])
+	assert_eq(back.day, 1)
+	assert_eq(back.city, "")
+	assert_eq(back.area, "derevnya", "the rest of the save is untouched")
+
+
+func test_day_must_be_positive() -> void:
+	var d := _save().to_dict()
+	var state: Dictionary = d["game_state"]
+	state["day"] = 0
+	var errors: Array[String] = []
+	assert_null(GameSave.from_dict(d, errors))
+	assert_eq(errors, [GameSave.ERR_DATA] as Array[String])

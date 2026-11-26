@@ -906,6 +906,7 @@ func _take_save() -> GameSave:
 		SaveStore.new_game = false
 		flags = WorldFlags.new()
 		chests = {}
+		TravelState.reset()
 		_screens.party = Party.from_db(_content.rules)
 		_screens.party.set_members(JsonRead.get_str_array(_content.start(), "party"))
 		_screens.save()
@@ -919,6 +920,7 @@ func _take_save() -> GameSave:
 		return null
 	flags = save.flags
 	chests = save.containers.duplicate(true)
+	TravelState.apply_save(save)
 	_screens.party = Party.from_dict(save.party, _content.rules, errors)
 	_screens.save()
 	if not save.rng.is_empty():
@@ -953,6 +955,7 @@ func _make_save() -> GameSave:
 	s.party = _screens.party.to_dict()
 	s.rng = rng.to_dict()
 	s.containers = chests.duplicate(true)
+	TravelState.fill_save(s)
 	if _in_combat():
 		s.mode = GameSave.MODE_COMBAT
 		s.encounter = _encounter.id
